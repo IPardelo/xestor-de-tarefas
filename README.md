@@ -45,6 +45,9 @@ Todos os comandos `npm` execútanse dende a carpeta `app/`.
 ```text
 xestor-de-tarefas/
 ├─ app/                               # Todo o código da app (web, escritorio e Android)
+│  ├─ public/
+│  │  └─ Images/                      # Logo, banner e capturas do README
+│  ├─ index.html                      # HTML raíz de Vite
 │  └─ package.json                    # Scripts npm (execútanse dende app/)
 ├─ LICENSE
 └─ README.md
