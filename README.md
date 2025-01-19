@@ -48,6 +48,7 @@ xestor-de-tarefas/
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ index.html                      # HTML raíz de Vite
+│  ├─ jsconfig.json                   # Alias @ → /src
 │  └─ package.json                    # Scripts npm (execútanse dende app/)
 ├─ LICENSE
 └─ README.md
