@@ -14,6 +14,7 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![MUI](https://img.shields.io/badge/MUI-6-007FFF?style=flat-square&logo=mui&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
+![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
 
 </div>
 
@@ -45,6 +46,7 @@ Todos os comandos `npm` execútanse dende a carpeta `app/`.
 ```text
 xestor-de-tarefas/
 ├─ app/                               # Todo o código da app (web, escritorio e Android)
+│  │  ├─ apiLocal.js                  # /api/kdbx/read e /api/ical (compartido por Vite e escritorio)
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ index.html                      # HTML raíz de Vite
