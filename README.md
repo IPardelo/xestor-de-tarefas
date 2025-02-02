@@ -55,6 +55,7 @@ xestor-de-tarefas/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
 │  │  ├─ Assets/                      # Fontes SF Pro e Font Awesome
+│  │  ├─ Styles/DarkMode.css          # Estilos do tema escuro
 │  │  └─ index.css                    # Estilos base + Tailwind
 │  ├─ index.html                      # HTML raíz de Vite
 │  ├─ jsconfig.json                   # Alias @ → /src
