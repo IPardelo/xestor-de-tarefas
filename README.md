@@ -54,6 +54,8 @@ xestor-de-tarefas/
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
+│  │  ├─ i18n/
+│  │  │  └─ translations.js           # Traducións gl / es / en
 │  │  ├─ Assets/                      # Fontes SF Pro e Font Awesome
 │  │  ├─ Styles/DarkMode.css          # Estilos do tema escuro
 │  │  ├─ Utils/                       # plataforma.js (esApp), toast.js e ical.js (carga de calendarios)
