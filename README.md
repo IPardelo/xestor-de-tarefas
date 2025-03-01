@@ -54,6 +54,8 @@ xestor-de-tarefas/
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
+│  │  ├─ Features/                    # Slices Redux Toolkit
+│  │  │  └─ Language/idiomaSlice.js
 │  │  ├─ i18n/
 │  │  │  └─ translations.js           # Traducións gl / es / en
 │  │  ├─ Assets/                      # Fontes SF Pro e Font Awesome
