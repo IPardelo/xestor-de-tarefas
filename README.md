@@ -55,6 +55,7 @@ xestor-de-tarefas/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
 │  │  ├─ Features/                    # Slices Redux Toolkit
+│  │  │  ├─ Theme/temaSlice.js
 │  │  │  └─ Language/idiomaSlice.js
 │  │  ├─ i18n/
 │  │  │  └─ translations.js           # Traducións gl / es / en
