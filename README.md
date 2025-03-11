@@ -57,6 +57,7 @@ xestor-de-tarefas/
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
 │  │  │  ├─ Projects/proxectosSlice.js
+│  │  │  ├─ Notes/notasSlice.js
 │  │  │  ├─ Theme/temaSlice.js
 │  │  │  └─ Language/idiomaSlice.js
 │  │  ├─ i18n/
