@@ -58,6 +58,7 @@ xestor-de-tarefas/
 │  │  │  ├─ Tasks/tareasSlice.js
 │  │  │  ├─ Projects/proxectosSlice.js
 │  │  │  ├─ Notes/notasSlice.js
+│  │  │  ├─ Users/usuariosSlice.js
 │  │  │  ├─ Theme/temaSlice.js
 │  │  │  └─ Language/idiomaSlice.js
 │  │  ├─ i18n/
