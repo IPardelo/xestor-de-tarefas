@@ -16,6 +16,7 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![MUI](https://img.shields.io/badge/MUI-6-007FFF?style=flat-square&logo=mui&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 ![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
 
 </div>
@@ -54,6 +55,8 @@ xestor-de-tarefas/
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
+│  │  ├─ App/
+│  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
 │  │  │  ├─ Projects/proxectosSlice.js
@@ -69,6 +72,7 @@ xestor-de-tarefas/
 │  │  └─ index.css                    # Estilos base + Tailwind
 │  ├─ index.html                      # HTML raíz de Vite
 │  ├─ jsconfig.json                   # Alias @ → /src
+│  ├─ .env / .env.example             # Credenciais de Firebase
 │  └─ package.json                    # Scripts npm (execútanse dende app/)
 ├─ LICENSE
 └─ README.md
