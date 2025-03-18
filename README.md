@@ -56,6 +56,7 @@ xestor-de-tarefas/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
 │  │  ├─ App/
+│  │  │  ├─ persistence.js            # Firestore: coleccións, migración e escrituras por elemento
 │  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
