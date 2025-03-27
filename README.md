@@ -57,6 +57,7 @@ xestor-de-tarefas/
 │  ├─ src/
 │  │  ├─ App/
 │  │  │  ├─ persistence.js            # Firestore: coleccións, migración e escrituras por elemento
+│  │  │  ├─ sincronizacion.js         # Middleware de Redux, cola de pendentes e escoita en tempo real
 │  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
