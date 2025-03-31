@@ -12,6 +12,7 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 [![Licenza](https://img.shields.io/badge/licenza-MIT-22c55e?style=flat-square)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.6-764ABC?style=flat-square&logo=redux&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![MUI](https://img.shields.io/badge/MUI-6-007FFF?style=flat-square&logo=mui&logoColor=white)
@@ -56,6 +57,7 @@ xestor-de-tarefas/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
 │  │  ├─ App/
+│  │  │  ├─ store.js                  # configureStore + rexistro de slices
 │  │  │  ├─ persistence.js            # Firestore: coleccións, migración e escrituras por elemento
 │  │  │  ├─ sincronizacion.js         # Middleware de Redux, cola de pendentes e escoita en tempo real
 │  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
