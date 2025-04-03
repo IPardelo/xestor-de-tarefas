@@ -62,6 +62,8 @@ xestor-de-tarefas/
 │  │  │  ├─ sincronizacion.js         # Middleware de Redux, cola de pendentes e escoita en tempo real
 │  │  │  ├─ autenticacion.js          # Login, contas e contrasinais con Firebase Auth (e modo local)
 │  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
+│  │  ├─ Components/                  # UI por áreas (*.android.jsx = versión da app)
+│  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
 │  │  │  ├─ Projects/proxectosSlice.js
