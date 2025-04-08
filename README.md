@@ -64,6 +64,7 @@ xestor-de-tarefas/
 │  │  │  └─ firebase.js               # Inicialización de Firebase (Firestore + Auth)
 │  │  ├─ Components/                  # UI por áreas (*.android.jsx = versión da app)
 │  │  │  ├─ Layout/                   # Header, Sidebar, UserSettingsView
+│  │  │  ├─ Tasks/                    # TasksList, TaskItem, TaskForm, TaskFilter
 │  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
