@@ -28,6 +28,10 @@ As aplicacións de tarefas comerciais pídenche unha conta nun servidor alleo, g
 datos onde non ves, e tarde ou cedo poñen detrás dun pago o que antes era gratis.
 XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 
+## Funcionalidades
+
+- ✅ Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
+
 ## Configuración
 
 ### Requisitos
