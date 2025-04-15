@@ -31,6 +31,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 ## Funcionalidades
 
 - ✅ Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
+- 📁 Xestión de proxectos con datos de cliente.
 
 ## Configuración
 
@@ -69,6 +70,7 @@ xestor-de-tarefas/
 │  │  ├─ Components/                  # UI por áreas (*.android.jsx = versión da app)
 │  │  │  ├─ Layout/                   # Header, Sidebar, UserSettingsView
 │  │  │  ├─ Tasks/                    # TasksList, TaskItem, TaskForm, TaskFilter
+│  │  │  ├─ Projects/                 # ProjectsView (con lectura KDBX)
 │  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
