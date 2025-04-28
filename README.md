@@ -31,6 +31,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 ## Funcionalidades
 
 - ✅ Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
+- 📝 Módulo de notas: notas de texto e notas tipo lista/checklist con recordatorios.
 - 📁 Xestión de proxectos con datos de cliente.
 
 ## Configuración
@@ -71,6 +72,7 @@ xestor-de-tarefas/
 │  │  │  ├─ Layout/                   # Header, Sidebar, UserSettingsView
 │  │  │  ├─ Tasks/                    # TasksList, TaskItem, TaskForm, TaskFilter
 │  │  │  ├─ Projects/                 # ProjectsView (con lectura KDBX)
+│  │  │  ├─ Notes/                    # NotesView (notas de texto e checklist)
 │  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
