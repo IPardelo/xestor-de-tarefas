@@ -32,6 +32,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 
 - ✅ Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
 - 📝 Módulo de notas: notas de texto e notas tipo lista/checklist con recordatorios.
+- 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
 - 📁 Xestión de proxectos con datos de cliente.
 
 ## Configuración
@@ -41,6 +42,11 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - Node.js 18+ (recomendado 20+)
 - npm
 - Windows, Linux ou macOS
+
+### 📅 Calendarios de Google (iCal)
+
+- Cada usuario pode engadir ata 3 calendarios en Axustes de usuario co "enderezo secreto en formato iCal" de Google Calendar.
+- Cada calendario gárdase no dispositivo: non se volve descargar durante 10 minutos e, se falla a descarga, amósase a última copia gardada cun aviso.
 
 ### Scripts
 
@@ -73,6 +79,7 @@ xestor-de-tarefas/
 │  │  │  ├─ Tasks/                    # TasksList, TaskItem, TaskForm, TaskFilter
 │  │  │  ├─ Projects/                 # ProjectsView (con lectura KDBX)
 │  │  │  ├─ Notes/                    # NotesView (notas de texto e checklist)
+│  │  │  ├─ Calendar/                 # CalendarView (anual/mensual/diaria)
 │  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
