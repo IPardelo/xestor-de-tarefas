@@ -34,6 +34,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - 📝 Módulo de notas: notas de texto e notas tipo lista/checklist con recordatorios.
 - 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
 - 📁 Xestión de proxectos con datos de cliente.
+- 👥 Xestión de usuarios.
 
 ## Configuración
 
@@ -86,6 +87,7 @@ xestor-de-tarefas/
 │  │  │  ├─ Projects/                 # ProjectsView (con lectura KDBX)
 │  │  │  ├─ Notes/                    # NotesView (notas de texto e checklist)
 │  │  │  ├─ Calendar/                 # CalendarView (anual/mensual/diaria)
+│  │  │  ├─ Options/                  # OptionsGlobalView, OptionsUsersView
 │  │  │  └─ UI/                       # DarkMode, ToastCenter e compoñentes comúns
 │  │  ├─ Features/                    # Slices Redux Toolkit
 │  │  │  ├─ Tasks/tareasSlice.js
