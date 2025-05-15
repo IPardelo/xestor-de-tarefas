@@ -1,0 +1,198 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { actualizarPreferenciasUsuarioActual, seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations, languageNames } from '@/i18n/translations';
+import CambioContrasinal from '@/Components/Auth/CambioContrasinal';
+
+export default function UserSettingsView() {
+	const dispatch = useDispatch();
+	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActual = useSelector(seleccionarUsuarioActual);
+	const t = translations[idioma] || translations.gl;
+
+	const [form, setForm] = useState({
+		imaxePerfil: '',
+		idiomaPredeterminado: 'gl',
+		temaPredeterminado: 'claro',
+		xenero: 'F',
+		contrasenha: '',
+		calendariosIcal: ['', '', ''],
+		kdbxFilePath: '',
+		kdbxPassword: '',
+	});
+
+	useEffect(() => {
+		if (!usuarioActual) return;
+		setForm({
+			imaxePerfil: usuarioActual.imaxePerfil || '',
+			idiomaPredeterminado: usuarioActual.idiomaPredeterminado || 'gl',
+			temaPredeterminado: usuarioActual.temaPredeterminado || 'claro',
+			xenero: usuarioActual.xenero || 'F',
+			contrasenha: String(usuarioActual.contrasenha || ''),
+			calendariosIcal: Array.from(
+				{ length: 3 },
+				(_, index) => usuarioActual.calendariosIcal?.[index] || ''
+			),
+			kdbxFilePath: usuarioActual.kdbxConfig?.filePath || '',
+			kdbxPassword: usuarioActual.kdbxConfig?.password || '',
+		});
+	}, [usuarioActual]);
+
+	const onChange = (e) => {
+		const { name, value } = e.target;
+		setForm((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const onCalendarChange = (index, value) => {
+		setForm((prev) => ({
+			...prev,
+			calendariosIcal: prev.calendariosIcal.map((item, itemIndex) =>
+				itemIndex === index ? value : item
+			),
+		}));
+	};
+
+	const onSubmit = (e) => {
+		e.preventDefault();
+		const { kdbxFilePath, kdbxPassword, contrasenha, ...resto } = form;
+		dispatch(
+			actualizarPreferenciasUsuarioActual({
+				...resto,
+				// Cos usuarios de Firebase Auth o contrasinal cámbiase no bloque propio.
+				...(usuarioActual?.uid ? {} : { contrasenha }),
+				kdbxConfig: { filePath: kdbxFilePath, password: kdbxPassword },
+			})
+		);
+	};
+
+	return (
+		<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
+			<h2 className='text-xl font-semibold text-gray-800 dark:text-white mb-6'>{t.userSettingsTitle}</h2>
+			<form onSubmit={onSubmit} className='space-y-4'>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.profileImage}</label>
+					<input
+						type='text'
+						name='imaxePerfil'
+						value={form.imaxePerfil}
+						onChange={onChange}
+						placeholder='https://...'
+						className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+					/>
+				</div>
+				{usuarioActual?.uid ? (
+					<>
+						<div>
+							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.userEmail}</label>
+							<p className='px-4 py-2 text-gray-600 dark:text-gray-400'>{usuarioActual.email}</p>
+						</div>
+						<CambioContrasinal />
+					</>
+				) : (
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.userPassword}</label>
+						<input
+							type='password'
+							name='contrasenha'
+							value={form.contrasenha}
+							onChange={onChange}
+							autoComplete='current-password'
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+					</div>
+				)}
+				<div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.defaultLanguage}</label>
+						<select
+							name='idiomaPredeterminado'
+							value={form.idiomaPredeterminado}
+							onChange={onChange}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+							<option value='gl'>{languageNames.gl}</option>
+							<option value='es'>{languageNames.es}</option>
+							<option value='en'>{languageNames.en}</option>
+						</select>
+					</div>
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.defaultTheme}</label>
+						<select
+							name='temaPredeterminado'
+							value={form.temaPredeterminado}
+							onChange={onChange}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+							<option value='claro'>{t.themeLightLabel}</option>
+							<option value='oscuro'>{t.themeDarkLabel}</option>
+						</select>
+					</div>
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.genderShort}</label>
+						<select
+							name='xenero'
+							value={form.xenero}
+							onChange={onChange}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+							<option value='M'>{t.genderMasculine}</option>
+							<option value='F'>{t.genderFeminine}</option>
+						</select>
+					</div>
+				</div>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+						{t.googleCalendarIcalUrls}
+					</label>
+					<p className='text-xs text-gray-500 dark:text-gray-400 mb-2'>{t.googleCalendarIcalHint}</p>
+					<div className='space-y-2'>
+						{form.calendariosIcal.map((url, index) => (
+							<input
+								key={`ical-${index}`}
+								type='url'
+								value={url}
+								onChange={(e) => onCalendarChange(index, e.target.value)}
+								placeholder={`${t.googleCalendarIcalUrlLabel} ${index + 1}`}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+							/>
+						))}
+					</div>
+				</div>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+						{t.kdbxConfigTitle}
+					</label>
+					<p className='text-xs text-gray-500 dark:text-gray-400 mb-2'>{t.kdbxConfigHint}</p>
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+						<input
+							type='text'
+							name='kdbxFilePath'
+							value={form.kdbxFilePath}
+							onChange={onChange}
+							placeholder={t.kdbxPath}
+							aria-label={t.kdbxPath}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+						<input
+							type='password'
+							name='kdbxPassword'
+							value={form.kdbxPassword}
+							onChange={onChange}
+							placeholder={t.kdbxPassword}
+							aria-label={t.kdbxPassword}
+							autoComplete='new-password'
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+					</div>
+				</div>
+				<div className='pt-2'>
+					<div className='flex justify-end'>
+						<button
+							type='submit'
+							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:translate-y-0 font-medium text-sm'>
+							{t.saveOptions}
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	);
+}

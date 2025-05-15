@@ -48,6 +48,11 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - Cada usuario pode engadir ata 3 calendarios en Axustes de usuario co "enderezo secreto en formato iCal" de Google Calendar.
 - Cada calendario gárdase no dispositivo: non se volve descargar durante 10 minutos e, se falla a descarga, amósase a última copia gardada cun aviso.
 
+### 🔒 KDBX (KeePass)
+
+- A lectura de KDBX está dispoñible desde Proxectos.
+- Cada usuario configura a ruta e o contrasinal da súa base en Axustes de usuario, debaixo dos calendarios iCal. Gárdase co resto dos datos do usuario.
+
 ### Scripts
 
 Todos os comandos `npm` execútanse dende a carpeta `app/`.
