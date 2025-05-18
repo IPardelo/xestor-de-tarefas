@@ -1,0 +1,300 @@
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AnimatePresence, motion } from 'framer-motion';
+
+// Componentes
+import TaskList from '@/Components/Tasks/TasksList';
+import TaskForm from '@/Components/Tasks/TaskForm';
+import Header from '@/Components/Layout/Header';
+import Sidebar from '@/Components/Layout/Sidebar';
+import TaskFilter from '@/Components/Tasks/TaskFilter';
+import CalendarView from '@/Components/Calendar/CalendarView';
+import CalendarErrorBoundary from '@/Components/Calendar/CalendarErrorBoundary';
+import NotesView from '@/Components/Notes/NotesView';
+import OptionsUsersView from '@/Components/Options/OptionsUsersView';
+import OptionsGlobalView from '@/Components/Options/OptionsGlobalView';
+import ProjectsView from '@/Components/Projects/ProjectsView';
+import UserSettingsView from '@/Components/Layout/UserSettingsView';
+import LoginView from '@/Components/Auth/LoginView';
+import ToastCenter from '@/Components/UI/ToastCenter';
+
+// Features
+import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { establecerTema, seleccionarTema } from '@/Features/Theme/temaSlice';
+import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
+import { translations } from '@/i18n/translations';
+import {
+	seleccionarSesionIniciada,
+	seleccionarUsuarioActual,
+	seleccionarUsuarioActualAdmin,
+} from '@/Features/Users/usuariosSlice';
+import { esApp } from '@/Utils/plataforma';
+import { sairDaSesion } from '@/App/autenticacion';
+import { seleccionarNotasUsuarioActual } from '@/Features/Notes/notasSlice';
+import { escoitarToquesRecordatorios, sincronizarRecordatorios } from '@/Utils/recordatorios';
+
+export default function App() {
+	const dispatch = useDispatch();
+	const tema = useSelector(seleccionarTema);
+	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActual = useSelector(seleccionarUsuarioActual);
+	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const sesionIniciada = useSelector(seleccionarSesionIniciada);
+	const t = translations[idioma] || translations.gl;
+	const xenero = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
+	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
+	const [vistaActual, setVistaActual] = useState('inicio');
+	const [modalPecharSesionAberta, setModalPecharSesionAberta] = useState(false);
+	const [sidebarAberta, setSidebarAberta] = useState(false);
+	const preferenciasAplicadasRef = useRef({ idioma: null, tema: null });
+	const notasUsuario = useSelector(seleccionarNotasUsuarioActual);
+	const [notaDestacadaId, setNotaDestacadaId] = useState(null);
+
+	// App: programa os recordatorios das notas como notificacións locais.
+	useEffect(() => {
+		if (!esApp) return;
+		sincronizarRecordatorios(sesionIniciada ? notasUsuario : []);
+	}, [notasUsuario, sesionIniciada]);
+
+	// App: ao tocar a notificación dun recordatorio ábrese a nota.
+	useEffect(() => {
+		if (!esApp) return undefined;
+		return escoitarToquesRecordatorios((notaId) => {
+			setVistaActual('notas');
+			setNotaDestacadaId(notaId);
+		});
+	}, []);
+
+	useEffect(() => {
+		if (tema === 'oscuro') {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	}, [tema]);
+
+	useEffect(() => {
+		if (!usuarioActual) return;
+		const idiomaPredeterminado = usuarioActual.idiomaPredeterminado || 'gl';
+		const temaPredeterminado = usuarioActual.temaPredeterminado || 'claro';
+
+		// Aplica preferencias só cando cambian realmente os valores por defecto do usuario.
+		if (preferenciasAplicadasRef.current.idioma !== idiomaPredeterminado) {
+			dispatch(establecerIdioma(idiomaPredeterminado));
+			preferenciasAplicadasRef.current.idioma = idiomaPredeterminado;
+		}
+		// Na app o tema segue ao do sistema (ver o efecto seguinte).
+		if (!esApp && preferenciasAplicadasRef.current.tema !== temaPredeterminado) {
+			dispatch(establecerTema(temaPredeterminado));
+			preferenciasAplicadasRef.current.tema = temaPredeterminado;
+		}
+	}, [dispatch, usuarioActual?.idiomaPredeterminado, usuarioActual?.temaPredeterminado]);
+
+	useEffect(() => {
+		if (!esApp) return;
+		const mediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+		if (!mediaQuery) return;
+
+		dispatch(establecerTema(mediaQuery.matches ? 'oscuro' : 'claro'));
+
+		const onChange = (event) => {
+			dispatch(establecerTema(event.matches ? 'oscuro' : 'claro'));
+		};
+
+		mediaQuery.addEventListener('change', onChange);
+		return () => mediaQuery.removeEventListener('change', onChange);
+	}, [dispatch]);
+
+	// Limpiar tareas inválidas al iniciar la aplicación
+	useEffect(() => {
+		dispatch(limpiarTareas());
+	}, [dispatch]);
+
+	// Vistas de administración só para admin (por se cambia o usuario actual)
+	useEffect(() => {
+		if (
+			!esAdmin &&
+			(vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais')
+		) {
+			setVistaActual('inicio');
+		}
+	}, [esAdmin, vistaActual]);
+
+	if (!sesionIniciada) {
+		return (
+			<>
+				{esApp && <ToastCenter />}
+				<LoginView />
+			</>
+		);
+	}
+
+	const confirmarPecharSesion = () => {
+		dispatch(sairDaSesion());
+		setVistaActual('inicio');
+		setModalPecharSesionAberta(false);
+		setSidebarAberta(false);
+	};
+
+	const renderVistaActual = () => {
+		if (vistaActual === 'inicio') {
+			return (
+				<>
+					<div>
+						<motion.h1
+							initial={{ y: -20, opacity: 0 }}
+							animate={{ y: 0, opacity: 1 }}
+							transition={{ duration: 0.5 }}
+							className='text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4'>
+							{benvida}
+						</motion.h1>
+					</div>
+					<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors duration-300'>
+						<div className='flex flex-col'>
+							<div className='flex items-center justify-between mb-4'>
+								<h1 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-white'>
+									{t.addNewTask}
+								</h1>
+							</div>
+							<TaskForm />
+						</div>
+					</div>
+					<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
+						<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6'>
+							<h2 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-white'>{t.myTasks}</h2>
+						</div>
+						<AnimatePresence>
+							<motion.div
+								initial={{ opacity: 0, y: 15 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 0.3 }}>
+								<TaskFilter />
+							</motion.div>
+						</AnimatePresence>
+						<AnimatePresence>
+							<motion.div
+								initial={{ opacity: 0, y: 15 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 0.3 }}>
+								<TaskList />
+							</motion.div>
+						</AnimatePresence>
+					</div>
+				</>
+			);
+		}
+
+		if (vistaActual === 'calendario') {
+			return (
+				<CalendarErrorBoundary key='calendar-boundary'>
+					<CalendarView />
+				</CalendarErrorBoundary>
+			);
+		}
+		if (vistaActual === 'notas') {
+			return (
+				<NotesView notaDestacadaId={notaDestacadaId} onNotaDestacadaVista={() => setNotaDestacadaId(null)} />
+			);
+		}
+		if (vistaActual === 'proxectos') return <ProjectsView />;
+		if (vistaActual === 'axustesUsuario') return <UserSettingsView />;
+		if (vistaActual === 'opcionesUsuarios' && esAdmin) return <OptionsUsersView />;
+		if (vistaActual === 'opcionesGlobais' && esAdmin) return <OptionsGlobalView />;
+		return null;
+	};
+
+	return (
+		<div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
+			{esApp && <ToastCenter />}
+			<Header onToggleSidebar={() => setSidebarAberta((v) => !v)} />
+			<div className='container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 max-w-7xl'>
+				<Sidebar
+					vistaActual={vistaActual}
+					onCambiarVista={setVistaActual}
+					estaAbierto={sidebarAberta}
+					onToggleAbierto={() => setSidebarAberta((v) => !v)}
+					onCerrar={() => setSidebarAberta(false)}
+					// Na web pídese confirmación; na app pecha a sesión directamente.
+					onCerrarSesion={() => (esApp ? confirmarPecharSesion() : setModalPecharSesionAberta(true))}
+				/>
+				<main className='flex-1 min-w-0'>
+					<AnimatePresence mode='wait'>
+						<motion.div
+							key={vistaActual}
+							initial={{ opacity: 0, y: 15 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -10 }}
+							transition={{ duration: 0.25 }}>
+							{renderVistaActual()}
+						</motion.div>
+					</AnimatePresence>
+				</main>
+			</div>
+			<AnimatePresence>
+				{modalPecharSesionAberta && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className='fixed inset-0 z-40 flex items-center justify-center p-4'>
+						<div
+							className='absolute inset-0 bg-black/45'
+							onClick={() => setModalPecharSesionAberta(false)}
+						/>
+						<motion.div
+							initial={{ opacity: 0, y: 12, scale: 0.98 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: 8, scale: 0.98 }}
+							className='relative z-10 w-full max-w-sm rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-5'>
+							<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-2'>
+								{idioma === 'en'
+									? 'Sign out'
+									: idioma === 'es'
+										? 'Cerrar sesión'
+										: 'Pechar sesión'}
+							</h3>
+							<p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
+								{idioma === 'en'
+									? 'Do you want to sign out from this user?'
+									: idioma === 'es'
+										? 'Quieres cerrar sesión de este usuario?'
+										: 'Queres pechar sesión deste usuario?'}
+							</p>
+							<div className='flex justify-end gap-2'>
+								<button
+									type='button'
+									onClick={() => setModalPecharSesionAberta(false)}
+									className='px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'>
+									{t.cancel}
+								</button>
+								<button
+									type='button'
+									onClick={confirmarPecharSesion}
+									className='px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'>
+									{idioma === 'en' ? 'Sign out' : idioma === 'es' ? 'Salir' : 'Saír'}
+								</button>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+			<div
+				className='mt-6 pb-3 pl-4 select-none text-[11px] sm:text-xs font-semibold tracking-wide opacity-80 text-gray-500 dark:text-gray-400'
+				style={{
+					textShadow:
+						'0 1px 0 rgba(255,255,255,0.35), 0 -1px 0 rgba(0,0,0,0.45), 0 0 1px rgba(0,0,0,0.35)',
+				}}>
+				<span className='pointer-events-none'>Desarrollado por </span>
+				<a
+					href='https://ipardelo.es'
+					target='_blank'
+					rel='noreferrer'
+					className='pointer-events-auto underline decoration-dotted underline-offset-2 hover:opacity-100 transition-opacity'>
+					IPardelo
+				</a>
+			</div>
+		</div>
+	);
+}

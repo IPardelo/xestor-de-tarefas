@@ -101,6 +101,7 @@ xestor-de-tarefas/
 │  │  ├─ Assets/                      # Fontes SF Pro e Font Awesome
 │  │  ├─ Styles/DarkMode.css          # Estilos do tema escuro
 │  │  ├─ Utils/                       # plataforma.js (esApp), toast.js e ical.js (carga de calendarios)
+│  │  ├─ App.jsx                      # Compoñente raíz e enrutado de vistas
 │  │  └─ index.css                    # Estilos base + Tailwind
 │  ├─ index.html                      # HTML raíz de Vite
 │  ├─ jsconfig.json                   # Alias @ → /src
