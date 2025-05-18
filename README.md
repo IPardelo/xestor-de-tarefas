@@ -102,6 +102,7 @@ xestor-de-tarefas/
 │  │  ├─ Styles/DarkMode.css          # Estilos do tema escuro
 │  │  ├─ Utils/                       # plataforma.js (esApp), toast.js e ical.js (carga de calendarios)
 │  │  ├─ App.jsx                      # Compoñente raíz e enrutado de vistas
+│  │  ├─ main.jsx                     # Punto de entrada (Provider + render)
 │  │  └─ index.css                    # Estilos base + Tailwind
 │  ├─ index.html                      # HTML raíz de Vite
 │  ├─ jsconfig.json                   # Alias @ → /src
