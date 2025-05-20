@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="app/public/Images/banner.PNG" width="50%" align="middle"/>
+
 <br>
 
 **Aplicación de xestión persoal de tarefas e proxectos**
@@ -19,6 +21,11 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 ![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
+
+<img src="app/public/Images/Interfaz.png" alt="Inicio" width="50%">
+&nbsp;
+&nbsp;
+<img src="app/public/Images/Interfaz.gif" alt="Inicio" width="230">
 
 </div>
 
