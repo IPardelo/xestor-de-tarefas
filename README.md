@@ -119,6 +119,19 @@ xestor-de-tarefas/
 └─ README.md
 ```
 
+## Evolución por versión
+
+### v1.0.0
+
+- Primeira versión estable da web.
+- Tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
+- Proxectos con datos de cliente e lectura de credenciais KeePass (KDBX).
+- Notas de texto e de lista, con cor, fixadas arriba, orde arrastrando e recordatorios.
+- Calendario anual, mensual e diario, con ata 3 calendarios de Google (iCal) por usuario.
+- Usuarios con idioma, tema e xénero por defecto, e xestión de usuarios para administradores.
+- Inicio de sesión con Firebase Authentication e sincronización dos datos con Firestore.
+- Interface en galego, castelán e inglés, con tema claro e escuro.
+
 
 ## Autor
 
