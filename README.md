@@ -51,6 +51,15 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - npm
 - Windows, Linux ou macOS
 
+### 🔥 Firebase
+
+Para usar a mesma app desde dous ordenadores/móbiles e compartir cambios:
+
+1) Crea un proxecto en Firebase e activa Firestore.
+2) En **Authentication > Sign-in method**, activa o provedor **Email/contrasinal**.
+3) Publica as regras de [`app/config/firestore.rules`](app/config/firestore.rules) (Firestore Database > Regras, ou `firebase deploy --only firestore:rules`).
+4) Enche cos datos necesarios o arquivo `app/.env.example` e renomeao a `.env` (na mesma carpeta `app/`).
+
 ### 📅 Calendarios de Google (iCal)
 
 - Cada usuario pode engadir ata 3 calendarios en Axustes de usuario co "enderezo secreto en formato iCal" de Google Calendar.
@@ -78,6 +87,7 @@ xestor-de-tarefas/
 │  ├─ config/
 │  │  ├─ apiLocal.js                  # /api/kdbx/read e /api/ical (compartido por Vite e escritorio)
 │  │  ├─ vite.config.js               # Vite + React + Tailwind + /api/kdbx/read + /api/ical + modo android
+│  │  └─ firestore.rules              # Regras de seguridade de Firestore
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ src/
