@@ -1,7 +1,7 @@
 {
   "name": "xestor-de-tarefas-web",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "license": "MIT",
   "description": "XestorDeTarefas es un proyecto de gestión de tareas que permite a los usuarios crear, organizar y realizar un seguimiento de sus tareas de manera eficiente. Con una interfaz intuitiva y fácil de usar, XestorDeTarefas ayuda a los usuarios a maximizar su productividad y mantenerse organizados en su vida diaria.",

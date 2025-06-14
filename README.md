@@ -133,6 +133,11 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v1.1.0
+
+- Regras de seguridade de Firestore: só se pode ler e escribir con sesión iniciada.
+- Base KeePass de exemplo para probar a lectura de credenciais dos proxectos.
+
 ### v1.0.0
 
 - Primeira versión estable da web.
