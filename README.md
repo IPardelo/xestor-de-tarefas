@@ -90,6 +90,8 @@ xestor-de-tarefas/
 │  │  └─ firestore.rules              # Regras de seguridade de Firestore
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
+│  ├─ kdbx/
+│  │  └─ Database.kdbx                # Base KeePass local (credenciais de proxectos)
 │  ├─ src/
 │  │  ├─ App/
 │  │  │  ├─ store.js                  # configureStore + rexistro de slices
