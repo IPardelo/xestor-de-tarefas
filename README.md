@@ -77,7 +77,14 @@ Todos os comandos `npm` execútanse dende a carpeta `app/`.
 | Script | Que fai |
 | --- | --- |
 | `npm run dev` | Web en modo desenvolvemento |
+| `npm run dev:android` | A interface da app no navegador, para probala sen móbil |
 | `npm run build` | Compila a web en `dist/` |
+| `npm run build:android` | Compila a interface da app en `dist/` |
+| `npm run android:sync` | `build:android` + copia o resultado ao proxecto `android/` |
+| `npm run android:open` | Abre o proxecto en Android Studio |
+| `npm run android:run` | Sincroniza e instala a app no móbil ou emulador conectado |
+
+Despois de calquera cambio no código hai que volver xerar a app (`npm run android:run`, ou `android:sync` e compilar dende Android Studio) para que chegue ao móbil. Os datos non: sincronízanse sós por Firebase.
 
 ## Estrutura xeral
 

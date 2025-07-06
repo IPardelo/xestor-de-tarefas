@@ -15,10 +15,18 @@
   },
   "scripts": {
     "dev": "vite --config config/vite.config.js",
+    "dev:android": "vite --config config/vite.config.js --mode android",
     "build": "vite build --config config/vite.config.js",
-    "preview": "vite preview --config config/vite.config.js"
+    "build:android": "vite build --config config/vite.config.js --mode android",
+    "preview": "vite preview --config config/vite.config.js",
+    "android:sync": "npm run build:android && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:run": "npm run android:sync && npx cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.4.7",
