@@ -13,6 +13,7 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 
 [![Licenza](https://img.shields.io/badge/licenza-MIT-22c55e?style=flat-square)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Android](https://img.shields.io/badge/app%20Android-incluída-3ddc84?style=flat-square&logo=android&logoColor=white)](#-app-android)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.6-764ABC?style=flat-square&logo=redux&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)
@@ -52,6 +53,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - Node.js 18+ (recomendado 20+)
 - npm
 - Windows, Linux ou macOS
+- Para a app Android: Android Studio con JDK 21
 
 ### 🔥 Firebase
 
@@ -101,6 +103,7 @@ xestor-de-tarefas/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ kdbx/
 │  │  └─ Database.kdbx                # Base KeePass local (credenciais de proxectos)
+│  ├─ android/                        # Proxecto nativo Android (Capacitor)
 │  ├─ src/
 │  │  ├─ App/
 │  │  │  ├─ store.js                  # configureStore + rexistro de slices
