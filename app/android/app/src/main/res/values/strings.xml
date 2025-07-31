@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">XestorDeTarefas</string>
+    <string name="title_activity_main">XestorDeTarefas</string>
+    <string name="package_name">com.ipardelo.xestordetarefas</string>
+    <string name="custom_url_scheme">com.ipardelo.xestordetarefas</string>
+</resources>
