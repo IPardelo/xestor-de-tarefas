@@ -146,6 +146,12 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.0.0
+
+- App Android feita co mesmo código, empaquetada con Capacitor.
+- Vistas propias para o móbil: inicio de sesión, axustes de usuario e tarefas.
+- Scripts para compilar e instalar a app: `dev:android`, `build:android`, `android:sync`, `android:open` e `android:run`.
+
 ### v1.1.0
 
 - Regras de seguridade de Firestore: só se pode ler e escribir con sesión iniciada.
