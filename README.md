@@ -146,6 +146,10 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.1.0
+
+- App Android: vistas de proxectos, xestión de usuarios e configuración de Firebase.
+
 ### v2.0.0
 
 - App Android feita co mesmo código, empaquetada con Capacitor.
