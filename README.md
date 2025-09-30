@@ -146,6 +146,10 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.2.0
+
+- App Android: vistas de notas e de calendario adaptadas ao móbil.
+
 ### v2.1.0
 
 - App Android: vistas de proxectos, xestión de usuarios e configuración de Firebase.
