@@ -146,6 +146,10 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.3.0
+
+- Recordatorios das notas como notificacións locais na app Android, aínda coa app pechada.
+
 ### v2.2.0
 
 - App Android: vistas de notas e de calendario adaptadas ao móbil.
