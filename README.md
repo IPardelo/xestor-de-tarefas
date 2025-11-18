@@ -22,6 +22,7 @@ garda notas e listas de comprobación, e revisa todo no calendario.
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
 ![Capacitor](https://img.shields.io/badge/Capacitor-8-119EFF?style=flat-square&logo=capacitor&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint&logoColor=white)
 ![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
 
 <img src="app/public/Images/Interfaz.png" alt="Inicio" width="50%">
@@ -98,6 +99,7 @@ xestor-de-tarefas/
 │  ├─ config/
 │  │  ├─ apiLocal.js                  # /api/kdbx/read e /api/ical (compartido por Vite e escritorio)
 │  │  ├─ vite.config.js               # Vite + React + Tailwind + /api/kdbx/read + /api/ical + modo android
+│  │  ├─ eslint.config.js             # Regras ESLint 9
 │  │  └─ firestore.rules              # Regras de seguridade de Firestore
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
