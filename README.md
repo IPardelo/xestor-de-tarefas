@@ -148,6 +148,10 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.3.1
+
+- Configuración de ESLint 9 e script `npm run lint` para revisar o código.
+
 ### v2.3.0
 
 - Recordatorios das notas como notificacións locais na app Android, aínda coa app pechada.
