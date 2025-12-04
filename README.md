@@ -101,6 +101,8 @@ xestor-de-tarefas/
 │  │  ├─ vite.config.js               # Vite + React + Tailwind + /api/kdbx/read + /api/ical + modo android
 │  │  ├─ eslint.config.js             # Regras ESLint 9
 │  │  └─ firestore.rules              # Regras de seguridade de Firestore
+│  ├─ desktop/
+│  │  └─ icon.png                     # Icona da ventá
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
 │  ├─ kdbx/
