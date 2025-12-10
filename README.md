@@ -45,6 +45,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
 - 📁 Xestión de proxectos con datos de cliente.
 - 👥 Xestión de usuarios.
+- 🖥️ App de escritorio para Windows nunha ventá propia, sen navegador nin consola.
 - 📱 App Android feita co mesmo código, con vistas adaptadas ao móbil.
 
 ## Configuración
@@ -102,6 +103,7 @@ xestor-de-tarefas/
 │  │  ├─ eslint.config.js             # Regras ESLint 9
 │  │  └─ firestore.rules              # Regras de seguridade de Firestore
 │  ├─ desktop/
+│  │  ├─ main.js                      # App de escritorio (Electron): ventá + Vite ou servidor local
 │  │  └─ icon.png                     # Icona da ventá
 │  ├─ public/
 │  │  └─ Images/                      # Logo, banner e capturas do README
