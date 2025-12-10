@@ -65,6 +65,7 @@ Para usar a mesma app desde dous ordenadores/móbiles e compartir cambios:
 2) En **Authentication > Sign-in method**, activa o provedor **Email/contrasinal**.
 3) Publica as regras de [`app/config/firestore.rules`](app/config/firestore.rules) (Firestore Database > Regras, ou `firebase deploy --only firestore:rules`).
 4) Enche cos datos necesarios o arquivo `app/.env.example` e renomeao a `.env` (na mesma carpeta `app/`).
+5) Arranca a app nos dispositivos que queiras: a de escritorio con `XestorDeTarefas.vbs` (ver "App de escritorio") ou a web con `npm run dev` dende `app/`.
 
 ### 📅 Calendarios de Google (iCal)
 
@@ -146,6 +147,7 @@ xestor-de-tarefas/
 │  ├─ jsconfig.json                   # Alias @ → /src
 │  ├─ .env / .env.example             # Credenciais de Firebase
 │  └─ package.json                    # Scripts npm (execútanse dende app/)
+├─ XestorDeTarefas.vbs                # Abre a app de escritorio (sen consola nin compilar)
 ├─ LICENSE
 └─ README.md
 ```
