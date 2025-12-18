@@ -154,6 +154,11 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
+### v2.4.0
+
+- App de escritorio para Windows con Electron: ventá propia, sen navegador nin consola.
+- `XestorDeTarefas.vbs` ábrea directamente dende o código, sen ter que compilar.
+
 ### v2.3.1
 
 - Configuración de ESLint 9 e script `npm run lint` para revisar o código.
