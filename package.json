@@ -1,0 +1,50 @@
+{
+  "name": "xestordetarefas",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "XestorDeTarefas es un proyecto de gestión de tareas que permite a los usuarios crear, organizar y realizar un seguimiento de sus tareas de manera eficiente. Con una interfaz intuitiva y fácil de usar, XestorDeTarefas ayuda a los usuarios a maximizar su productividad y mantenerse organizados en su vida diaria.",
+  "author": {
+    "name": "Ismael Castiñeira",
+    "url": "https://ipardelo.es"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.7",
+    "@reduxjs/toolkit": "2.6.1",
+    "@tailwindcss/vite": "4.0.13",
+    "framer-motion": "^12.5.0",
+    "prop-types": "15.8.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-redux": "9.2.0",
+    "tailwindcss": "4.0.13"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.21.0",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "@vitejs/plugin-react": "4.3.4",
+    "eslint": "9.21.0",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-react-refresh": "0.4.19",
+    "globals": "15.15.0",
+    "vite": "6.4.1"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ],
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
