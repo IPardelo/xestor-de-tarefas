@@ -1,11 +1,12 @@
 // ? Importaciones
 import { motion } from 'framer-motion';
 import packageJson from '../../../package.json';
+import DarkMode from '@/Components/UI/DarkMode';
 
 export default function Header() {
 	return (
 		<header className='bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6 transition-colors duration-300'>
-			<nav className='container mx-auto px-4 sm:px-6 py-4 flex items-center'>
+			<nav className='container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center'>
 				<section className='flex items-center gap-3 flex-1 min-w-0'>
 					<motion.div
 						initial={{ rotate: 0 }}
@@ -26,7 +27,11 @@ export default function Header() {
 						<span className='text-xs text-gray-500 dark:text-gray-400 ml-2'>v{packageJson.version}</span>
 					</motion.h1>
 				</section>
-
+				<div className='flex items-center gap-2 sm:gap-4'>
+					<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className='relative z-10'>
+						<DarkMode />
+					</motion.div>
+				</div>
 			</nav>
 		</header>
 	);

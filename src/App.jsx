@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 
 // Componentes
@@ -10,10 +10,20 @@ import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 
 // Features
+import { seleccionarTema } from '@/Features/Theme/temaSlice';
 import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
 
 export default function App() {
 	const dispatch = useDispatch();
+	const tema = useSelector(seleccionarTema);
+
+	useEffect(() => {
+		if (tema === 'oscuro') {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	}, [tema]);
 
 	// Limpiar tareas inválidas al iniciar la aplicación
 	useEffect(() => {
