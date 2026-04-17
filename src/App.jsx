@@ -19,13 +19,14 @@ import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaS
 import { establecerTema, seleccionarTema } from '@/Features/Theme/temaSlice';
 import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
 import { translations } from '@/i18n/translations';
-import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
+import { seleccionarUsuarioActual, seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
 
 export default function App() {
 	const dispatch = useDispatch();
 	const tema = useSelector(seleccionarTema);
 	const idioma = useSelector(seleccionarIdioma);
 	const usuarioActual = useSelector(seleccionarUsuarioActual);
+	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
 	const t = translations[idioma] || translations.gl;
 	const xenero = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
 	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
@@ -49,6 +50,16 @@ export default function App() {
 	useEffect(() => {
 		dispatch(limpiarTareas());
 	}, [dispatch]);
+
+	// Vistas de administración só para admin (por se cambia o usuario actual)
+	useEffect(() => {
+		if (
+			!esAdmin &&
+			(vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais')
+		) {
+			setVistaActual('inicio');
+		}
+	}, [esAdmin, vistaActual]);
 
 	return (
 		<div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
@@ -109,9 +120,9 @@ export default function App() {
 						<ProjectsView />
 					) : vistaActual === 'axustesUsuario' ? (
 						<UserSettingsView />
-					) : vistaActual === 'opcionesUsuarios' ? (
+					) : vistaActual === 'opcionesUsuarios' && esAdmin ? (
 						<OptionsUsersView />
-					) : vistaActual === 'opcionesGlobais' ? (
+					) : vistaActual === 'opcionesGlobais' && esAdmin ? (
 						<OptionsGlobalView />
 					) : null}
 				</main>
