@@ -9,6 +9,10 @@ import {
 	seleccionarUsuarioActual,
 	seleccionarUsuarios,
 } from '@/Features/Users/usuariosSlice';
+import {
+	actualizarConfiguracionKdbx,
+	seleccionarConfiguracionKdbx,
+} from '@/Features/Projects/proxectosSlice';
 import { translations, languageNames } from '@/i18n/translations';
 
 export default function OptionsView() {
@@ -17,6 +21,7 @@ export default function OptionsView() {
 	const usuarioActual = useSelector(seleccionarUsuarioActual);
 	const usuarios = useSelector(seleccionarUsuarios);
 	const eAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const kdbxConfig = useSelector(seleccionarConfiguracionKdbx);
 	const t = translations[idioma] || translations.gl;
 
 	const [form, setForm] = useState({
@@ -34,6 +39,10 @@ export default function OptionsView() {
 		imaxePerfil: '',
 		admin: '0',
 	});
+	const [kdbxForm, setKdbxForm] = useState({
+		filePath: 'kdbx\\Database.kdbx',
+		password: '1234567890',
+	});
 
 	useEffect(() => {
 		if (!usuarioActual) return;
@@ -44,6 +53,13 @@ export default function OptionsView() {
 			xenero: usuarioActual.xenero || 'F',
 		});
 	}, [usuarioActual]);
+
+	useEffect(() => {
+		setKdbxForm({
+			filePath: kdbxConfig?.filePath || 'kdbx\\Database.kdbx',
+			password: kdbxConfig?.password || '1234567890',
+		});
+	}, [kdbxConfig]);
 
 	const onChange = (e) => {
 		const { name, value } = e.target;
@@ -72,6 +88,16 @@ export default function OptionsView() {
 			imaxePerfil: '',
 			admin: '0',
 		});
+	};
+
+	const onKdbxChange = (e) => {
+		const { name, value } = e.target;
+		setKdbxForm((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const onSubmitKdbxConfig = (e) => {
+		e.preventDefault();
+		dispatch(actualizarConfiguracionKdbx(kdbxForm));
 	};
 
 	return (
@@ -148,6 +174,33 @@ export default function OptionsView() {
 
 			{eAdmin && (
 				<div className='mt-8 border-t border-gray-200 dark:border-gray-700 pt-6'>
+					<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.kdbxConfigTitle}</h3>
+					<form onSubmit={onSubmitKdbxConfig} className='space-y-3 mb-6'>
+						<input
+							type='text'
+							name='filePath'
+							value={kdbxForm.filePath}
+							onChange={onKdbxChange}
+							placeholder={t.kdbxPath}
+							required
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+						<input
+							type='password'
+							name='password'
+							value={kdbxForm.password}
+							onChange={onKdbxChange}
+							placeholder={t.kdbxPassword}
+							required
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+						<button
+							type='submit'
+							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+							{t.saveKdbxConfig}
+						</button>
+					</form>
+
 					<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.adminUsersTitle}</h3>
 
 					<form onSubmit={onSubmitNovoUsuario} className='space-y-3 mb-6'>
@@ -220,7 +273,7 @@ export default function OptionsView() {
 						</div>
 						<button
 							type='submit'
-							className='px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
 							{t.createUser}
 						</button>
 					</form>

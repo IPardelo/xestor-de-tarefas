@@ -44,6 +44,13 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 			proximamente: false,
 		},
 		{
+			id: 'proxectos',
+			icon: 'fa-folder-tree',
+			label: t.projects,
+			activo: vistaActual === 'proxectos',
+			proximamente: false,
+		},
+		{
 			id: 'opciones',
 			icon: 'fa-gear',
 			label: t.options,
