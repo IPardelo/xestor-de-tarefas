@@ -1,6 +1,8 @@
 // ? Importaciones
 import { useDispatch, useSelector } from 'react-redux';
 import { alternarTema, seleccionarTema } from '@/Features/Theme/temaSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 // ? Estilos
 import '@/Styles/DarkMode.css';
@@ -8,6 +10,8 @@ import '@/Styles/DarkMode.css';
 export default function ModoOscuro() {
 	const dispatch = useDispatch();
 	const tema = useSelector(seleccionarTema);
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 
 	const manejarCambioTema = () => {
 		dispatch(alternarTema());
@@ -22,6 +26,7 @@ export default function ModoOscuro() {
 					id='ToggleDarkMode'
 					checked={tema === 'oscuro'}
 					onChange={manejarCambioTema}
+					aria-label={tema === 'oscuro' ? t.themeLight : t.themeDark}
 				/>
 				<div className='theme-switch__container'>
 					<div className='theme-switch__clouds'></div>

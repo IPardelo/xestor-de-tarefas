@@ -1,13 +1,17 @@
 // ? Importaciones
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 
 // ? Features
 import { alternarEstadoTarea, eliminarTarea, actualizarTarea } from '@/Features/Tasks/tareasSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 const ElementoTarea = ({ tarea }) => {
 	const dispatch = useDispatch();
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 	const [mostrarAcciones, setMostrarAcciones] = useState(false);
 	const [estaEditando, setEstaEditando] = useState(false);
 	const [tareaEditada, setTareaEditada] = useState(tarea);
@@ -15,17 +19,17 @@ const ElementoTarea = ({ tarea }) => {
 	// Prioridades con iconos y colores
 	const prioridades = {
 		alta: {
-			label: 'Alta',
+			label: t.high,
 			icon: 'fa-solid fa-arrow-up',
 			class: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
 		},
 		media: {
-			label: 'Media',
+			label: t.medium,
 			icon: 'fa-solid fa-equals',
 			class: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300',
 		},
 		baja: {
-			label: 'Baixa',
+			label: t.low,
 			icon: 'fa-solid fa-arrow-down',
 			class: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
 		},
@@ -43,7 +47,8 @@ const ElementoTarea = ({ tarea }) => {
 			year: 'numeric',
 			timeZone: 'Europe/Madrid',
 		};
-		return fecha.toLocaleDateString('gl-ES', opciones);
+		const locale = idioma === 'en' ? 'en-US' : idioma === 'es' ? 'es-ES' : 'gl-ES';
+		return fecha.toLocaleDateString(locale, opciones);
 	};
 
 	// Manejar la edición de la tarea
@@ -75,20 +80,20 @@ const ElementoTarea = ({ tarea }) => {
 						value={tareaEditada.titulo}
 						onChange={(e) => setTareaEditada({ ...tareaEditada, titulo: e.target.value })}
 						className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'
-						placeholder='Título da tarefa'
+						placeholder={t.taskTitlePlaceholder}
 					/>
 					<textarea
 						value={tareaEditada.descripcion || ''}
 						onChange={(e) => setTareaEditada({ ...tareaEditada, descripcion: e.target.value })}
 						className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white resize-none'
-						placeholder='Descrición da tarefa'
+						placeholder={t.taskDescriptionPlaceholder}
 						rows='2'
 					/>
 					<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 								<i className='fa-solid fa-flag mr-2 text-indigo-500 dark:text-indigo-400'></i>
-								Prioridade
+								{t.priority}
 							</label>
 							<div className='flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
 								{['alta', 'media', 'baja'].map((prioridad) => (
@@ -121,7 +126,7 @@ const ElementoTarea = ({ tarea }) => {
 						<div>
 							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 								<i className='fa-solid fa-calendar-days mr-2 text-indigo-500 dark:text-indigo-400'></i>
-								Data límite
+								{t.dueDate}
 							</label>
 							<input
 								type='date'
@@ -143,7 +148,7 @@ const ElementoTarea = ({ tarea }) => {
 							whileHover={{ scale: 1.02 }}
 							whileTap={{ scale: 0.98 }}
 							className='px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm'>
-							Cancelar
+							{t.cancel}
 						</motion.button>
 						<motion.button
 							type='button'
@@ -151,7 +156,7 @@ const ElementoTarea = ({ tarea }) => {
 							whileHover={{ scale: 1.02 }}
 							whileTap={{ scale: 0.98 }}
 							className='px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-							Gardar cambios
+							{t.saveChanges}
 						</motion.button>
 					</div>
 				</div>
@@ -225,7 +230,7 @@ const ElementoTarea = ({ tarea }) => {
 						whileTap={{ scale: 0.9 }}
 						onClick={() => setEstaEditando(true)}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'
-						aria-label='Editar tarefa'>
+						aria-label={t.editTask}>
 						<i className='fa-solid fa-pen-to-square'></i>
 					</motion.button>
 
@@ -234,7 +239,7 @@ const ElementoTarea = ({ tarea }) => {
 						whileTap={{ scale: 0.9 }}
 						onClick={() => dispatch(eliminarTarea(tarea.id))}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
-						aria-label='Eliminar tarefa'>
+						aria-label={t.deleteTask}>
 						<i className='fa-solid fa-trash-can'></i>
 					</motion.button>
 				</motion.div>

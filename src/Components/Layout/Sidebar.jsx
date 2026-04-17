@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 const BarraLateral = () => {
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 	const [estaAbierto, setEstaAbierto] = useState(false);
 
 	// Filtrar tarefas válidas para evitar erros con elementos nulos
@@ -18,7 +22,7 @@ const BarraLateral = () => {
 
 	// Opciones de navegación con iconos modernos de FontAwesome 6
 	const opcionesNavegacion = [
-		{ icon: 'fa-house', label: 'Inicio', activo: true, URL: '/', proximamente: false },
+		{ icon: 'fa-house', label: t.home, activo: true, URL: '/', proximamente: false },
 	];
 
 	return (
@@ -67,6 +71,7 @@ const BarraLateral = () => {
 							tarefasCompletadas={tarefasCompletadas}
 							tarefasPendentes={tarefasPendentes}
 							taxaCompletado={taxaCompletado}
+							t={t}
 						/>
 					</motion.div>
 				)}
@@ -80,6 +85,7 @@ const BarraLateral = () => {
 					tarefasCompletadas={tarefasCompletadas}
 					tarefasPendentes={tarefasPendentes}
 					taxaCompletado={taxaCompletado}
+					t={t}
 				/>
 			</aside>
 		</>
@@ -93,6 +99,7 @@ const ContenidoBarraLateral = ({
 	tarefasCompletadas,
 	tarefasPendentes,
 	taxaCompletado,
+	t,
 }) => {
 	return (
 		<div className='space-y-8 w-fit'>
@@ -104,8 +111,8 @@ const ContenidoBarraLateral = ({
 						<i className='fa-solid fa-user-astronaut text-3xl text-transparent bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 bg-clip-text'></i>
 					</div>
 				</motion.div>
-				<h2 className='mt-3 font-bold text-gray-800 dark:text-white text-xl'>Persoa usuaria</h2>
-				<p className='text-sm text-gray-500 dark:text-gray-400'>Benvida a XestorDeTarefas</p>
+				<h2 className='mt-3 font-bold text-gray-800 dark:text-white text-xl'>{t.userPerson}</h2>
+				<p className='text-sm text-gray-500 dark:text-gray-400'>{t.sidebarWelcome}</p>
 			</div>
 
 			<nav className='px-2'>
@@ -129,7 +136,7 @@ const ContenidoBarraLateral = ({
 								<span className='ml-4'>{opcion.label}</span>
 								{opcion.proximamente && (
 									<span className='ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-gray-100 dark:bg-gray-700/20 text-gray-400 dark:text-gray-500'>
-										En breve
+										{t.comingSoon}
 									</span>
 								)}
 								{opcion.active && (
@@ -146,13 +153,13 @@ const ContenidoBarraLateral = ({
 			<div className='border-t border-gray-200 dark:border-gray-700 pt-6'>
 				<h3 className='font-bold text-gray-800 dark:text-white text-lg mb-4 flex items-center gap-2'>
 					<i className='fa-solid fa-chart-pie text-indigo-500 dark:text-indigo-400'></i>
-					Resumo de tarefas
+					{t.taskSummary}
 				</h3>
 
 				<div className='space-y-5'>
 					<div>
 						<div className='flex justify-between text-sm mb-2'>
-							<span className='text-gray-600 dark:text-gray-400 font-medium'>Progreso</span>
+							<span className='text-gray-600 dark:text-gray-400 font-medium'>{t.progress}</span>
 							<motion.span
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
@@ -176,7 +183,7 @@ const ContenidoBarraLateral = ({
 							transition={{ type: 'spring', stiffness: 400, damping: 10 }}
 							className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
 							<div className='flex justify-between items-center gap-2'>
-								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Completadas</p>
+								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>{t.completed}</p>
 								<div className='p-2 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/20'>
 									<i className='fa-solid fa-check text-xs text-green-500 dark:text-green-400'></i>
 								</div>
@@ -191,7 +198,7 @@ const ContenidoBarraLateral = ({
 							transition={{ type: 'spring', stiffness: 400, damping: 10 }}
 							className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
 							<div className='flex justify-between items-center gap-2'>
-								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Pendentes</p>
+								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>{t.pending}</p>
 								<div className='p-2 rounded-full flex items-center justify-center bg-amber-100 dark:bg-amber-900/20'>
 									<i className='fa-solid fa-clock text-xs text-amber-500 dark:text-amber-400'></i>
 								</div>
@@ -207,7 +214,7 @@ const ContenidoBarraLateral = ({
 						transition={{ type: 'spring', stiffness: 400, damping: 10 }}
 						className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
 						<div className='flex justify-between items-center'>
-							<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Total de tarefas</p>
+							<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>{t.totalTasks}</p>
 							<div className='p-2 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/20'>
 								<i className='fa-solid fa-list-check text-xs text-blue-500 dark:text-blue-400'></i>
 							</div>

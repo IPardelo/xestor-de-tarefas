@@ -10,12 +10,16 @@ import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 
 // Features
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarTema } from '@/Features/Theme/temaSlice';
 import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
+import { translations } from '@/i18n/translations';
 
 export default function App() {
 	const dispatch = useDispatch();
 	const tema = useSelector(seleccionarTema);
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 
 	useEffect(() => {
 		if (tema === 'oscuro') {
@@ -43,14 +47,14 @@ export default function App() {
 							animate={{ y: 0, opacity: 1 }}
 							transition={{ duration: 0.5 }}
 							className='text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4'>
-							Benvida a XestorDeTarefas!
+							{t.welcome}
 						</motion.h1>
 					</div>
 					<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors duration-300'>
 						<div className='flex flex-col'>
 							<div className='flex items-center justify-between mb-4'>
 								<h1 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-white'>
-									Engadir nova tarefa
+									{t.addNewTask}
 								</h1>
 							</div>
 							<TaskForm />
@@ -59,7 +63,7 @@ export default function App() {
 					<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
 						<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6'>
 							<h2 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-white'>
-								As miñas tarefas
+								{t.myTasks}
 							</h2>
 						</div>
 						<AnimatePresence>
