@@ -10,6 +10,16 @@ const ajustarAZonaHorariaMexico = (fechaString) => {
 	return fecha.toISOString();
 };
 
+const podeAccederATarefa = (tarefa, usuarioId) => {
+	if (!tarefa || !usuarioId) return false;
+	if (!tarefa.propietariaId && !tarefa.asignadaAId) return true;
+	return (
+		tarefa.propietariaId === usuarioId ||
+		tarefa.asignadaAId === usuarioId ||
+		(Array.isArray(tarefa.compartidaConIds) && tarefa.compartidaConIds.includes(usuarioId))
+	);
+};
+
 // Recuperar tareas del localStorage si existen
 const cargarTareasDelAlmacenamiento = () => {
 	try {
@@ -55,6 +65,13 @@ export const tareasSlice = createSlice({
 	name: 'tareas',
 	initialState: estadoInicial,
 	reducers: {
+		hidratarTareas: (state, action) => {
+			const payload = action.payload || {};
+			if (Array.isArray(payload.tareas)) state.tareas = payload.tareas;
+			if (typeof payload.filtro === 'string') state.filtro = payload.filtro;
+			if (typeof payload.busqueda === 'string') state.busqueda = payload.busqueda;
+			if (typeof payload.ordenarPor === 'string') state.ordenarPor = payload.ordenarPor;
+		},
 		// Reducer para agregar una tarea
 		agregarTarea: (state, action) => {
 			if (!action.payload?.titulo?.trim()) {
@@ -67,6 +84,11 @@ export const tareasSlice = createSlice({
 				descripcion: action.payload.descripcion?.trim() || '',
 				completada: action.payload.completada || false,
 				prioridad: action.payload.prioridad || 'media',
+				propietariaId: action.payload.propietariaId,
+				asignadaAId: action.payload.asignadaAId || action.payload.propietariaId,
+				compartidaConIds: Array.isArray(action.payload.compartidaConIds)
+					? action.payload.compartidaConIds
+					: [],
 				fechaVencimiento: ajustarAZonaHorariaMexico(action.payload.fechaVencimiento),
 				fechaCreacion: new Date().toISOString(),
 			});
@@ -75,13 +97,19 @@ export const tareasSlice = createSlice({
 
 		// Reducer para eliminar una tarea
 		eliminarTarea: (state, action) => {
-			state.tareas = state.tareas.filter((tarea) => tarea !== null && tarea.id !== action.payload);
+			const { id, usuarioId } = action.payload || {};
+			state.tareas = state.tareas.filter(
+				(tarea) => tarea !== null && (tarea.id !== id || !podeAccederATarefa(tarea, usuarioId))
+			);
 			localStorage.setItem('tareas', JSON.stringify(state.tareas));
 		},
 
 		// Reducer para alternar el estado de completado de una tarea
 		alternarEstadoTarea: (state, action) => {
-			const tarea = state.tareas.find((tarea) => tarea !== null && tarea.id === action.payload);
+			const { id, usuarioId } = action.payload || {};
+			const tarea = state.tareas.find(
+				(tarea) => tarea !== null && tarea.id === id && podeAccederATarefa(tarea, usuarioId)
+			);
 			if (tarea) {
 				tarea.completada = !tarea.completada;
 				localStorage.setItem('tareas', JSON.stringify(state.tareas));
@@ -90,12 +118,14 @@ export const tareasSlice = createSlice({
 
 		// Reducer para actualizar una tarea
 		actualizarTarea: (state, action) => {
-			const { id, ...cambios } = action.payload;
+			const { id, usuarioId, ...cambios } = action.payload;
 			if (!id || !cambios.titulo?.trim()) {
 				return;
 			}
 
-			const tareaExistente = state.tareas.find((tarea) => tarea?.id === id);
+			const tareaExistente = state.tareas.find(
+				(tarea) => tarea?.id === id && podeAccederATarefa(tarea, usuarioId)
+			);
 			if (tareaExistente) {
 				Object.assign(tareaExistente, {
 					...tareaExistente,
@@ -103,6 +133,10 @@ export const tareasSlice = createSlice({
 					titulo: cambios.titulo.trim(),
 					descripcion: cambios.descripcion?.trim() || tareaExistente.descripcion,
 					prioridad: cambios.prioridad || tareaExistente.prioridad,
+					asignadaAId: cambios.asignadaAId || tareaExistente.asignadaAId,
+					compartidaConIds: Array.isArray(cambios.compartidaConIds)
+						? cambios.compartidaConIds
+						: tareaExistente.compartidaConIds,
 					fechaVencimiento: ajustarAZonaHorariaMexico(cambios.fechaVencimiento),
 				});
 				localStorage.setItem('tareas', JSON.stringify(state.tareas));
@@ -138,6 +172,7 @@ export const tareasSlice = createSlice({
 
 // Acciones
 export const {
+	hidratarTareas,
 	agregarTarea,
 	eliminarTarea,
 	alternarEstadoTarea,
@@ -149,12 +184,16 @@ export const {
 } = tareasSlice.actions;
 
 // Selectores
-export const seleccionarTodasLasTareas = (state) => state.tareas?.tareas || [];
+export const seleccionarTodasLasTareas = (state) => {
+	const usuarioId = state.usuarios?.usuarioActualId;
+	const todas = state.tareas?.tareas || [];
+	return todas.filter((tarea) => podeAccederATarefa(tarea, usuarioId));
+};
 
 // Selector optimizado para rendimiento
 export const seleccionarTareasFiltradas = createSelector(
 	[
-		(state) => state.tareas?.tareas || [],
+		(state) => seleccionarTodasLasTareas(state),
 		(state) => state.tareas?.filtro || 'todos',
 		(state) => state.tareas?.busqueda || '',
 		(state) => state.tareas?.ordenarPor || 'fechaCreacion:desc',
@@ -230,7 +269,7 @@ export const seleccionarConteoTareas = createSelector([seleccionarTodasLasTareas
 
 // Selector para obtener una tarea por ID
 export const seleccionarTareaPorId = (state, idTarea) => {
-	const tareas = state.tareas?.tareas || [];
+	const tareas = seleccionarTodasLasTareas(state);
 	return tareas.find((tarea) => tarea !== null && tarea.id === idTarea);
 };
 

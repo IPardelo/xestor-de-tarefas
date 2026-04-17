@@ -1,14 +1,27 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
+import {
+	cambiarUsuario,
+	seleccionarUsuarioActual,
+	seleccionarUsuarioActualId,
+	seleccionarUsuarios,
+} from '@/Features/Users/usuariosSlice';
 
 const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
+	const dispatch = useDispatch();
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
 	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
+	const usuarios = useSelector(seleccionarUsuarios);
+	const usuarioActual = useSelector(seleccionarUsuarioActual);
 	const t = translations[idioma] || translations.gl;
+	const xeneroActual = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
+	const benvidaLateral =
+		idioma === 'en' ? t.sidebarWelcome : t.sidebarWelcomeByGender?.[xeneroActual] || t.sidebarWelcome;
 	const [estaAbierto, setEstaAbierto] = useState(false);
 
 	// Filtrar tarefas válidas para evitar erros con elementos nulos
@@ -79,6 +92,11 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 							tarefasPendentes={tarefasPendentes}
 							taxaCompletado={taxaCompletado}
 							t={t}
+							xeneroActual={xeneroActual}
+							benvidaLateral={benvidaLateral}
+							usuarioActualId={usuarioActualId}
+							usuarios={usuarios}
+							onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 							onCambiarVista={onCambiarVista}
 							onDespuesDeNavegar={() => setEstaAbierto(false)}
 						/>
@@ -95,6 +113,11 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 					tarefasPendentes={tarefasPendentes}
 					taxaCompletado={taxaCompletado}
 					t={t}
+					xeneroActual={xeneroActual}
+					benvidaLateral={benvidaLateral}
+					usuarioActualId={usuarioActualId}
+					usuarios={usuarios}
+					onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 					onCambiarVista={onCambiarVista}
 				/>
 			</aside>
@@ -110,6 +133,11 @@ const ContenidoBarraLateral = ({
 	tarefasPendentes,
 	taxaCompletado,
 	t,
+	xeneroActual,
+	benvidaLateral,
+	usuarioActualId,
+	usuarios,
+	onCambiarUsuario,
 	onCambiarVista,
 	onDespuesDeNavegar,
 }) => {
@@ -123,8 +151,24 @@ const ContenidoBarraLateral = ({
 						<i className='fa-solid fa-user-astronaut text-3xl text-transparent bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 bg-clip-text'></i>
 					</div>
 				</motion.div>
-				<h2 className='mt-3 font-bold text-gray-800 dark:text-white text-xl'>{t.userPerson}</h2>
-				<p className='text-sm text-gray-500 dark:text-gray-400'>{t.sidebarWelcome}</p>
+				<div className='mt-3'>
+					<div className='relative'>
+						<div className='pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 dark:text-gray-300'>
+							<i className='fa-solid fa-user text-sm'></i>
+						</div>
+						<select
+							value={usuarioActualId}
+							onChange={(e) => onCambiarUsuario(e.target.value)}
+							className='w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg pl-8 pr-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500'>
+							{usuarios.map((usuario) => (
+								<option key={usuario.id} value={usuario.id}>
+									{usuario.nome}
+								</option>
+							))}
+						</select>
+					</div>
+				</div>
+				<p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>{benvidaLateral}</p>
 			</div>
 
 			<nav className='px-2'>

@@ -1,0 +1,42 @@
+{
+  "usuarios": {
+    "lista": [
+      {
+        "id": "ismael",
+        "nome": "Ismael Castiñeira",
+        "idiomaPredeterminado": "gl",
+        "temaPredeterminado": "oscuro",
+        "xenero": "M"
+      },
+      {
+        "id": "niki",
+        "nome": "Nicole Papin",
+        "idiomaPredeterminado": "es",
+        "temaPredeterminado": "claro",
+        "xenero": "F"
+      },
+      {
+        "id": "dani",
+        "nome": "Daniela Castiñeira",
+        "idiomaPredeterminado": "en",
+        "temaPredeterminado": "claro",
+        "xenero": "F"
+      }
+    ],
+    "usuarioActualId": "ismael"
+  },
+  "idioma": {
+    "actual": "gl"
+  },
+  "tema": {
+    "modo": "oscuro"
+  },
+  "tareas": {
+    "tareas": [],
+    "filtro": "todos",
+    "busqueda": "",
+    "ordenarPor": "fechaCreacion:desc",
+    "estado": "inactivo",
+    "error": null
+  }
+}

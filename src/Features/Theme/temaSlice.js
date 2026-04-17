@@ -30,6 +30,12 @@ export const temaSlice = createSlice({
 	name: 'tema',
 	initialState: estadoInicial,
 	reducers: {
+		hidratarTema: (state, action) => {
+			const modo = action.payload?.modo;
+			if (modo === 'claro' || modo === 'oscuro') {
+				state.modo = modo;
+			}
+		},
 		alternarTema: (state) => {
 			state.modo = state.modo === 'oscuro' ? 'claro' : 'oscuro';
 			localStorage.setItem('tema', state.modo);
@@ -56,7 +62,7 @@ export const temaSlice = createSlice({
 });
 
 // Acciones
-export const { alternarTema, establecerTema } = temaSlice.actions;
+export const { hidratarTema, alternarTema, establecerTema } = temaSlice.actions;
 
 // Selectores
 export const seleccionarTema = (state) => state.tema.modo;
