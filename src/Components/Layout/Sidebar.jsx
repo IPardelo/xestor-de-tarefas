@@ -5,7 +5,7 @@ import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
 
-const BarraLateral = () => {
+const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
 	const idioma = useSelector(seleccionarIdioma);
 	const t = translations[idioma] || translations.gl;
@@ -22,7 +22,14 @@ const BarraLateral = () => {
 
 	// Opciones de navegación con iconos modernos de FontAwesome 6
 	const opcionesNavegacion = [
-		{ icon: 'fa-house', label: t.home, activo: true, URL: '/', proximamente: false },
+		{ id: 'inicio', icon: 'fa-house', label: t.home, activo: vistaActual === 'inicio', proximamente: false },
+		{
+			id: 'calendario',
+			icon: 'fa-calendar-days',
+			label: t.calendar,
+			activo: vistaActual === 'calendario',
+			proximamente: false,
+		},
 	];
 
 	return (
@@ -72,6 +79,8 @@ const BarraLateral = () => {
 							tarefasPendentes={tarefasPendentes}
 							taxaCompletado={taxaCompletado}
 							t={t}
+							onCambiarVista={onCambiarVista}
+							onDespuesDeNavegar={() => setEstaAbierto(false)}
 						/>
 					</motion.div>
 				)}
@@ -86,6 +95,7 @@ const BarraLateral = () => {
 					tarefasPendentes={tarefasPendentes}
 					taxaCompletado={taxaCompletado}
 					t={t}
+					onCambiarVista={onCambiarVista}
 				/>
 			</aside>
 		</>
@@ -100,6 +110,8 @@ const ContenidoBarraLateral = ({
 	tarefasPendentes,
 	taxaCompletado,
 	t,
+	onCambiarVista,
+	onDespuesDeNavegar,
 }) => {
 	return (
 		<div className='space-y-8 w-fit'>
@@ -122,9 +134,13 @@ const ContenidoBarraLateral = ({
 							key={indice}
 							whileHover={{ x: 4 }}
 							transition={{ type: 'spring', stiffness: 400, damping: 10 }}>
-							<a
-								href={opcion.URL}
-								className={`flex items-center px-4 py-3 rounded-xl transition-all ${
+							<button
+								type='button'
+								onClick={() => {
+									onCambiarVista(opcion.id);
+									onDespuesDeNavegar?.();
+								}}
+								className={`w-full flex items-center px-4 py-3 rounded-xl transition-all cursor-pointer ${
 									opcion.activo
 										? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium shadow-md'
 										: 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
@@ -144,7 +160,7 @@ const ContenidoBarraLateral = ({
 										<i className='fa-solid fa-chevron-right text-xs opacity-70'></i>
 									</div>
 								)}
-							</a>
+							</button>
 						</motion.li>
 					))}
 				</ul>
