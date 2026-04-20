@@ -268,8 +268,7 @@ const FormularioTarea = () => {
 									type='submit'
 									whileHover={{ scale: 1.02 }}
 									whileTap={{ scale: 0.98 }}
-									className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm flex items-center gap-2'>
-									<i className='fa-solid fa-save'></i>
+									className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
 									{t.save}
 								</motion.button>
 							</div>

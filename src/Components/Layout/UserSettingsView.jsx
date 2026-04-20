@@ -89,11 +89,13 @@ export default function UserSettingsView() {
 					</div>
 				</div>
 				<div className='pt-2'>
-					<button
-						type='submit'
-						className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-						{t.saveOptions}
-					</button>
+					<div className='flex justify-end'>
+						<button
+							type='submit'
+							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+							{t.saveOptions}
+						</button>
+					</div>
 				</div>
 			</form>
 		</div>

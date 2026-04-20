@@ -124,11 +124,13 @@ export default function OptionsUsersView() {
 								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 							/>
 						</div>
-						<button
-							type='submit'
-							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-							{t.createUser}
-						</button>
+						<div className='flex justify-end pt-1'>
+							<button
+								type='submit'
+								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+								{t.createUser}
+							</button>
+						</div>
 					</form>
 
 					<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.adminUsersTitle}</h3>
