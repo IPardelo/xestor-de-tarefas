@@ -82,8 +82,10 @@
         "clienteNome": "Cliente",
         "clienteTelefono": "600600600",
         "clienteEmail": "proxecto@proxecto.es",
+        "url": "",
         "prezoAcordado": "1800€",
         "dataLimiteEntrega": "1997-11-18",
+        "cor": "#9333ea",
         "creadoEn": "2026-04-17T15:05:22.966Z"
       },
       {
@@ -92,8 +94,10 @@
         "clienteNome": "Cliente",
         "clienteTelefono": "600600600",
         "clienteEmail": "proxecto@proxecto.es",
+        "url": "",
         "prezoAcordado": "1200€",
         "dataLimiteEntrega": "2026-01-01",
+        "cor": "#14b8a6",
         "creadoEn": "2026-04-17T15:04:39.719Z"
       }
     ],

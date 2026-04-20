@@ -18,6 +18,15 @@ const weekStartByLang = {
 	en: 0, // Sunday
 };
 
+const corHexARgba = (hex, alpha = 1) => {
+	const safeHex = typeof hex === 'string' ? hex.trim().replace('#', '') : '';
+	if (!/^[0-9a-fA-F]{6}$/.test(safeHex)) return `rgba(147, 51, 234, ${alpha})`;
+	const r = Number.parseInt(safeHex.slice(0, 2), 16);
+	const g = Number.parseInt(safeHex.slice(2, 4), 16);
+	const b = Number.parseInt(safeHex.slice(4, 6), 16);
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 function getMonthName(date, locale) {
 	return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date);
 }
@@ -238,7 +247,12 @@ export default function CalendarView() {
 												<p className='text-sm text-gray-500 dark:text-gray-400'>{task.descripcion}</p>
 											)}
 											{proxectoVinculado && (
-												<p className='mt-2 inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-900/25 dark:text-teal-300'>
+												<p
+													className='mt-2 inline-flex items-center text-xs px-2.5 py-1 rounded-full'
+													style={{
+														backgroundColor: corHexARgba(proxectoVinculado.cor, 0.16),
+														color: proxectoVinculado.cor || '#9333ea',
+													}}>
 													<i className='fa-solid fa-folder-tree mr-1.5'></i>
 													{t.taskProject}: {proxectoVinculado.nome}
 												</p>

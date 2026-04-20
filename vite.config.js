@@ -66,6 +66,7 @@ const percorrerGrupos = (grupos = [], resultados = []) => {
         grupo: nomeGrupo,
         titulo: obterTextoCampo(entry, 'Title'),
         usuario: obterTextoCampo(entry, 'UserName'),
+        password: obterTextoCampo(entry, 'Password'),
         url: obterTextoCampo(entry, 'URL'),
         notas: obterTextoCampo(entry, 'Notes'),
       })
