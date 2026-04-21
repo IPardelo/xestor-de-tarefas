@@ -30,10 +30,8 @@ const percorrerGrupos = (grupos = [], resultados = []) => {
   return resultados
 }
 
-const kdbxApiPlugin = () => ({
-  name: 'kdbx-api',
-  configureServer(server) {
-    server.middlewares.use('/api/kdbx/read', async (req, res) => {
+const rexistrarRutaKdbx = (middlewares) => {
+  middlewares.use('/api/kdbx/read', async (req, res) => {
       if (req.method !== 'POST') {
         res.statusCode = 405
         res.setHeader('Content-Type', 'application/json')
@@ -78,6 +76,15 @@ const kdbxApiPlugin = () => ({
         }
       })
     })
+}
+
+const kdbxApiPlugin = () => ({
+  name: 'kdbx-api',
+  configureServer(server) {
+    rexistrarRutaKdbx(server.middlewares)
+  },
+  configurePreviewServer(server) {
+    rexistrarRutaKdbx(server.middlewares)
   },
 })
 
