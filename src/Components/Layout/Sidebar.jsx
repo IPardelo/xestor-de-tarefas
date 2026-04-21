@@ -156,6 +156,7 @@ const ContenidoBarraLateral = ({
 	onDespuesDeNavegar,
 }) => {
 	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const podeCambiarUsuario = usuarios.length > 1;
 	const [opcionsXeraisAberto, setOpcionsXeraisAberto] = useState(false);
 	const opcionsFilhoActivo =
 		esAdmin &&
@@ -197,6 +198,7 @@ const ContenidoBarraLateral = ({
 						<select
 							value={usuarioActualId}
 							onChange={(e) => onCambiarUsuario(e.target.value)}
+							disabled={!podeCambiarUsuario}
 							className='w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg pl-8 pr-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500'>
 							{usuarios.map((usuario) => (
 								<option key={usuario.id} value={usuario.id}>

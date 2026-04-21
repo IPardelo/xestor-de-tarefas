@@ -82,6 +82,7 @@ export const tareasSlice = createSlice({
 				...action.payload,
 				titulo: action.payload.titulo.trim(),
 				descripcion: action.payload.descripcion?.trim() || '',
+				tipo: action.payload.tipo || 'tarea',
 				completada: action.payload.completada || false,
 				prioridad: action.payload.prioridad || 'media',
 				propietariaId: action.payload.propietariaId,
@@ -133,6 +134,7 @@ export const tareasSlice = createSlice({
 					...cambios,
 					titulo: cambios.titulo.trim(),
 					descripcion: cambios.descripcion?.trim() || tareaExistente.descripcion,
+					tipo: cambios.tipo || tareaExistente.tipo || 'tarea',
 					prioridad: cambios.prioridad || tareaExistente.prioridad,
 					asignadaAId: cambios.asignadaAId || tareaExistente.asignadaAId,
 					compartidaConIds: Array.isArray(cambios.compartidaConIds)
