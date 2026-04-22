@@ -52,7 +52,6 @@ const ElementoTarea = ({ tarea }) => {
 
 	const prioridad = prioridades[tarea.prioridad] || prioridades.media;
 	const tipoDaTarefa = tarea.tipo === 'reunion' ? 'reunion' : 'tarea';
-	const asignadaA = usuarios.find((u) => u.id === tarea.asignadaAId);
 	const colaborador = (tarea.compartidaConIds || [])
 		.map((id) => usuarios.find((u) => u.id === id))
 		.find(Boolean);
@@ -321,12 +320,6 @@ const ElementoTarea = ({ tarea }) => {
 							<i className={`fa-solid ${tipoDaTarefa === 'reunion' ? 'fa-people-group' : 'fa-list-check'} mr-1`}></i>
 							{tipoDaTarefa === 'reunion' ? t.taskTypeMeeting : t.taskTypeTask}
 						</span>
-						{asignadaA && (
-							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'>
-								<i className='fa-solid fa-user-check mr-1'></i>
-								{t.assignedToLabel}: {asignadaA.nome}
-							</span>
-						)}
 						{colaborador && (
 							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'>
 								<i className='fa-solid fa-users mr-1'></i>
