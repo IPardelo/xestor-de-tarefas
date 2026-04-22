@@ -16,12 +16,21 @@ const normalizarAdmin = (valor, id, nome) => {
 	return valor === '1' ? '1' : '0';
 };
 
+const normalizarCalendariosIcal = (valor) => {
+	if (!Array.isArray(valor)) return [];
+	return valor
+		.slice(0, 3)
+		.map((item) => (typeof item === 'string' ? item.trim() : ''))
+		.filter(Boolean);
+};
+
 const normalizarUsuario = (usuario) => ({
 	...usuario,
 	xenero: normalizarXenero(usuario?.xenero),
 	imaxePerfil: usuario?.imaxePerfil || '',
 	contrasenha: String(usuario?.contrasenha || ''),
 	admin: normalizarAdmin(usuario?.admin, usuario?.id, usuario?.nome),
+	calendariosIcal: normalizarCalendariosIcal(usuario?.calendariosIcal),
 });
 
 const usuariosPorDefecto = [
@@ -119,6 +128,9 @@ const usuariosSlice = createSlice({
 			}
 			if (payload.xenero) usuario.xenero = normalizarXenero(payload.xenero);
 			if (typeof payload.contrasenha === 'string') usuario.contrasenha = payload.contrasenha;
+			if (Array.isArray(payload.calendariosIcal)) {
+				usuario.calendariosIcal = normalizarCalendariosIcal(payload.calendariosIcal);
+			}
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
 		rexistrarUsuario: (state, action) => {

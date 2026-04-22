@@ -16,6 +16,7 @@ export default function UserSettingsView() {
 		temaPredeterminado: 'claro',
 		xenero: 'F',
 		contrasenha: '',
+		calendariosIcal: ['', '', ''],
 	});
 
 	useEffect(() => {
@@ -26,12 +27,25 @@ export default function UserSettingsView() {
 			temaPredeterminado: usuarioActual.temaPredeterminado || 'claro',
 			xenero: usuarioActual.xenero || 'F',
 			contrasenha: String(usuarioActual.contrasenha || ''),
+			calendariosIcal: Array.from(
+				{ length: 3 },
+				(_, index) => usuarioActual.calendariosIcal?.[index] || ''
+			),
 		});
 	}, [usuarioActual]);
 
 	const onChange = (e) => {
 		const { name, value } = e.target;
 		setForm((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const onCalendarChange = (index, value) => {
+		setForm((prev) => ({
+			...prev,
+			calendariosIcal: prev.calendariosIcal.map((item, itemIndex) =>
+				itemIndex === index ? value : item
+			),
+		}));
 	};
 
 	const onSubmit = (e) => {
@@ -99,6 +113,24 @@ export default function UserSettingsView() {
 							<option value='M'>{t.genderMasculine}</option>
 							<option value='F'>{t.genderFeminine}</option>
 						</select>
+					</div>
+				</div>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+						{t.googleCalendarIcalUrls}
+					</label>
+					<p className='text-xs text-gray-500 dark:text-gray-400 mb-2'>{t.googleCalendarIcalHint}</p>
+					<div className='space-y-2'>
+						{form.calendariosIcal.map((url, index) => (
+							<input
+								key={`ical-${index}`}
+								type='url'
+								value={url}
+								onChange={(e) => onCalendarChange(index, e.target.value)}
+								placeholder={`${t.googleCalendarIcalUrlLabel} ${index + 1}`}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+							/>
+						))}
 					</div>
 				</div>
 				<div className='pt-2'>
