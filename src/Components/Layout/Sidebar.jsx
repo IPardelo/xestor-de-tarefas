@@ -1,8 +1,20 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
+import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
 
 const BarraLateral = () => {
+	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
 	const [estaAbierto, setEstaAbierto] = useState(false);
+
+	// Filtrar tarefas válidas para evitar erros con elementos nulos
+	const tarefasValidas = tarefas.filter((tarefa) => tarefa !== null && tarefa !== undefined);
+
+	// Calcular estatísticas
+	const totalTarefas = tarefasValidas.length;
+	const tarefasCompletadas = tarefasValidas.filter((tarefa) => tarefa.completada).length;
+	const tarefasPendentes = totalTarefas - tarefasCompletadas;
+	const taxaCompletado = totalTarefas > 0 ? Math.round((tarefasCompletadas / totalTarefas) * 100) : 0;
 
 	// Opciones de navegación con iconos modernos de FontAwesome 6
 	const opcionesNavegacion = [
@@ -51,6 +63,10 @@ const BarraLateral = () => {
 						</button>
 						<ContenidoBarraLateral
 							opcionesNavegacion={opcionesNavegacion}
+							totalTarefas={totalTarefas}
+							tarefasCompletadas={tarefasCompletadas}
+							tarefasPendentes={tarefasPendentes}
+							taxaCompletado={taxaCompletado}
 						/>
 					</motion.div>
 				)}
@@ -58,14 +74,26 @@ const BarraLateral = () => {
 
 			{/* Sidebar para escritorio */}
 			<aside className='hidden md:block w-fit bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300 self-start sticky top-4 hover:shadow-lg'>
-				<ContenidoBarraLateral opcionesNavegacion={opcionesNavegacion} />
+				<ContenidoBarraLateral
+					opcionesNavegacion={opcionesNavegacion}
+					totalTarefas={totalTarefas}
+					tarefasCompletadas={tarefasCompletadas}
+					tarefasPendentes={tarefasPendentes}
+					taxaCompletado={taxaCompletado}
+				/>
 			</aside>
 		</>
 	);
 };
 
 // Componente para el contenido del sidebar
-const ContenidoBarraLateral = ({ opcionesNavegacion }) => {
+const ContenidoBarraLateral = ({
+	opcionesNavegacion,
+	totalTarefas,
+	tarefasCompletadas,
+	tarefasPendentes,
+	taxaCompletado,
+}) => {
 	return (
 		<div className='space-y-8 w-fit'>
 			<div className='text-center border-b border-gray-200 dark:border-gray-700 pb-6'>
@@ -114,6 +142,80 @@ const ContenidoBarraLateral = ({ opcionesNavegacion }) => {
 					))}
 				</ul>
 			</nav>
+
+			<div className='border-t border-gray-200 dark:border-gray-700 pt-6'>
+				<h3 className='font-bold text-gray-800 dark:text-white text-lg mb-4 flex items-center gap-2'>
+					<i className='fa-solid fa-chart-pie text-indigo-500 dark:text-indigo-400'></i>
+					Resumo de tarefas
+				</h3>
+
+				<div className='space-y-5'>
+					<div>
+						<div className='flex justify-between text-sm mb-2'>
+							<span className='text-gray-600 dark:text-gray-400 font-medium'>Progreso</span>
+							<motion.span
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								key={taxaCompletado}
+								className='font-bold text-indigo-600 dark:text-indigo-400'>
+								{taxaCompletado}%
+							</motion.span>
+						</div>
+						<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5'>
+							<motion.div
+								className='bg-gradient-to-r from-indigo-500 to-purple-600 h-2.5 rounded-full'
+								initial={{ width: 0 }}
+								animate={{ width: `${taxaCompletado}%` }}
+								transition={{ duration: 0.8, ease: 'easeOut' }}></motion.div>
+						</div>
+					</div>
+
+					<div className='grid grid-cols-2 gap-3'>
+						<motion.div
+							whileHover={{ y: -4 }}
+							transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+							className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
+							<div className='flex justify-between items-center gap-2'>
+								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Completadas</p>
+								<div className='p-2 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/20'>
+									<i className='fa-solid fa-check text-xs text-green-500 dark:text-green-400'></i>
+								</div>
+							</div>
+							<p className='text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-2'>
+								{tarefasCompletadas}
+							</p>
+						</motion.div>
+
+						<motion.div
+							whileHover={{ y: -4 }}
+							transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+							className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
+							<div className='flex justify-between items-center gap-2'>
+								<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Pendentes</p>
+								<div className='p-2 rounded-full flex items-center justify-center bg-amber-100 dark:bg-amber-900/20'>
+									<i className='fa-solid fa-clock text-xs text-amber-500 dark:text-amber-400'></i>
+								</div>
+							</div>
+							<p className='text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2'>
+								{tarefasPendentes}
+							</p>
+						</motion.div>
+					</div>
+
+					<motion.div
+						whileHover={{ y: -4 }}
+						transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+						className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-xl shadow-sm'>
+						<div className='flex justify-between items-center'>
+							<p className='text-xs font-medium text-gray-600 dark:text-gray-400'>Total de tarefas</p>
+							<div className='p-2 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/20'>
+								<i className='fa-solid fa-list-check text-xs text-blue-500 dark:text-blue-400'></i>
+							</div>
+						</div>
+						<p className='text-2xl font-bold text-gray-800 dark:text-white mt-2'>{totalTarefas}</p>
+					</motion.div>
+				</div>
+			</div>
 		</div>
 	);
 };
