@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from '@reduxjs/toolkit';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
 	agregarNota,
 	actualizarNota,
@@ -39,6 +39,7 @@ export default function NotesView() {
 		textoLista: '',
 	});
 	const [editandoId, setEditandoId] = useState(null);
+	const [expandidoNovaNota, setExpandidoNovaNota] = useState(false);
 	const [borrador, setBorrador] = useState({
 		titulo: '',
 		contido: '',
@@ -58,11 +59,45 @@ export default function NotesView() {
 			textoLista: '',
 		});
 
+	const LIMIADOR_CASELLA = /^\s*(?:[-*]\s*)?(?:\[(?:\s|x|X)\]|☐|☑)\s*/;
+
+	const limparPrefixoCasilla = (liña) => String(liña || '').replace(LIMIADOR_CASELLA, '');
+
+	const engadirPrefixoCasilla = (liña) => {
+		const limpo = limparPrefixoCasilla(liña);
+		return limpo.trim() ? `☐ ${limpo.trim()}` : '☐ ';
+	};
+
+	const textoConCasillas = (texto) => {
+		const liñas = String(texto || '').split('\n');
+		return liñas.map(engadirPrefixoCasilla).join('\n');
+	};
+
+	const inserirLiñaConCasilla = (event, value, onChange) => {
+		if (event.key !== 'Enter' || event.shiftKey) return;
+		event.preventDefault();
+		const target = event.currentTarget;
+		const inicio = target.selectionStart ?? value.length;
+		const fin = target.selectionEnd ?? value.length;
+		const prefixo = '☐ ';
+		const seguinteValor = `${value.slice(0, inicio)}\n${prefixo}${value.slice(fin)}`;
+		const novaPosicion = inicio + 1 + prefixo.length;
+		onChange(seguinteValor);
+		requestAnimationFrame(() => {
+			target.setSelectionRange(novaPosicion, novaPosicion);
+		});
+	};
+
+	const iconosTipoNota = {
+		texto: 'fa-align-left',
+		lista: 'fa-list-check',
+	};
+
 	// Each line in the textarea becomes one checklist item.
 	const textoAItensLista = (texto, itensPrevios = []) =>
 		String(texto || '')
 			.split('\n')
-			.map((liña) => liña.trim())
+			.map((liña) => limparPrefixoCasilla(liña).trim())
 			.filter(Boolean)
 			.map((liña, indice) => ({
 				id: itensPrevios[indice]?.id || nanoid(),
@@ -85,17 +120,19 @@ export default function NotesView() {
 			})
 		);
 		limparNovaNota();
+		setExpandidoNovaNota(false);
 	};
 
 	const comezarEdicion = (nota) => {
 		setEditandoId(nota.id);
+		const textoListaBase = Array.isArray(nota.itensLista) ? nota.itensLista.map((item) => item.texto).join('\n') : '';
 		setBorrador({
 			titulo: nota.titulo || '',
 			contido: nota.contido || '',
 			tipo: nota.tipo === 'lista' ? 'lista' : 'texto',
 			cor: nota.cor || '#9333ea',
 			itensLista: Array.isArray(nota.itensLista) ? nota.itensLista : [],
-			textoLista: Array.isArray(nota.itensLista) ? nota.itensLista.map((item) => item.texto).join('\n') : '',
+			textoLista: textoConCasillas(textoListaBase),
 		});
 	};
 
@@ -117,86 +154,151 @@ export default function NotesView() {
 
 	return (
 		<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
-			<h2 className='text-xl font-semibold text-gray-800 dark:text-white mb-4'>{t.notesTitle}</h2>
+			<h2 className='text-xl font-semibold text-gray-800 dark:text-white mb-4'>
+				{t.addNewNote || t.addNote}
+			</h2>
 
 			<form
 				onSubmit={gardarNovaNota}
 				className='mb-6 rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-700/40'>
-				<input
-					type='text'
-					value={novaNota.titulo}
-					onChange={(e) => setNovaNota((prev) => ({ ...prev, titulo: e.target.value }))}
-					placeholder={t.noteTitlePlaceholder}
-					className='w-full mb-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500'
-				/>
-				<div className='mb-3'>
-					<div className='flex gap-2'>
-						<button
-							type='button'
-							onClick={() => setNovaNota((prev) => ({ ...prev, tipo: 'texto' }))}
-							className={`px-3 py-1.5 rounded-lg text-sm ${
-								novaNota.tipo === 'texto'
-									? 'bg-indigo-600 text-white'
-									: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
-							}`}>
-							{t.noteTypeText}
-						</button>
-						<button
-							type='button'
-							onClick={() => setNovaNota((prev) => ({ ...prev, tipo: 'lista' }))}
-							className={`px-3 py-1.5 rounded-lg text-sm ${
-								novaNota.tipo === 'lista'
-									? 'bg-indigo-600 text-white'
-									: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
-							}`}>
-							{t.noteTypeChecklist}
-						</button>
-					</div>
-				</div>
-				{novaNota.tipo === 'texto' ? (
-					<textarea
-						value={novaNota.contido}
-						onChange={(e) => setNovaNota((prev) => ({ ...prev, contido: e.target.value }))}
-						placeholder={t.noteContentPlaceholder}
-						rows='3'
-						className='w-full mb-3 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
-					/>
-				) : (
-					<div className='mb-3 space-y-2'>
-						<textarea
-							value={novaNota.textoLista}
-							onChange={(e) =>
-								setNovaNota((prev) => ({
-									...prev,
-									textoLista: e.target.value,
-									itensLista: textoAItensLista(e.target.value, prev.itensLista),
-								}))
-							}
-							placeholder={t.noteChecklistItemPlaceholder}
-							rows='5'
-							className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
-						/>
-					</div>
-				)}
-				<div className='flex flex-wrap items-center justify-between gap-3'>
-					<div className='flex items-center gap-2'>
-						<input
-							type='color'
-							value={novaNota.cor}
-							onChange={(e) => setNovaNota((prev) => ({ ...prev, cor: e.target.value }))}
-							className='h-10 w-14 p-1 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer'
-							aria-label={t.noteColor}
-						/>
-						<span className='text-xs text-gray-500 dark:text-gray-400'>{novaNota.cor}</span>
-					</div>
+				<div className='flex items-center mb-4 gap-3'>
 					<motion.button
-						type='submit'
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
-						className='px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium'>
-						{t.addNote}
+						type='button'
+						onClick={() => setExpandidoNovaNota((v) => !v)}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className='flex-none w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-md'
+						aria-expanded={expandidoNovaNota}
+						aria-label={t.saveNote || t.addNote}>
+						<i className='fa-solid fa-plus'></i>
 					</motion.button>
+					<input
+						type='text'
+						value={novaNota.titulo}
+						onChange={(e) => setNovaNota((prev) => ({ ...prev, titulo: e.target.value }))}
+						onClick={() => setExpandidoNovaNota(true)}
+						placeholder={t.noteTitlePlaceholder}
+						className='flex-1 bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 py-2 outline-none text-gray-800 dark:text-white transition-colors placeholder-gray-400 dark:placeholder-gray-500 min-w-0'
+					/>
 				</div>
+				<AnimatePresence>
+					{expandidoNovaNota && (
+						<motion.div
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: 'auto' }}
+							exit={{ opacity: 0, height: 0 }}
+							transition={{ duration: 0.25 }}
+							className='space-y-4 overflow-hidden p-4'>
+							<div>
+								<div className='flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
+									{['texto', 'lista'].map((tipo) => (
+										<label
+											key={tipo}
+											className={`flex-1 flex items-center justify-center gap-1.5 py-2 cursor-pointer transition-colors text-sm ${
+												novaNota.tipo === tipo
+													? 'bg-indigo-500 text-white'
+													: 'bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+											}`}>
+											<input
+												type='radio'
+												name='tipoNovaNota'
+												value={tipo}
+												checked={novaNota.tipo === tipo}
+												onChange={() => {
+													if (tipo === 'lista') {
+														setNovaNota((prev) => ({
+															...prev,
+															tipo: 'lista',
+															textoLista: textoConCasillas(prev.textoLista),
+														}));
+														return;
+													}
+													setNovaNota((prev) => ({ ...prev, tipo: 'texto' }));
+												}}
+												className='sr-only'
+											/>
+											<i className={`fa-solid ${iconosTipoNota[tipo]}`}></i>
+											<span className='hidden sm:inline'>
+												{tipo === 'texto' ? t.noteTypeText : t.noteTypeChecklist}
+											</span>
+										</label>
+									))}
+								</div>
+							</div>
+							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+								<i className='fa-solid fa-align-left mr-2 text-indigo-500 dark:text-indigo-400'></i>
+								{t.noteContentLabel || t.noteContentPlaceholder}
+							</label>
+							{novaNota.tipo === 'texto' ? (
+								<textarea
+									value={novaNota.contido}
+									onChange={(e) => setNovaNota((prev) => ({ ...prev, contido: e.target.value }))}
+									placeholder={t.noteContentPlaceholder}
+									rows='3'
+									className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
+								/>
+							) : (
+								<div className='space-y-2'>
+									<textarea
+										value={novaNota.textoLista}
+										onFocus={() =>
+											setNovaNota((prev) => ({
+												...prev,
+												textoLista: prev.textoLista ? prev.textoLista : '☐ ',
+											}))
+										}
+										onChange={(e) =>
+											setNovaNota((prev) => ({
+												...prev,
+												textoLista: e.target.value,
+												itensLista: textoAItensLista(e.target.value, prev.itensLista),
+											}))
+										}
+										onKeyDown={(e) =>
+											inserirLiñaConCasilla(e, novaNota.textoLista, (novoTexto) =>
+												setNovaNota((prev) => ({
+													...prev,
+													textoLista: novoTexto,
+													itensLista: textoAItensLista(novoTexto, prev.itensLista),
+												}))
+											)
+										}
+										placeholder={t.noteChecklistItemPlaceholder}
+										rows='5'
+										className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
+									/>
+								</div>
+							)}
+							<div className='flex flex-wrap items-center justify-between gap-3'>
+								<div className='flex items-center gap-2'>
+									<input
+										type='color'
+										value={novaNota.cor}
+										onChange={(e) => setNovaNota((prev) => ({ ...prev, cor: e.target.value }))}
+										className='h-10 w-14 p-1 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer'
+										aria-label={t.noteColor}
+									/>
+									<span className='text-xs text-gray-500 dark:text-gray-400'>{novaNota.cor}</span>
+								</div>
+								<div className='flex items-center gap-2'>
+									<button
+										type='button'
+										onClick={() => setExpandidoNovaNota(false)}
+										className='px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium'>
+										{t.cancel}
+									</button>
+									<motion.button
+										type='submit'
+										whileHover={{ scale: 1.02 }}
+										whileTap={{ scale: 0.98 }}
+										className='px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium'>
+										{t.saveNote || t.addNote}
+									</motion.button>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</form>
 
 			{notas.length === 0 ? (
@@ -264,44 +366,77 @@ export default function NotesView() {
 											className='w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60'
 										/>
 										<div className='flex gap-2'>
-											<button
-												type='button'
-												onClick={() => setBorrador((prev) => ({ ...prev, tipo: 'texto' }))}
-												className={`px-2 py-1 rounded text-xs ${
-													borrador.tipo === 'texto'
-														? 'bg-indigo-600 text-white'
-														: 'bg-gray-200/70 dark:bg-gray-700/70'
-												}`}>
-												{t.noteTypeText}
-											</button>
-											<button
-												type='button'
-												onClick={() => setBorrador((prev) => ({ ...prev, tipo: 'lista' }))}
-												className={`px-2 py-1 rounded text-xs ${
-													borrador.tipo === 'lista'
-														? 'bg-indigo-600 text-white'
-														: 'bg-gray-200/70 dark:bg-gray-700/70'
-												}`}>
-												{t.noteTypeChecklist}
-											</button>
+											<div className='flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden w-full'>
+												{['texto', 'lista'].map((tipo) => (
+													<label
+														key={tipo}
+														className={`flex-1 flex items-center justify-center gap-1.5 py-2 cursor-pointer transition-colors text-sm ${
+															borrador.tipo === tipo
+																? 'bg-indigo-500 text-white'
+																: 'bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+														}`}>
+														<input
+															type='radio'
+															name='tipoBorradorNota'
+															value={tipo}
+															checked={borrador.tipo === tipo}
+															onChange={() => {
+																if (tipo === 'lista') {
+																	setBorrador((prev) => ({
+																		...prev,
+																		tipo: 'lista',
+																		textoLista: textoConCasillas(prev.textoLista),
+																	}));
+																	return;
+																}
+																setBorrador((prev) => ({ ...prev, tipo: 'texto' }));
+															}}
+															className='sr-only'
+														/>
+														<i className={`fa-solid ${iconosTipoNota[tipo]}`}></i>
+														<span className='hidden sm:inline'>
+															{tipo === 'texto' ? t.noteTypeText : t.noteTypeChecklist}
+														</span>
+													</label>
+												))}
+											</div>
 										</div>
+										<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+											<i className='fa-solid fa-align-left mr-2 text-indigo-500 dark:text-indigo-400'></i>
+											{t.noteContentLabel || t.noteContentPlaceholder}
+										</label>
 										{borrador.tipo === 'texto' ? (
 											<textarea
 												value={borrador.contido}
 												onChange={(e) => setBorrador((prev) => ({ ...prev, contido: e.target.value }))}
 												rows='3'
-												className='w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 resize-none'
+												className='w-full mt-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 resize-none'
 											/>
 										) : (
-											<div className='space-y-2'>
+											<div className='mt-1 space-y-2'>
 												<textarea
 													value={borrador.textoLista}
+													onFocus={() =>
+														setBorrador((prev) => ({
+															...prev,
+															textoLista: prev.textoLista ? prev.textoLista : '☐ ',
+														}))
+													}
 													onChange={(e) =>
 														setBorrador((prev) => ({
 															...prev,
 															textoLista: e.target.value,
 															itensLista: textoAItensLista(e.target.value, prev.itensLista),
 														}))
+													}
+													onKeyDown={(e) =>
+														inserirLiñaConCasilla(e, borrador.textoLista, (novoTexto) =>
+															setBorrador((prev) => ({
+																...prev,
+																textoLista: novoTexto,
+																itensLista: textoAItensLista(novoTexto, prev.itensLista),
+															}))
+														)
 													}
 													placeholder={t.noteChecklistItemPlaceholder}
 													rows='5'

@@ -520,9 +520,15 @@ export default function CalendarView() {
 				{monthTasks.length === 0 ? (
 					<p className='text-gray-500 dark:text-gray-400'>{t.noMonthTasks}</p>
 				) : (
-					<ul className='space-y-2'>
+					<ul className='space-y-3'>
 						{monthTasks.map((task) => {
 							const proxectoVinculado = proxectosSeguros.find((p) => p.id === task.proxectoId);
+							const corLateralIcal =
+								task.calendarIndex === 1
+									? '#0ea5e9'
+									: task.calendarIndex === 3
+										? '#f59e0b'
+										: '#a855f7';
 							const claseEtiquetaCalendario =
 								task.calendarIndex === 1
 									? 'bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'
@@ -530,39 +536,53 @@ export default function CalendarView() {
 										? 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
 										: 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300';
 							return (
-								<li
+								<motion.li
 									key={task.id}
-									className='rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/40'>
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									className={`rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 bg-gradient-to-br from-gray-50 to-neutral-100 dark:from-gray-700 dark:to-gray-800 ${
+										task.orixe === 'ical'
+											? 'border-sky-500'
+											: 'border-indigo-500'
+									}`}
+									style={{
+										borderLeftColor:
+											task.orixe === 'ical'
+												? corLateralIcal
+												: proxectoVinculado?.cor || '#6366f1',
+									}}>
 									<div className='flex justify-between gap-2 items-start'>
 										<div className='min-w-0 flex-1'>
 											<p className='font-medium text-gray-800 dark:text-gray-100'>{task.titulo}</p>
 											{task.descripcion && (
-												<p className='text-sm text-gray-500 dark:text-gray-400'>{task.descripcion}</p>
+												<p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>{task.descripcion}</p>
 											)}
-											{task.orixe === 'ical' && (
-												<p
-													className={`mt-2 inline-flex items-center text-xs px-2.5 py-1 rounded-full ${claseEtiquetaCalendario}`}>
-													<i className='fa-solid fa-calendar-check mr-1.5'></i>
-													{task.fonte || t.googleCalendarLabel}
-												</p>
-											)}
-											{proxectoVinculado && (
-												<p
-													className='mt-2 inline-flex items-center text-xs px-2.5 py-1 rounded-full'
-													style={{
-														backgroundColor: corHexARgba(proxectoVinculado.cor, 0.16),
-														color: proxectoVinculado.cor || '#9333ea',
-													}}>
-													<i className='fa-solid fa-folder-tree mr-1.5'></i>
-													{t.taskProject}: {proxectoVinculado.nome}
-												</p>
-											)}
+											<div className='mt-3 flex flex-wrap items-center gap-2'>
+												{task.orixe === 'ical' && (
+													<span
+														className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full ${claseEtiquetaCalendario}`}>
+														<i className='fa-solid fa-calendar-check mr-1.5'></i>
+														{task.fonte || t.googleCalendarLabel}
+													</span>
+												)}
+												{proxectoVinculado && (
+													<span
+														className='inline-flex items-center text-xs px-2.5 py-1 rounded-full'
+														style={{
+															backgroundColor: corHexARgba(proxectoVinculado.cor, 0.16),
+															color: proxectoVinculado.cor || '#9333ea',
+														}}>
+														<i className='fa-solid fa-folder-tree mr-1.5'></i>
+														{proxectoVinculado.nome}
+													</span>
+												)}
+											</div>
 										</div>
 										<span className='text-xs text-gray-500 dark:text-gray-400 shrink-0'>
 											{ensureDate(task._dueDate)?.toLocaleDateString(locale) || ''}
 										</span>
 									</div>
-								</li>
+								</motion.li>
 							);
 						})}
 					</ul>

@@ -93,24 +93,30 @@ const ListaTareas = () => {
 
 	return (
 		<div className='space-y-4'>
-			<AnimatePresence mode='popLayout'>
-				{tareasPagina.map((tarea) => (
+			<div className='min-h-[26rem]'>
+				<AnimatePresence mode='wait' initial={false}>
 					<motion.div
-						key={tarea.id}
-						initial={{ opacity: 0, y: 20 }}
+						key={`pagina-${paginaActual}`}
+						initial={{ opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, x: -100, height: 0 }}
-						transition={{
-							opacity: { duration: 0.3 },
-							y: { type: 'spring', stiffness: 300, damping: 30 },
-							x: { duration: 0.2 },
-							height: { duration: 0.2 },
-						}}
-						layout>
-						<ElementoTarea tarea={tarea} />
+						exit={{ opacity: 0, y: -8 }}
+						transition={{ duration: 0.18 }}
+						className='space-y-4'>
+						{tareasPagina.map((tarea) => (
+							<motion.div
+								key={tarea.id}
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{
+									opacity: { duration: 0.2 },
+									y: { duration: 0.2 },
+								}}>
+								<ElementoTarea tarea={tarea} />
+							</motion.div>
+						))}
 					</motion.div>
-				))}
-			</AnimatePresence>
+				</AnimatePresence>
+			</div>
 
 			{/* Paginación */}
 			<div className='flex justify-center items-center gap-2 mt-4'>
