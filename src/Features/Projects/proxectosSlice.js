@@ -1,11 +1,37 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit';
 
+const KDBX_CONFIG_STORAGE_KEY = 'kdbx_config_local';
+const DEFAULT_KDBX_CONFIG = {
+	filePath: 'kdbx\\Database.kdbx',
+	password: '1234567890',
+};
+
+const cargarKdbxConfigLocal = () => {
+	try {
+		const raw = localStorage.getItem(KDBX_CONFIG_STORAGE_KEY);
+		if (!raw) return DEFAULT_KDBX_CONFIG;
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== 'object') return DEFAULT_KDBX_CONFIG;
+		return {
+			filePath: (parsed.filePath || '').trim() || DEFAULT_KDBX_CONFIG.filePath,
+			password: parsed.password || DEFAULT_KDBX_CONFIG.password,
+		};
+	} catch {
+		return DEFAULT_KDBX_CONFIG;
+	}
+};
+
+const gardarKdbxConfigLocal = (config) => {
+	try {
+		localStorage.setItem(KDBX_CONFIG_STORAGE_KEY, JSON.stringify(config));
+	} catch {
+		/* empty */
+	}
+};
+
 const estadoInicial = {
 	lista: [],
-	kdbxConfig: {
-		filePath: 'kdbx\\Database.kdbx',
-		password: '1234567890',
-	},
+	kdbxConfig: cargarKdbxConfigLocal(),
 	kdbxEntries: [],
 };
 
@@ -30,15 +56,8 @@ const proxectosSlice = createSlice({
 	reducers: {
 		hidratarProxectos: (state, action) => {
 			const lista = action.payload?.lista;
-			const kdbxConfig = action.payload?.kdbxConfig;
 			if (Array.isArray(lista)) {
 				state.lista = lista.map(normalizarProxecto);
-			}
-			if (kdbxConfig && typeof kdbxConfig === 'object') {
-				state.kdbxConfig = {
-					filePath: kdbxConfig.filePath || estadoInicial.kdbxConfig.filePath,
-					password: kdbxConfig.password || estadoInicial.kdbxConfig.password,
-				};
 			}
 		},
 		engadirProxecto: (state, action) => {
@@ -70,9 +89,10 @@ const proxectosSlice = createSlice({
 		actualizarConfiguracionKdbx: (state, action) => {
 			const payload = action.payload || {};
 			state.kdbxConfig = {
-				filePath: (payload.filePath || '').trim() || estadoInicial.kdbxConfig.filePath,
-				password: payload.password || estadoInicial.kdbxConfig.password,
+				filePath: (payload.filePath || '').trim() || DEFAULT_KDBX_CONFIG.filePath,
+				password: payload.password || DEFAULT_KDBX_CONFIG.password,
 			};
+			gardarKdbxConfigLocal(state.kdbxConfig);
 		},
 		establecerKdbxEntries: (state, action) => {
 			state.kdbxEntries = Array.isArray(action.payload) ? action.payload : [];

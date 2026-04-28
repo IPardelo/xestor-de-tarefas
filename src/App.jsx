@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -34,6 +34,8 @@ export default function App() {
 	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
 	const [vistaActual, setVistaActual] = useState('inicio');
 	const [logueado, setLogueado] = useState(false);
+	const [modalPecharSesionAberta, setModalPecharSesionAberta] = useState(false);
+	const preferenciasAplicadasRef = useRef({ idioma: null, tema: null });
 
 	useEffect(() => {
 		if (tema === 'oscuro') {
@@ -45,9 +47,19 @@ export default function App() {
 
 	useEffect(() => {
 		if (!usuarioActual) return;
-		dispatch(establecerIdioma(usuarioActual.idiomaPredeterminado || 'gl'));
-		dispatch(establecerTema(usuarioActual.temaPredeterminado || 'claro'));
-	}, [dispatch, usuarioActual]);
+		const idiomaPredeterminado = usuarioActual.idiomaPredeterminado || 'gl';
+		const temaPredeterminado = usuarioActual.temaPredeterminado || 'claro';
+
+		// Aplica preferencias só cando cambian realmente os valores por defecto do usuario.
+		if (preferenciasAplicadasRef.current.idioma !== idiomaPredeterminado) {
+			dispatch(establecerIdioma(idiomaPredeterminado));
+			preferenciasAplicadasRef.current.idioma = idiomaPredeterminado;
+		}
+		if (preferenciasAplicadasRef.current.tema !== temaPredeterminado) {
+			dispatch(establecerTema(temaPredeterminado));
+			preferenciasAplicadasRef.current.tema = temaPredeterminado;
+		}
+	}, [dispatch, usuarioActual?.idiomaPredeterminado, usuarioActual?.temaPredeterminado]);
 
 	// Limpiar tareas inválidas al iniciar la aplicación
 	useEffect(() => {
@@ -71,6 +83,7 @@ export default function App() {
 	const pecharSesion = () => {
 		setLogueado(false);
 		setVistaActual('inicio');
+		setModalPecharSesionAberta(false);
 	};
 
 	const renderVistaActual = () => {
@@ -136,7 +149,11 @@ export default function App() {
 		<div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
 			<Header />
 			<div className='container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 max-w-7xl'>
-				<Sidebar vistaActual={vistaActual} onCambiarVista={setVistaActual} onCerrarSesion={pecharSesion} />
+				<Sidebar
+					vistaActual={vistaActual}
+					onCambiarVista={setVistaActual}
+					onCerrarSesion={() => setModalPecharSesionAberta(true)}
+				/>
 				<main className='flex-1 min-w-0'>
 					<AnimatePresence mode='wait'>
 						<motion.div
@@ -150,6 +167,54 @@ export default function App() {
 					</AnimatePresence>
 				</main>
 			</div>
+			<AnimatePresence>
+				{modalPecharSesionAberta && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className='fixed inset-0 z-40 flex items-center justify-center p-4'>
+						<div
+							className='absolute inset-0 bg-black/45'
+							onClick={() => setModalPecharSesionAberta(false)}
+						/>
+						<motion.div
+							initial={{ opacity: 0, y: 12, scale: 0.98 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: 8, scale: 0.98 }}
+							className='relative z-10 w-full max-w-sm rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-5'>
+							<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-2'>
+								{idioma === 'en'
+									? 'Sign out'
+									: idioma === 'es'
+										? 'Cerrar sesión'
+										: 'Pechar sesión'}
+							</h3>
+							<p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
+								{idioma === 'en'
+									? 'Do you want to sign out from this user?'
+									: idioma === 'es'
+										? 'Quieres cerrar sesión de este usuario?'
+										: 'Queres pechar sesión deste usuario?'}
+							</p>
+							<div className='flex justify-end gap-2'>
+								<button
+									type='button'
+									onClick={() => setModalPecharSesionAberta(false)}
+									className='px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'>
+									{t.cancel}
+								</button>
+								<button
+									type='button'
+									onClick={pecharSesion}
+									className='px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'>
+									{idioma === 'en' ? 'Sign out' : idioma === 'es' ? 'Salir' : 'Saír'}
+								</button>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 			<div
 				className='mt-6 pb-3 pl-4 select-none text-[11px] sm:text-xs font-semibold tracking-wide opacity-80 text-gray-500 dark:text-gray-400'
 				style={{

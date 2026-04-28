@@ -23,6 +23,12 @@ const corHexARgba = (hex, alpha = 1) => {
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+const autoAxustarAlturaTextarea = (textarea) => {
+	if (!textarea) return;
+	textarea.style.height = 'auto';
+	textarea.style.height = `${textarea.scrollHeight}px`;
+};
+
 export default function NotesView() {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
@@ -40,6 +46,7 @@ export default function NotesView() {
 	});
 	const [editandoId, setEditandoId] = useState(null);
 	const [expandidoNovaNota, setExpandidoNovaNota] = useState(false);
+	const [notaEliminandoId, setNotaEliminandoId] = useState(null);
 	const [borrador, setBorrador] = useState({
 		titulo: '',
 		contido: '',
@@ -60,18 +67,24 @@ export default function NotesView() {
 		});
 
 	const LIMIADOR_CASELLA = /^\s*(?:[-*]\s*)?(?:\[(?:\s|x|X)\]|☐|☑)\s*/;
+	const CASELLA_MARCADA = /^\s*(?:[-*]\s*)?(?:\[(?:x|X)\]|☑)\s*/;
+	const CASELLA_CON_PREFIXO = /^\s*(?:[-*]\s*)?(?:\[(?:\s|x|X)\]|☐|☑)\s*/;
 
 	const limparPrefixoCasilla = (liña) => String(liña || '').replace(LIMIADOR_CASELLA, '');
 
-	const engadirPrefixoCasilla = (liña) => {
+	const engadirPrefixoCasilla = (liña, completado = false) => {
 		const limpo = limparPrefixoCasilla(liña);
-		return limpo.trim() ? `☐ ${limpo.trim()}` : '☐ ';
+		const prefixo = completado ? '☑' : '☐';
+		return limpo.trim() ? `${prefixo} ${limpo.trim()}` : `${prefixo} `;
 	};
 
 	const textoConCasillas = (texto) => {
 		const liñas = String(texto || '').split('\n');
 		return liñas.map(engadirPrefixoCasilla).join('\n');
 	};
+
+	const textoConCasillasDesdeItens = (itens = []) =>
+		itens.map((item) => engadirPrefixoCasilla(item?.texto || '', Boolean(item?.completado))).join('\n');
 
 	const inserirLiñaConCasilla = (event, value, onChange) => {
 		if (event.key !== 'Enter' || event.shiftKey) return;
@@ -97,12 +110,17 @@ export default function NotesView() {
 	const textoAItensLista = (texto, itensPrevios = []) =>
 		String(texto || '')
 			.split('\n')
-			.map((liña) => limparPrefixoCasilla(liña).trim())
-			.filter(Boolean)
-			.map((liña, indice) => ({
+			.map((liña) => {
+				const textoLimpo = limparPrefixoCasilla(liña).trim();
+				const tenPrefixo = CASELLA_CON_PREFIXO.test(String(liña || ''));
+				const completadoMarcado = CASELLA_MARCADA.test(String(liña || ''));
+				return { texto: textoLimpo, tenPrefixo, completadoMarcado };
+			})
+			.filter((item) => item.texto)
+			.map((item, indice) => ({
 				id: itensPrevios[indice]?.id || nanoid(),
-				texto: liña,
-				completado: Boolean(itensPrevios[indice]?.completado),
+				texto: item.texto,
+				completado: item.tenPrefixo ? item.completadoMarcado : Boolean(itensPrevios[indice]?.completado),
 			}));
 
 	const gardarNovaNota = (e) => {
@@ -125,14 +143,14 @@ export default function NotesView() {
 
 	const comezarEdicion = (nota) => {
 		setEditandoId(nota.id);
-		const textoListaBase = Array.isArray(nota.itensLista) ? nota.itensLista.map((item) => item.texto).join('\n') : '';
+		const itensNota = Array.isArray(nota.itensLista) ? nota.itensLista : [];
 		setBorrador({
 			titulo: nota.titulo || '',
 			contido: nota.contido || '',
 			tipo: nota.tipo === 'lista' ? 'lista' : 'texto',
 			cor: nota.cor || '#9333ea',
-			itensLista: Array.isArray(nota.itensLista) ? nota.itensLista : [],
-			textoLista: textoConCasillas(textoListaBase),
+			itensLista: itensNota,
+			textoLista: textoConCasillasDesdeItens(itensNota),
 		});
 	};
 
@@ -247,6 +265,7 @@ export default function NotesView() {
 												textoLista: prev.textoLista ? prev.textoLista : '☐ ',
 											}))
 										}
+										ref={(node) => autoAxustarAlturaTextarea(node)}
 										onChange={(e) =>
 											setNovaNota((prev) => ({
 												...prev,
@@ -254,6 +273,7 @@ export default function NotesView() {
 												itensLista: textoAItensLista(e.target.value, prev.itensLista),
 											}))
 										}
+										onInput={(e) => autoAxustarAlturaTextarea(e.currentTarget)}
 										onKeyDown={(e) =>
 											inserirLiñaConCasilla(e, novaNota.textoLista, (novoTexto) =>
 												setNovaNota((prev) => ({
@@ -264,7 +284,7 @@ export default function NotesView() {
 											)
 										}
 										placeholder={t.noteChecklistItemPlaceholder}
-										rows='5'
+										rows='3'
 										className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
 									/>
 								</div>
@@ -313,7 +333,18 @@ export default function NotesView() {
 								key={nota.id}
 								layout
 								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
+								animate={
+									notaEliminandoId === nota.id
+										? { opacity: 0, y: -8, scale: 0.98 }
+										: { opacity: 1, y: 0, scale: 1 }
+								}
+								transition={{ duration: notaEliminandoId === nota.id ? 0.5 : 0.25 }}
+								onAnimationComplete={() => {
+									if (notaEliminandoId === nota.id) {
+										dispatch(eliminarNota({ id: nota.id, usuarioId: usuarioActualId }));
+										setNotaEliminandoId(null);
+									}
+								}}
 								className='break-inside-avoid mb-4 rounded-xl p-4 border shadow-sm text-gray-900 dark:text-gray-100'
 								style={{
 									backgroundColor: corHexARgba(corNota, 0.18),
@@ -347,9 +378,7 @@ export default function NotesView() {
 											whileHover={{ scale: 1.1, color: '#ef4444' }}
 											whileTap={{ scale: 0.9 }}
 											type='button'
-											onClick={() => {
-												dispatch(eliminarNota({ id: nota.id, usuarioId: usuarioActualId }));
-											}}
+											onClick={() => setNotaEliminandoId(nota.id)}
 											title={t.deleteNote}
 											className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'>
 											<i className='fa-solid fa-trash-can'></i>
@@ -422,6 +451,7 @@ export default function NotesView() {
 															textoLista: prev.textoLista ? prev.textoLista : '☐ ',
 														}))
 													}
+													ref={(node) => autoAxustarAlturaTextarea(node)}
 													onChange={(e) =>
 														setBorrador((prev) => ({
 															...prev,
@@ -429,6 +459,7 @@ export default function NotesView() {
 															itensLista: textoAItensLista(e.target.value, prev.itensLista),
 														}))
 													}
+													onInput={(e) => autoAxustarAlturaTextarea(e.currentTarget)}
 													onKeyDown={(e) =>
 														inserirLiñaConCasilla(e, borrador.textoLista, (novoTexto) =>
 															setBorrador((prev) => ({
@@ -439,7 +470,7 @@ export default function NotesView() {
 														)
 													}
 													placeholder={t.noteChecklistItemPlaceholder}
-													rows='5'
+													rows='3'
 													className='w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 resize-none'
 												/>
 											</div>
@@ -482,7 +513,7 @@ export default function NotesView() {
 										{nota.tipo === 'lista' && (
 											<ul className='space-y-1'>
 												{(nota.itensLista || []).map((item) => (
-													<li key={item.id} className='flex items-center gap-2 text-sm'>
+													<li key={item.id} className='flex items-start gap-2 text-sm'>
 														<input
 															type='checkbox'
 															checked={Boolean(item.completado)}
@@ -495,7 +526,7 @@ export default function NotesView() {
 																	})
 																)
 															}
-															className='accent-indigo-600'
+															className='accent-indigo-600 mt-0.5'
 														/>
 														<span className={item.completado ? 'line-through opacity-85' : ''}>
 															{item.texto}
