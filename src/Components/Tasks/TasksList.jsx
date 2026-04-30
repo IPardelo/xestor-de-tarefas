@@ -5,6 +5,8 @@ import { useState } from 'react';
 
 // ? Features
 import { seleccionarTareasFiltradas, seleccionarFiltroActivo } from '@/Features/Tasks/tareasSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 // ? Componentes
 import ElementoTarea from '@/Components/Tasks/TaskItem';
@@ -12,6 +14,8 @@ import ElementoTarea from '@/Components/Tasks/TaskItem';
 const ListaTareas = () => {
 	const tareas = useSelector(seleccionarTareasFiltradas) || [];
 	const filtroActivo = useSelector(seleccionarFiltroActivo);
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 
 	// Filtrar tareas inválidas (nulas o indefinidas)
 	const tareasValidas = tareas.filter((tarea) => tarea !== null && tarea !== undefined);
@@ -33,38 +37,38 @@ const ListaTareas = () => {
 		switch (filtroActivo) {
 			case 'completadas':
 				return {
-					titulo: 'Non hai tarefas completadas',
-					descripcion: 'As tarefas que completes aparecerán aquí',
+					titulo: t.noCompletedTitle,
+					descripcion: t.noCompletedDesc,
 					icono: 'fa-solid fa-check-circle',
 				};
 			case 'activas':
 				return {
-					titulo: 'Non hai tarefas pendentes',
-					descripcion: 'Bo traballo! Completaches todas as túas tarefas',
+					titulo: t.noActiveTitle,
+					descripcion: t.noActiveDesc,
 					icono: 'fa-solid fa-thumbs-up',
 				};
 			case 'alta':
 				return {
-					titulo: 'Non hai tarefas de prioridade alta',
-					descripcion: 'Engade unha tarefa con prioridade alta',
+					titulo: t.noHighTitle,
+					descripcion: t.noHighDesc,
 					icono: 'fa-solid fa-arrow-up',
 				};
 			case 'media':
 				return {
-					titulo: 'Non hai tarefas de prioridade media',
-					descripcion: 'Engade unha tarefa con prioridade media',
+					titulo: t.noMediumTitle,
+					descripcion: t.noMediumDesc,
 					icono: 'fa-solid fa-equals',
 				};
 			case 'baja':
 				return {
-					titulo: 'Non hai tarefas de prioridade baixa',
-					descripcion: 'Engade unha tarefa con prioridade baixa',
+					titulo: t.noLowTitle,
+					descripcion: t.noLowDesc,
 					icono: 'fa-solid fa-arrow-down',
 				};
 			default:
 				return {
-					titulo: 'Non hai tarefas dispoñibles',
-					descripcion: 'Engade unha nova tarefa para comezar',
+					titulo: t.noTasksTitle,
+					descripcion: t.noTasksDesc,
 					icono: 'fa-solid fa-list-check',
 				};
 		}

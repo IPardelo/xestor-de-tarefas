@@ -11,23 +11,27 @@ import {
 	establecerBusqueda,
 	establecerOrdenamiento,
 } from '@/Features/Tasks/tareasSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 const FiltroTareas = () => {
 	const dispatch = useDispatch();
 	const filtroActivo = useSelector(seleccionarFiltroActivo);
 	const conteoTareas = useSelector(seleccionarConteoTareas);
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 	const [terminoBusqueda, setTerminoBusqueda] = useState('');
 	const [estaAbierto, setEstaAbierto] = useState(false);
 
 	// Opciones de filtro con sus iconos
 	const opcionesFiltro = [
-		{ id: 'todos', label: 'Todas', icon: 'fa-border-all' },
-		{ id: 'activas', label: 'Pendentes', icon: 'fa-hourglass-half' },
-		{ id: 'completadas', label: 'Completadas', icon: 'fa-check-circle' },
+		{ id: 'todos', label: t.all, icon: 'fa-border-all' },
+		{ id: 'activas', label: t.active, icon: 'fa-hourglass-half' },
+		{ id: 'completadas', label: t.completed, icon: 'fa-check-circle' },
 		// Opciones adicionales de prioridad
-		{ id: 'alta', label: 'Prioridade alta', icon: 'fa-arrow-up' },
-		{ id: 'media', label: 'Prioridade media', icon: 'fa-equals' },
-		{ id: 'baja', label: 'Prioridade baixa', icon: 'fa-arrow-down' },
+		{ id: 'alta', label: t.priorityHigh, icon: 'fa-arrow-up' },
+		{ id: 'media', label: t.priorityMedium, icon: 'fa-equals' },
+		{ id: 'baja', label: t.priorityLow, icon: 'fa-arrow-down' },
 	];
 
 	// Cambiar el filtro activo
@@ -60,7 +64,7 @@ const FiltroTareas = () => {
 							type='text'
 							value={terminoBusqueda}
 							onChange={manejarCambioBusqueda}
-							placeholder='Buscar tarefas...'
+							placeholder={t.searchTasks}
 							className='w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'
 						/>
 					</div>
@@ -74,12 +78,12 @@ const FiltroTareas = () => {
 							onChange={manejarCambioOrdenamiento}
 							defaultValue='fechaCreacion:desc'
 							className='w-full pl-10 pr-10 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white appearance-none cursor-pointer'>
-							<option value='fechaCreacion:desc'>Máis recentes</option>
-							<option value='fechaCreacion:asc'>Máis antigas</option>
-							<option value='fechaVencimiento:asc'>Data límite ↑</option>
-							<option value='fechaVencimiento:desc'>Data límite ↓</option>
-							<option value='prioridad:asc'>Prioridade ↑</option>
-							<option value='prioridad:desc'>Prioridade ↓</option>
+							<option value='fechaCreacion:desc'>{t.mostRecent}</option>
+							<option value='fechaCreacion:asc'>{t.oldest}</option>
+							<option value='fechaVencimiento:asc'>{t.dueDateUp}</option>
+							<option value='fechaVencimiento:desc'>{t.dueDateDown}</option>
+							<option value='prioridad:asc'>{t.priorityUp}</option>
+							<option value='prioridad:desc'>{t.priorityDown}</option>
 						</select>
 						<div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500'>
 							<i className='fa-solid fa-chevron-down'></i>

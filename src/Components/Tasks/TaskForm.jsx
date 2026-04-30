@@ -1,14 +1,18 @@
 // ? Importaciones
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from '@reduxjs/toolkit';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ? Features
 import { agregarTarea } from '@/Features/Tasks/tareasSlice';
+import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { translations } from '@/i18n/translations';
 
 const FormularioTarea = () => {
 	const dispatch = useDispatch();
+	const idioma = useSelector(seleccionarIdioma);
+	const t = translations[idioma] || translations.gl;
 	const [expandido, setExpandido] = useState(false);
 	const [datosFormulario, setDatosFormulario] = useState({
 		titulo: '',
@@ -88,7 +92,7 @@ const FormularioTarea = () => {
 						value={datosFormulario.titulo}
 						onChange={manejarCambio}
 						onClick={() => setExpandido(true)}
-						placeholder='Engadir nova tarefa'
+						placeholder={t.addNewTask}
 						className='flex-1 bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 py-2 outline-none text-gray-800 dark:text-white transition-colors placeholder-gray-400 dark:placeholder-gray-500 min-w-0'
 						autoComplete='off'
 					/>
@@ -105,13 +109,13 @@ const FormularioTarea = () => {
 							<div>
 								<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 									<i className='fa-solid fa-align-left mr-2 text-indigo-500 dark:text-indigo-400'></i>
-									Descrición
+									{t.description}
 								</label>
 								<textarea
 									name='descripcion'
 									value={datosFormulario.descripcion}
 									onChange={manejarCambio}
-									placeholder='Engadir unha descrición...'
+									placeholder={t.addDescription}
 									rows='2'
 									className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg resize-none outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'></textarea>
 							</div>
@@ -120,7 +124,7 @@ const FormularioTarea = () => {
 								<div>
 									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 										<i className='fa-solid fa-flag mr-2 text-indigo-500 dark:text-indigo-400'></i>
-										Prioridade
+										{t.priority}
 									</label>
 									<div className='flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
 										{['alta', 'media', 'baja'].map((prioridad) => (
@@ -143,10 +147,10 @@ const FormularioTarea = () => {
 												<i className={`fa-solid ${iconosPrioridad[prioridad]}`}></i>
 												<span className='hidden sm:inline capitalize'>
 													{prioridad === 'alta'
-														? 'Alta'
+														? t.high
 														: prioridad === 'media'
-														? 'Media'
-														: 'Baixa'}
+														? t.medium
+														: t.low}
 												</span>
 											</label>
 										))}
@@ -156,7 +160,7 @@ const FormularioTarea = () => {
 								<div>
 									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 										<i className='fa-solid fa-calendar-days mr-2 text-indigo-500 dark:text-indigo-400'></i>
-										Data límite
+										{t.dueDate}
 									</label>
 									<input
 										type='date'
@@ -175,7 +179,7 @@ const FormularioTarea = () => {
 									whileHover={{ scale: 1.02 }}
 									whileTap={{ scale: 0.98 }}
 									className='px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium text-sm'>
-									Cancelar
+									{t.cancel}
 								</motion.button>
 
 								<motion.button
@@ -184,7 +188,7 @@ const FormularioTarea = () => {
 									whileTap={{ scale: 0.98 }}
 									className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm flex items-center gap-2'>
 									<i className='fa-solid fa-save'></i>
-									Gardar
+									{t.save}
 								</motion.button>
 							</div>
 						</motion.div>
