@@ -1,0 +1,28 @@
+{
+  "usuarios": {
+    "lista": [
+      {
+        "id": "ismael",
+        "nome": "Ismael Castiñeira",
+        "idiomaPredeterminado": "gl",
+        "temaPredeterminado": "oscuro",
+        "xenero": "M"
+      }
+    ],
+    "usuarioActualId": "ismael"
+  },
+  "idioma": {
+    "actual": "gl"
+  },
+  "tema": {
+    "modo": "oscuro"
+  },
+  "tareas": {
+    "tareas": [],
+    "filtro": "todos",
+    "busqueda": "",
+    "ordenarPor": "fechaCreacion:desc",
+    "estado": "inactivo",
+    "error": null
+  }
+}
