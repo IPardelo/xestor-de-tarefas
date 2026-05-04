@@ -15,6 +15,12 @@ const idiomaSlice = createSlice({
 		actual: cargarIdioma(),
 	},
 	reducers: {
+		hidratarIdioma: (state, action) => {
+			const idioma = action.payload?.actual;
+			if (['gl', 'es', 'en'].includes(idioma)) {
+				state.actual = idioma;
+			}
+		},
 		establecerIdioma: (state, action) => {
 			state.actual = action.payload;
 			localStorage.setItem('idioma', state.actual);
@@ -22,6 +28,6 @@ const idiomaSlice = createSlice({
 	},
 });
 
-export const { establecerIdioma } = idiomaSlice.actions;
+export const { hidratarIdioma, establecerIdioma } = idiomaSlice.actions;
 export const seleccionarIdioma = (state) => state.idioma.actual;
 export default idiomaSlice.reducer;
