@@ -11,16 +11,20 @@ import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
 
 // Features
-import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
-import { seleccionarTema } from '@/Features/Theme/temaSlice';
+import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
+import { establecerTema, seleccionarTema } from '@/Features/Theme/temaSlice';
 import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
 import { translations } from '@/i18n/translations';
+import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
 
 export default function App() {
 	const dispatch = useDispatch();
 	const tema = useSelector(seleccionarTema);
 	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActual = useSelector(seleccionarUsuarioActual);
 	const t = translations[idioma] || translations.gl;
+	const xenero = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
+	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
 	const [vistaActual, setVistaActual] = useState('inicio');
 
 	useEffect(() => {
@@ -30,6 +34,12 @@ export default function App() {
 			document.documentElement.classList.remove('dark');
 		}
 	}, [tema]);
+
+	useEffect(() => {
+		if (!usuarioActual) return;
+		dispatch(establecerIdioma(usuarioActual.idiomaPredeterminado || 'gl'));
+		dispatch(establecerTema(usuarioActual.temaPredeterminado || 'claro'));
+	}, [dispatch, usuarioActual]);
 
 	// Limpiar tareas inválidas al iniciar la aplicación
 	useEffect(() => {
@@ -50,7 +60,7 @@ export default function App() {
 									animate={{ y: 0, opacity: 1 }}
 									transition={{ duration: 0.5 }}
 									className='text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4'>
-									{t.welcome}
+									{benvida}
 								</motion.h1>
 							</div>
 							<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors duration-300'>

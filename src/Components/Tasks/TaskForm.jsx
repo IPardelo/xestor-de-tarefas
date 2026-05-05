@@ -1,5 +1,5 @@
 // ? Importaciones
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from '@reduxjs/toolkit';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,10 +8,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { agregarTarea } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
+import {
+	seleccionarUsuarioActualId,
+	seleccionarUsuarios,
+	seleccionarUsuariosExceptoActual,
+} from '@/Features/Users/usuariosSlice';
 
 const FormularioTarea = () => {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
+	const usuarios = useSelector(seleccionarUsuarios);
+	const outrosUsuarios = useSelector(seleccionarUsuariosExceptoActual);
 	const t = translations[idioma] || translations.gl;
 	const [expandido, setExpandido] = useState(false);
 	const [datosFormulario, setDatosFormulario] = useState({
@@ -19,7 +27,13 @@ const FormularioTarea = () => {
 		descripcion: '',
 		prioridad: 'media',
 		fechaVencimiento: '',
+		asignadaAId: usuarioActualId,
+		compartidaConId: '',
 	});
+
+	useEffect(() => {
+		setDatosFormulario((prev) => ({ ...prev, asignadaAId: usuarioActualId }));
+	}, [usuarioActualId]);
 
 	// Manejar el cambio de los campos del formulario
 	const manejarCambio = (e) => {
@@ -46,6 +60,9 @@ const FormularioTarea = () => {
 				completada: false,
 				prioridad: datosFormulario.prioridad,
 				fechaVencimiento: datosFormulario.fechaVencimiento || null,
+				propietariaId: usuarioActualId,
+				asignadaAId: datosFormulario.asignadaAId || usuarioActualId,
+				compartidaConIds: datosFormulario.compartidaConId ? [datosFormulario.compartidaConId] : [],
 				fechaCreacion: new Date().toISOString(),
 			})
 		);
@@ -56,6 +73,8 @@ const FormularioTarea = () => {
 			descripcion: '',
 			prioridad: 'media',
 			fechaVencimiento: '',
+			asignadaAId: usuarioActualId,
+			compartidaConId: '',
 		});
 
 		// Contraer el formulario
@@ -169,6 +188,45 @@ const FormularioTarea = () => {
 										onChange={manejarCambio}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'
 									/>
+								</div>
+							</div>
+
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+								<div>
+									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+										<i className='fa-solid fa-user-check mr-2 text-indigo-500 dark:text-indigo-400'></i>
+										{t.assignTo}
+									</label>
+									<select
+										name='asignadaAId'
+										value={datosFormulario.asignadaAId}
+										onChange={manejarCambio}
+										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+										{usuarios.map((usuario) => (
+											<option key={usuario.id} value={usuario.id}>
+												{usuario.nome}
+											</option>
+										))}
+									</select>
+								</div>
+
+								<div>
+									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+										<i className='fa-solid fa-users mr-2 text-indigo-500 dark:text-indigo-400'></i>
+										{t.sharedWith}
+									</label>
+									<select
+										name='compartidaConId'
+										value={datosFormulario.compartidaConId}
+										onChange={manejarCambio}
+										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+										<option value=''>{t.none}</option>
+										{outrosUsuarios.map((usuario) => (
+											<option key={usuario.id} value={usuario.id}>
+												{usuario.nome}
+											</option>
+										))}
+									</select>
 								</div>
 							</div>
 

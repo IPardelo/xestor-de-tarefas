@@ -7,10 +7,13 @@ import { motion } from 'framer-motion';
 import { alternarEstadoTarea, eliminarTarea, actualizarTarea } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
+import { seleccionarUsuarioActualId, seleccionarUsuarios } from '@/Features/Users/usuariosSlice';
 
 const ElementoTarea = ({ tarea }) => {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
+	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
+	const usuarios = useSelector(seleccionarUsuarios);
 	const t = translations[idioma] || translations.gl;
 	const [mostrarAcciones, setMostrarAcciones] = useState(false);
 	const [estaEditando, setEstaEditando] = useState(false);
@@ -36,6 +39,10 @@ const ElementoTarea = ({ tarea }) => {
 	};
 
 	const prioridad = prioridades[tarea.prioridad] || prioridades.media;
+	const asignadaA = usuarios.find((u) => u.id === tarea.asignadaAId);
+	const colaborador = (tarea.compartidaConIds || [])
+		.map((id) => usuarios.find((u) => u.id === id))
+		.find(Boolean);
 
 	// Formato de data máis lexible para Galicia
 	const formatearFecha = (cadenaFecha) => {
@@ -57,6 +64,7 @@ const ElementoTarea = ({ tarea }) => {
 
 		const tareaActualizada = {
 			id: tarea.id,
+			usuarioId: usuarioActualId,
 			...tareaEditada,
 			titulo: tareaEditada.titulo.trim(),
 			descripcion: tareaEditada.descripcion?.trim() || '',
@@ -184,7 +192,7 @@ const ElementoTarea = ({ tarea }) => {
 					<motion.button
 						whileHover={{ scale: 1.1 }}
 						whileTap={{ scale: 0.9 }}
-						onClick={() => dispatch(alternarEstadoTarea(tarea.id))}
+						onClick={() => dispatch(alternarEstadoTarea({ id: tarea.id, usuarioId: usuarioActualId }))}
 						className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors
 						${
 							tarea.completada
@@ -195,7 +203,9 @@ const ElementoTarea = ({ tarea }) => {
 					</motion.button>
 				</div>
 
-				<div className='flex-1 min-w-0' onClick={() => dispatch(alternarEstadoTarea(tarea.id))}>
+				<div
+					className='flex-1 min-w-0'
+					onClick={() => dispatch(alternarEstadoTarea({ id: tarea.id, usuarioId: usuarioActualId }))}>
 					<h3
 						className={`text-base sm:text-lg font-medium mb-1 text-gray-800 dark:text-white truncate
 						${tarea.completada ? 'line-through text-gray-500 dark:text-gray-400' : ''}`}>
@@ -219,6 +229,18 @@ const ElementoTarea = ({ tarea }) => {
 							<i className={`${prioridad.icon} mr-1`}></i>
 							{prioridad.label}
 						</span>
+						{asignadaA && (
+							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'>
+								<i className='fa-solid fa-user-check mr-1'></i>
+								{t.assignedToLabel}: {asignadaA.nome}
+							</span>
+						)}
+						{colaborador && (
+							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'>
+								<i className='fa-solid fa-users mr-1'></i>
+								{t.sharedWithLabel}: {colaborador.nome}
+							</span>
+						)}
 					</div>
 				</div>
 				<motion.div
@@ -237,7 +259,7 @@ const ElementoTarea = ({ tarea }) => {
 					<motion.button
 						whileHover={{ scale: 1.1, color: '#ef4444' }}
 						whileTap={{ scale: 0.9 }}
-						onClick={() => dispatch(eliminarTarea(tarea.id))}
+						onClick={() => dispatch(eliminarTarea({ id: tarea.id, usuarioId: usuarioActualId }))}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
 						aria-label={t.deleteTask}>
 						<i className='fa-solid fa-trash-can'></i>
