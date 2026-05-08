@@ -6,13 +6,15 @@
         "nome": "Ismael Castiñeira",
         "idiomaPredeterminado": "gl",
         "temaPredeterminado": "oscuro",
-        "xenero": "M"
+        "xenero": "M",
+        "imaxePerfil": "https://omniretro.com/wp-content/uploads/2025/10/mejores-juegos-super-mario-1200x800.jpg",
+        "admin": "1"
       }
     ],
     "usuarioActualId": "ismael"
   },
   "idioma": {
-    "actual": "gl"
+    "actual": "es"
   },
   "tema": {
     "modo": "oscuro"

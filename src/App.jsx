@@ -9,6 +9,7 @@ import Header from '@/Components/Layout/Header';
 import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
+import OptionsView from '@/Components/Options/OptionsView';
 
 // Features
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
@@ -99,8 +100,10 @@ export default function App() {
 								</AnimatePresence>
 							</div>
 						</>
-					) : (
+					) : vistaActual === 'calendario' ? (
 						<CalendarView />
+					) : (
+						<OptionsView />
 					)}
 				</main>
 			</div>

@@ -43,6 +43,13 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 			activo: vistaActual === 'calendario',
 			proximamente: false,
 		},
+		{
+			id: 'opciones',
+			icon: 'fa-gear',
+			label: t.options,
+			activo: vistaActual === 'opciones',
+			proximamente: false,
+		},
 	];
 
 	return (
@@ -95,6 +102,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 							xeneroActual={xeneroActual}
 							benvidaLateral={benvidaLateral}
 							usuarioActualId={usuarioActualId}
+							usuarioActual={usuarioActual}
 							usuarios={usuarios}
 							onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 							onCambiarVista={onCambiarVista}
@@ -116,6 +124,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 					xeneroActual={xeneroActual}
 					benvidaLateral={benvidaLateral}
 					usuarioActualId={usuarioActualId}
+					usuarioActual={usuarioActual}
 					usuarios={usuarios}
 					onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 					onCambiarVista={onCambiarVista}
@@ -136,6 +145,7 @@ const ContenidoBarraLateral = ({
 	xeneroActual,
 	benvidaLateral,
 	usuarioActualId,
+	usuarioActual,
 	usuarios,
 	onCambiarUsuario,
 	onCambiarVista,
@@ -147,9 +157,17 @@ const ContenidoBarraLateral = ({
 				<motion.div
 					whileHover={{ scale: 1.05 }}
 					className='relative w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full p-1 shadow-lg'>
-					<div className='absolute inset-0 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center m-0.5'>
-						<i className='fa-solid fa-user-astronaut text-3xl text-transparent bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 bg-clip-text'></i>
-					</div>
+					{usuarioActual?.imaxePerfil ? (
+						<img
+							src={usuarioActual.imaxePerfil}
+							alt='Perfil'
+							className='absolute inset-0 w-full h-full rounded-full object-cover m-0.5'
+						/>
+					) : (
+						<div className='absolute inset-0 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center m-0.5'>
+							<i className='fa-solid fa-user-astronaut text-3xl text-transparent bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 bg-clip-text'></i>
+						</div>
+					)}
 				</motion.div>
 				<div className='mt-3'>
 					<div className='relative'>
