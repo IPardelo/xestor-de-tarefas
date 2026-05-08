@@ -107,6 +107,21 @@ export default function App() {
 					)}
 				</main>
 			</div>
+			<div
+				className='mt-6 pb-3 pl-4 select-none text-[11px] sm:text-xs font-semibold tracking-wide opacity-80 text-gray-500 dark:text-gray-400'
+				style={{
+					textShadow:
+						'0 1px 0 rgba(255,255,255,0.35), 0 -1px 0 rgba(0,0,0,0.45), 0 0 1px rgba(0,0,0,0.35)',
+				}}>
+				<span className='pointer-events-none'>Desarrollado por </span>
+				<a
+					href='https://ipardelo.es'
+					target='_blank'
+					rel='noreferrer'
+					className='pointer-events-auto underline decoration-dotted underline-offset-2 hover:opacity-100 transition-opacity'>
+					IPardelo
+				</a>
+			</div>
 		</div>
 	);
 }
