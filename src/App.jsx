@@ -10,6 +10,7 @@ import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
 import OptionsView from '@/Components/Options/OptionsView';
+import ProjectsView from '@/Components/Projects/ProjectsView';
 
 // Features
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
@@ -102,6 +103,8 @@ export default function App() {
 						</>
 					) : vistaActual === 'calendario' ? (
 						<CalendarView />
+					) : vistaActual === 'proxectos' ? (
+						<ProjectsView />
 					) : (
 						<OptionsView />
 					)}
