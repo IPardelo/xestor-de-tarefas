@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
@@ -50,13 +50,6 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 			activo: vistaActual === 'proxectos',
 			proximamente: false,
 		},
-		{
-			id: 'opciones',
-			icon: 'fa-gear',
-			label: t.options,
-			activo: vistaActual === 'opciones',
-			proximamente: false,
-		},
 	];
 
 	return (
@@ -100,6 +93,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 							<i className='fa-solid fa-xmark'></i>
 						</button>
 						<ContenidoBarraLateral
+							vistaActual={vistaActual}
 							opcionesNavegacion={opcionesNavegacion}
 							totalTarefas={totalTarefas}
 							tarefasCompletadas={tarefasCompletadas}
@@ -122,6 +116,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 			{/* Sidebar para escritorio */}
 			<aside className='hidden md:block w-fit bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300 self-start sticky top-4 hover:shadow-lg'>
 				<ContenidoBarraLateral
+					vistaActual={vistaActual}
 					opcionesNavegacion={opcionesNavegacion}
 					totalTarefas={totalTarefas}
 					tarefasCompletadas={tarefasCompletadas}
@@ -143,6 +138,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 
 // Componente para el contenido del sidebar
 const ContenidoBarraLateral = ({
+	vistaActual,
 	opcionesNavegacion,
 	totalTarefas,
 	tarefasCompletadas,
@@ -158,6 +154,18 @@ const ContenidoBarraLateral = ({
 	onCambiarVista,
 	onDespuesDeNavegar,
 }) => {
+	const [opcionsXeraisAberto, setOpcionsXeraisAberto] = useState(
+		() => vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais'
+	);
+	const opcionsFilhoActivo =
+		vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais';
+
+	useEffect(() => {
+		if (vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais') {
+			setOpcionsXeraisAberto(true);
+		}
+	}, [vistaActual]);
+
 	return (
 		<div className='space-y-8 w-fit'>
 			<div className='text-center border-b border-gray-200 dark:border-gray-700 pb-6'>
@@ -193,7 +201,25 @@ const ContenidoBarraLateral = ({
 						</select>
 					</div>
 				</div>
-				<p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>{benvidaLateral}</p>
+				<div className='mt-2 flex items-start justify-center gap-2'>
+					<p className='text-sm text-gray-500 dark:text-gray-400 flex-1 min-w-0 text-center'>{benvidaLateral}</p>
+					<button
+						type='button'
+						onClick={() => {
+							onCambiarVista('axustesUsuario');
+							onDespuesDeNavegar?.();
+						}}
+						className={`shrink-0 p-1 rounded-lg transition-colors ${
+							vistaActual === 'axustesUsuario'
+								? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
+								: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
+						}`}
+						aria-current={vistaActual === 'axustesUsuario' ? 'page' : undefined}
+						aria-label={t.userSettingsLabel}
+						title={t.userSettingsLabel}>
+						<i className='fa-solid fa-gear text-base' />
+					</button>
+				</div>
 			</div>
 
 			<nav className='px-2'>
@@ -232,6 +258,66 @@ const ContenidoBarraLateral = ({
 							</button>
 						</motion.li>
 					))}
+					<motion.li whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 10 }}>
+						<button
+							type='button'
+							onClick={() => setOpcionsXeraisAberto((v) => !v)}
+							className={`w-full flex items-center gap-2 px-4 py-3 rounded-xl transition-all cursor-pointer ${
+								opcionsFilhoActivo
+									? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium shadow-md'
+									: 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
+							}`}
+							aria-expanded={opcionsXeraisAberto}
+							aria-controls='submenu-opcions-xerais'>
+							<i
+								className={`fa-solid fa-sliders text-lg ${
+									opcionsFilhoActivo ? 'text-white' : 'text-indigo-500 dark:text-indigo-400'
+								}`}
+							/>
+							<span className='ml-2 flex-1 text-left'>{t.optionsGeneralNav}</span>
+							<i
+								className={`fa-solid text-xs shrink-0 ${
+									opcionsXeraisAberto ? 'fa-chevron-up' : 'fa-chevron-down'
+								} ${opcionsFilhoActivo ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}
+							/>
+						</button>
+						{opcionsXeraisAberto && (
+							<ul
+								id='submenu-opcions-xerais'
+								className='mt-1 ml-2 pl-3 border-l-2 border-indigo-200 dark:border-indigo-600 space-y-0.5'>
+								<li>
+									<button
+										type='button'
+										onClick={() => {
+											onCambiarVista('opcionesUsuarios');
+											onDespuesDeNavegar?.();
+										}}
+										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+											vistaActual === 'opcionesUsuarios'
+												? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
+												: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+										}`}>
+										{t.optionsUserCreationNav}
+									</button>
+								</li>
+								<li>
+									<button
+										type='button'
+										onClick={() => {
+											onCambiarVista('opcionesGlobais');
+											onDespuesDeNavegar?.();
+										}}
+										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+											vistaActual === 'opcionesGlobais'
+												? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
+												: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+										}`}>
+										{t.optionsGlobalNav}
+									</button>
+								</li>
+							</ul>
+						)}
+					</motion.li>
 				</ul>
 			</nav>
 

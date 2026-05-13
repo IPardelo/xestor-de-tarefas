@@ -9,8 +9,10 @@ import Header from '@/Components/Layout/Header';
 import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
-import OptionsView from '@/Components/Options/OptionsView';
+import OptionsUsersView from '@/Components/Options/OptionsUsersView';
+import OptionsGlobalView from '@/Components/Options/OptionsGlobalView';
 import ProjectsView from '@/Components/Projects/ProjectsView';
+import UserSettingsView from '@/Components/Layout/UserSettingsView';
 
 // Features
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
@@ -105,9 +107,13 @@ export default function App() {
 						<CalendarView />
 					) : vistaActual === 'proxectos' ? (
 						<ProjectsView />
-					) : (
-						<OptionsView />
-					)}
+					) : vistaActual === 'axustesUsuario' ? (
+						<UserSettingsView />
+					) : vistaActual === 'opcionesUsuarios' ? (
+						<OptionsUsersView />
+					) : vistaActual === 'opcionesGlobais' ? (
+						<OptionsGlobalView />
+					) : null}
 				</main>
 			</div>
 			<div
