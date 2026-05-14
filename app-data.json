@@ -14,13 +14,40 @@
     "usuarioActualId": "ismael"
   },
   "idioma": {
-    "actual": "es"
+    "actual": "gl"
   },
   "tema": {
     "modo": "oscuro"
   },
   "tareas": {
-    "tareas": [],
+    "tareas": [
+      {
+        "id": "VPFq6_4U-kNtCuYfhe1EW",
+        "titulo": "TAREFA 1",
+        "descripcion": "Descripción da tarefa 1",
+        "completada": false,
+        "prioridad": "media",
+        "fechaVencimiento": "2026-04-18T18:00:00.000Z",
+        "propietariaId": "ismael",
+        "asignadaAId": "ismael",
+        "compartidaConIds": [],
+        "proxectoId": "zfnR8a5T499Kj2-hnLCRs",
+        "fechaCreacion": "2026-04-17T18:16:24.998Z"
+      },
+      {
+        "id": "b4sNJ_OlLSYV71thV3ar7",
+        "titulo": "TAREFA 2",
+        "descripcion": "Descripcion da tarefa 2",
+        "completada": false,
+        "prioridad": "media",
+        "fechaVencimiento": "2026-04-20T18:00:00.000Z",
+        "propietariaId": "ismael",
+        "asignadaAId": "ismael",
+        "compartidaConIds": [],
+        "proxectoId": "NJOkQVHwrS4lUTPKwhUyD",
+        "fechaCreacion": "2026-04-17T18:20:06.179Z"
+      }
+    ],
     "filtro": "todos",
     "busqueda": "",
     "ordenarPor": "fechaCreacion:desc",

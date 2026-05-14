@@ -8,12 +8,14 @@ import { alternarEstadoTarea, eliminarTarea, actualizarTarea } from '@/Features/
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
 import { seleccionarUsuarioActualId, seleccionarUsuarios } from '@/Features/Users/usuariosSlice';
+import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
 
 const ElementoTarea = ({ tarea }) => {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
 	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
 	const usuarios = useSelector(seleccionarUsuarios);
+	const proxectos = useSelector(seleccionarProxectos);
 	const t = translations[idioma] || translations.gl;
 	const [mostrarAcciones, setMostrarAcciones] = useState(false);
 	const [estaEditando, setEstaEditando] = useState(false);
@@ -43,6 +45,7 @@ const ElementoTarea = ({ tarea }) => {
 	const colaborador = (tarea.compartidaConIds || [])
 		.map((id) => usuarios.find((u) => u.id === id))
 		.find(Boolean);
+	const proxectoVinculado = proxectos.find((p) => p.id === tarea.proxectoId);
 
 	// Formato de data máis lexible para Galicia
 	const formatearFecha = (cadenaFecha) => {
@@ -68,6 +71,7 @@ const ElementoTarea = ({ tarea }) => {
 			...tareaEditada,
 			titulo: tareaEditada.titulo.trim(),
 			descripcion: tareaEditada.descripcion?.trim() || '',
+			proxectoId: tareaEditada.proxectoId || null,
 			fechaVencimiento: tareaEditada.fechaVencimiento || null, // Aseguramos que fechaVencimiento sea null si no hay fecha
 		};
 
@@ -97,6 +101,26 @@ const ElementoTarea = ({ tarea }) => {
 						placeholder={t.taskDescriptionPlaceholder}
 						rows='2'
 					/>
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+							<i className='fa-solid fa-folder-tree mr-2 text-indigo-500 dark:text-indigo-400'></i>
+							{t.taskProject}
+						</label>
+						<select
+							value={tareaEditada.proxectoId || ''}
+							onChange={(e) =>
+								setTareaEditada({ ...tareaEditada, proxectoId: e.target.value || null })
+							}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+							<option value=''>{t.noneProject}</option>
+							{proxectos.map((p) => (
+								<option key={p.id} value={p.id}>
+									{p.nome}
+								</option>
+							))}
+						</select>
+					</div>
+
 					<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
@@ -241,6 +265,12 @@ const ElementoTarea = ({ tarea }) => {
 								{t.sharedWithLabel}: {colaborador.nome}
 							</span>
 						)}
+						{proxectoVinculado && (
+							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-900/25 dark:text-teal-300'>
+								<i className='fa-solid fa-folder-tree mr-1'></i>
+								{t.taskProject}: {proxectoVinculado.nome}
+							</span>
+						)}
 					</div>
 				</div>
 				<motion.div
@@ -250,7 +280,10 @@ const ElementoTarea = ({ tarea }) => {
 					<motion.button
 						whileHover={{ scale: 1.1 }}
 						whileTap={{ scale: 0.9 }}
-						onClick={() => setEstaEditando(true)}
+						onClick={() => {
+							setTareaEditada({ ...tarea, proxectoId: tarea.proxectoId || '' });
+							setEstaEditando(true);
+						}}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'
 						aria-label={t.editTask}>
 						<i className='fa-solid fa-pen-to-square'></i>

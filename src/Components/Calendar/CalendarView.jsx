@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
+import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
 
@@ -43,6 +44,7 @@ function getMonthGrid(year, month, weekStart) {
 export default function CalendarView() {
 	const idioma = useSelector(seleccionarIdioma);
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
+	const proxectos = useSelector(seleccionarProxectos);
 	const t = translations[idioma] || translations.gl;
 	const locale = localeByLang[idioma] || localeByLang.gl;
 	const weekStart = weekStartByLang[idioma] ?? weekStartByLang.gl;
@@ -223,23 +225,32 @@ export default function CalendarView() {
 					<p className='text-gray-500 dark:text-gray-400'>{t.noMonthTasks}</p>
 				) : (
 					<ul className='space-y-2'>
-						{monthTasks.map((task) => (
-							<li
-								key={task.id}
-								className='rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/40'>
-								<div className='flex justify-between gap-2 items-start'>
-									<div>
-										<p className='font-medium text-gray-800 dark:text-gray-100'>{task.titulo}</p>
-										{task.descripcion && (
-											<p className='text-sm text-gray-500 dark:text-gray-400'>{task.descripcion}</p>
-										)}
+						{monthTasks.map((task) => {
+							const proxectoVinculado = proxectos.find((p) => p.id === task.proxectoId);
+							return (
+								<li
+									key={task.id}
+									className='rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/40'>
+									<div className='flex justify-between gap-2 items-start'>
+										<div className='min-w-0 flex-1'>
+											<p className='font-medium text-gray-800 dark:text-gray-100'>{task.titulo}</p>
+											{task.descripcion && (
+												<p className='text-sm text-gray-500 dark:text-gray-400'>{task.descripcion}</p>
+											)}
+											{proxectoVinculado && (
+												<p className='mt-2 inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-900/25 dark:text-teal-300'>
+													<i className='fa-solid fa-folder-tree mr-1.5'></i>
+													{t.taskProject}: {proxectoVinculado.nome}
+												</p>
+											)}
+										</div>
+										<span className='text-xs text-gray-500 dark:text-gray-400 shrink-0'>
+											{task._dueDate.toLocaleDateString(locale)}
+										</span>
 									</div>
-									<span className='text-xs text-gray-500 dark:text-gray-400'>
-										{task._dueDate.toLocaleDateString(locale)}
-									</span>
-								</div>
-							</li>
-						))}
+								</li>
+							);
+						})}
 					</ul>
 				)}
 			</div>
