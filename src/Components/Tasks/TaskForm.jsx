@@ -13,6 +13,7 @@ import {
 	seleccionarUsuarios,
 	seleccionarUsuariosExceptoActual,
 } from '@/Features/Users/usuariosSlice';
+import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
 
 const FormularioTarea = () => {
 	const dispatch = useDispatch();
@@ -20,6 +21,7 @@ const FormularioTarea = () => {
 	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
 	const usuarios = useSelector(seleccionarUsuarios);
 	const outrosUsuarios = useSelector(seleccionarUsuariosExceptoActual);
+	const proxectos = useSelector(seleccionarProxectos);
 	const t = translations[idioma] || translations.gl;
 	const [expandido, setExpandido] = useState(false);
 	const [datosFormulario, setDatosFormulario] = useState({
@@ -29,6 +31,7 @@ const FormularioTarea = () => {
 		fechaVencimiento: '',
 		asignadaAId: usuarioActualId,
 		compartidaConId: '',
+		proxectoId: '',
 	});
 
 	useEffect(() => {
@@ -63,6 +66,7 @@ const FormularioTarea = () => {
 				propietariaId: usuarioActualId,
 				asignadaAId: datosFormulario.asignadaAId || usuarioActualId,
 				compartidaConIds: datosFormulario.compartidaConId ? [datosFormulario.compartidaConId] : [],
+				proxectoId: datosFormulario.proxectoId || null,
 				fechaCreacion: new Date().toISOString(),
 			})
 		);
@@ -75,6 +79,7 @@ const FormularioTarea = () => {
 			fechaVencimiento: '',
 			asignadaAId: usuarioActualId,
 			compartidaConId: '',
+			proxectoId: '',
 		});
 
 		// Contraer el formulario
@@ -189,6 +194,25 @@ const FormularioTarea = () => {
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'
 									/>
 								</div>
+							</div>
+
+							<div>
+								<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+									<i className='fa-solid fa-folder-tree mr-2 text-indigo-500 dark:text-indigo-400'></i>
+									{t.taskProject}
+								</label>
+								<select
+									name='proxectoId'
+									value={datosFormulario.proxectoId}
+									onChange={manejarCambio}
+									className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+									<option value=''>{t.noneProject}</option>
+									{proxectos.map((p) => (
+										<option key={p.id} value={p.id}>
+											{p.nome}
+										</option>
+									))}
+								</select>
 							</div>
 
 							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>

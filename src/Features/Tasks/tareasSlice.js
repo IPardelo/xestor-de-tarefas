@@ -89,6 +89,7 @@ export const tareasSlice = createSlice({
 				compartidaConIds: Array.isArray(action.payload.compartidaConIds)
 					? action.payload.compartidaConIds
 					: [],
+				proxectoId: action.payload.proxectoId || null,
 				fechaVencimiento: ajustarAZonaHorariaMexico(action.payload.fechaVencimiento),
 				fechaCreacion: new Date().toISOString(),
 			});
@@ -137,6 +138,10 @@ export const tareasSlice = createSlice({
 					compartidaConIds: Array.isArray(cambios.compartidaConIds)
 						? cambios.compartidaConIds
 						: tareaExistente.compartidaConIds,
+					proxectoId:
+						cambios.proxectoId !== undefined
+							? cambios.proxectoId || null
+							: tareaExistente.proxectoId,
 					fechaVencimiento: ajustarAZonaHorariaMexico(cambios.fechaVencimiento),
 				});
 				localStorage.setItem('tareas', JSON.stringify(state.tareas));
