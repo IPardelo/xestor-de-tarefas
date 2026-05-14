@@ -25,7 +25,7 @@
         "id": "VPFq6_4U-kNtCuYfhe1EW",
         "titulo": "TAREFA 1",
         "descripcion": "Descripción da tarefa 1",
-        "completada": false,
+        "completada": true,
         "prioridad": "media",
         "fechaVencimiento": "2026-04-18T18:00:00.000Z",
         "propietariaId": "ismael",

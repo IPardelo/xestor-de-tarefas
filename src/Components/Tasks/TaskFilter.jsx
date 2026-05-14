@@ -143,24 +143,26 @@ const FiltroTareas = () => {
 						)}
 					</div>
 
-					{/* Versión escritorio - Pestañas horizontales */}
-					<div className='hidden md:flex items-center space-x-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto'>
+					{/* Versión escritorio — dúas filas (3 columnas) para que quepan sen scroll horizontal */}
+					<div className='hidden md:grid md:grid-cols-3 gap-2'>
 						{opcionesFiltro.map((opcion) => (
 							<motion.button
 								key={opcion.id}
 								onClick={() => manejarCambioFiltro(opcion.id)}
-								className={`px-4 py-3 inline-flex items-center gap-2 whitespace-nowrap font-medium transition-colors border-b-2 -mb-px
+								className={`px-2 sm:px-3 py-2.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm font-medium transition-colors rounded-lg border-2
 									${
 										filtroActivo === opcion.id
-											? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-											: 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+											? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-900/25 text-indigo-600 dark:text-indigo-400'
+											: 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/50'
 									}`}
 								whileHover={{ y: -2 }}
 								whileTap={{ y: 0 }}>
-								<i className={`fa-solid ${opcion.icon}`}></i>
-								<span>{opcion.label}</span>
+								<span className='inline-flex items-center gap-2'>
+									<i className={`fa-solid ${opcion.icon} shrink-0`}></i>
+									<span className='leading-tight'>{opcion.label}</span>
+								</span>
 								<motion.span
-									className='ml-1.5 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300'
+									className='inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300'
 									initial={{ scale: 0 }}
 									animate={{ scale: 1 }}
 									transition={{ type: 'spring', stiffness: 500, damping: 10 }}>

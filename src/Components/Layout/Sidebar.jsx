@@ -201,7 +201,7 @@ const ContenidoBarraLateral = ({
 						</select>
 					</div>
 				</div>
-				<div className='mt-2 flex items-start justify-center gap-2'>
+				<div className='mt-2 flex items-center justify-center gap-2'>
 					<p className='text-sm text-gray-500 dark:text-gray-400 flex-1 min-w-0 text-center'>{benvidaLateral}</p>
 					<button
 						type='button'
