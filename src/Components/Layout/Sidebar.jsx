@@ -7,6 +7,7 @@ import { translations } from '@/i18n/translations';
 import {
 	cambiarUsuario,
 	seleccionarUsuarioActual,
+	seleccionarUsuarioActualAdmin,
 	seleccionarUsuarioActualId,
 	seleccionarUsuarios,
 } from '@/Features/Users/usuariosSlice';
@@ -154,17 +155,21 @@ const ContenidoBarraLateral = ({
 	onCambiarVista,
 	onDespuesDeNavegar,
 }) => {
-	const [opcionsXeraisAberto, setOpcionsXeraisAberto] = useState(
-		() => vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais'
-	);
+	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const [opcionsXeraisAberto, setOpcionsXeraisAberto] = useState(false);
 	const opcionsFilhoActivo =
-		vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais';
+		esAdmin &&
+		(vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais');
 
 	useEffect(() => {
+		if (!esAdmin) {
+			setOpcionsXeraisAberto(false);
+			return;
+		}
 		if (vistaActual === 'opcionesUsuarios' || vistaActual === 'opcionesGlobais') {
 			setOpcionsXeraisAberto(true);
 		}
-	}, [vistaActual]);
+	}, [vistaActual, esAdmin]);
 
 	return (
 		<div className='space-y-8 w-fit'>
@@ -258,66 +263,68 @@ const ContenidoBarraLateral = ({
 							</button>
 						</motion.li>
 					))}
-					<motion.li whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 10 }}>
-						<button
-							type='button'
-							onClick={() => setOpcionsXeraisAberto((v) => !v)}
-							className={`w-full flex items-center gap-2 px-4 py-3 rounded-xl transition-all cursor-pointer ${
-								opcionsFilhoActivo
-									? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium shadow-md'
-									: 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
-							}`}
-							aria-expanded={opcionsXeraisAberto}
-							aria-controls='submenu-opcions-xerais'>
-							<i
-								className={`fa-solid fa-sliders text-lg ${
-									opcionsFilhoActivo ? 'text-white' : 'text-indigo-500 dark:text-indigo-400'
+					{esAdmin && (
+						<motion.li whileHover={{ x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 10 }}>
+							<button
+								type='button'
+								onClick={() => setOpcionsXeraisAberto((v) => !v)}
+								className={`w-full flex items-center gap-2 px-4 py-3 rounded-xl transition-all cursor-pointer ${
+									opcionsFilhoActivo
+										? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium shadow-md'
+										: 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700'
 								}`}
-							/>
-							<span className='ml-2 flex-1 text-left'>{t.optionsGeneralNav}</span>
-							<i
-								className={`fa-solid text-xs shrink-0 ${
-									opcionsXeraisAberto ? 'fa-chevron-up' : 'fa-chevron-down'
-								} ${opcionsFilhoActivo ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}
-							/>
-						</button>
-						{opcionsXeraisAberto && (
-							<ul
-								id='submenu-opcions-xerais'
-								className='mt-1 ml-2 pl-3 border-l-2 border-indigo-200 dark:border-indigo-600 space-y-0.5'>
-								<li>
-									<button
-										type='button'
-										onClick={() => {
-											onCambiarVista('opcionesUsuarios');
-											onDespuesDeNavegar?.();
-										}}
-										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-											vistaActual === 'opcionesUsuarios'
-												? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
-												: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-										}`}>
-										{t.optionsUserCreationNav}
-									</button>
-								</li>
-								<li>
-									<button
-										type='button'
-										onClick={() => {
-											onCambiarVista('opcionesGlobais');
-											onDespuesDeNavegar?.();
-										}}
-										className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-											vistaActual === 'opcionesGlobais'
-												? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
-												: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-										}`}>
-										{t.optionsGlobalNav}
-									</button>
-								</li>
-							</ul>
-						)}
-					</motion.li>
+								aria-expanded={opcionsXeraisAberto}
+								aria-controls='submenu-opcions-xerais'>
+								<i
+									className={`fa-solid fa-sliders text-lg ${
+										opcionsFilhoActivo ? 'text-white' : 'text-indigo-500 dark:text-indigo-400'
+									}`}
+								/>
+								<span className='ml-2 flex-1 text-left'>{t.optionsGeneralNav}</span>
+								<i
+									className={`fa-solid text-xs shrink-0 ${
+										opcionsXeraisAberto ? 'fa-chevron-up' : 'fa-chevron-down'
+									} ${opcionsFilhoActivo ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}
+								/>
+							</button>
+							{opcionsXeraisAberto && (
+								<ul
+									id='submenu-opcions-xerais'
+									className='mt-1 ml-2 pl-3 border-l-2 border-indigo-200 dark:border-indigo-600 space-y-0.5'>
+									<li>
+										<button
+											type='button'
+											onClick={() => {
+												onCambiarVista('opcionesUsuarios');
+												onDespuesDeNavegar?.();
+											}}
+											className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+												vistaActual === 'opcionesUsuarios'
+													? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
+													: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+											}`}>
+											{t.optionsUserCreationNav}
+										</button>
+									</li>
+									<li>
+										<button
+											type='button'
+											onClick={() => {
+												onCambiarVista('opcionesGlobais');
+												onDespuesDeNavegar?.();
+											}}
+											className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+												vistaActual === 'opcionesGlobais'
+													? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 font-medium'
+													: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+											}`}>
+											{t.optionsGlobalNav}
+										</button>
+									</li>
+								</ul>
+							)}
+						</motion.li>
+					)}
 				</ul>
 			</nav>
 
