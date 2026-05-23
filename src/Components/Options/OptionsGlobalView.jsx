@@ -111,11 +111,13 @@ export default function OptionsGlobalView() {
 								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 							/>
 						</div>
-						<button
-							type='submit'
-							className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-							{t.saveKdbxConfig}
-						</button>
+						<div className='flex justify-end pt-1'>
+							<button
+								type='submit'
+								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+								{t.saveKdbxConfig}
+							</button>
+						</div>
 					</form>
 
 					<div className='mt-8 pt-6 border-t border-gray-200 dark:border-gray-700'>
@@ -137,11 +139,13 @@ export default function OptionsGlobalView() {
 							</div>
 							{appDataPathMsg && <p className='text-sm text-green-600 dark:text-green-400'>{appDataPathMsg}</p>}
 							{appDataPathError && <p className='text-sm text-red-500'>{appDataPathError}</p>}
-							<button
-								type='submit'
-								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-								{t.saveAppDataPath}
-							</button>
+							<div className='flex justify-end pt-1'>
+								<button
+									type='submit'
+									className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+									{t.saveAppDataPath}
+								</button>
+							</div>
 						</form>
 					</div>
 				</div>
