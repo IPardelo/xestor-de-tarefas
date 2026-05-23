@@ -16,6 +16,9 @@ export default function OptionsGlobalView() {
 		filePath: 'kdbx\\Database.kdbx',
 		password: '1234567890',
 	});
+	const [appDataPathForm, setAppDataPathForm] = useState('');
+	const [appDataPathMsg, setAppDataPathMsg] = useState('');
+	const [appDataPathError, setAppDataPathError] = useState('');
 
 	useEffect(() => {
 		setKdbxForm({
@@ -32,6 +35,40 @@ export default function OptionsGlobalView() {
 	const onSubmitKdbxConfig = (e) => {
 		e.preventDefault();
 		dispatch(actualizarConfiguracionKdbx(kdbxForm));
+	};
+
+	useEffect(() => {
+		if (!eAdmin) return;
+		const cargarRutaDatos = async () => {
+			try {
+				const resp = await fetch('/api/app-data-config');
+				const data = await resp.json();
+				if (!resp.ok) throw new Error(data?.error || t.appDataPathReadError);
+				setAppDataPathForm(data?.appDataPath || '');
+			} catch (error) {
+				setAppDataPathError(error?.message || t.appDataPathReadError);
+			}
+		};
+		cargarRutaDatos();
+	}, [eAdmin, t.appDataPathReadError]);
+
+	const onSubmitAppDataPath = async (e) => {
+		e.preventDefault();
+		setAppDataPathMsg('');
+		setAppDataPathError('');
+		try {
+			const resp = await fetch('/api/app-data-config', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ appDataPath: appDataPathForm }),
+			});
+			const data = await resp.json();
+			if (!resp.ok) throw new Error(data?.error || t.appDataPathSaveError);
+			setAppDataPathForm(data?.appDataPath || appDataPathForm);
+			setAppDataPathMsg(t.appDataPathSavedOk);
+		} catch (error) {
+			setAppDataPathError(error?.message || t.appDataPathSaveError);
+		}
 	};
 
 	return (
@@ -80,6 +117,33 @@ export default function OptionsGlobalView() {
 							{t.saveKdbxConfig}
 						</button>
 					</form>
+
+					<div className='mt-8 pt-6 border-t border-gray-200 dark:border-gray-700'>
+						<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.appDataPathTitle}</h3>
+						<form onSubmit={onSubmitAppDataPath} className='space-y-3'>
+							<div>
+								<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+									{t.appDataPathLabel}
+								</label>
+								<input
+									type='text'
+									name='appDataPath'
+									value={appDataPathForm}
+									onChange={(e) => setAppDataPathForm(e.target.value)}
+									placeholder={t.appDataPathLabel}
+									required
+									className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+								/>
+							</div>
+							{appDataPathMsg && <p className='text-sm text-green-600 dark:text-green-400'>{appDataPathMsg}</p>}
+							{appDataPathError && <p className='text-sm text-red-500'>{appDataPathError}</p>}
+							<button
+								type='submit'
+								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
+								{t.saveAppDataPath}
+							</button>
+						</form>
+					</div>
 				</div>
 			)}
 		</div>

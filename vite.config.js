@@ -8,14 +8,67 @@ import kdbxweb from 'kdbxweb'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const dataFilePath = resolve(__dirname, 'app-data.json')
+const appConfigPath = resolve(__dirname, 'app-config.json')
+
+const obterRutaDatosActual = async () => {
+  try {
+    const configRaw = await readFile(appConfigPath, 'utf-8')
+    const config = JSON.parse(configRaw || '{}')
+    const ruta = typeof config?.appDataPath === 'string' ? config.appDataPath.trim() : ''
+    if (ruta) return ruta
+    await writeFile(appConfigPath, JSON.stringify({ appDataPath: dataFilePath }, null, 2), 'utf-8')
+    return dataFilePath
+  } catch {
+    await writeFile(appConfigPath, JSON.stringify({ appDataPath: dataFilePath }, null, 2), 'utf-8')
+    return dataFilePath
+  }
+}
 
 const appDataApiPlugin = () => ({
   name: 'app-data-api',
   configureServer(server) {
+    server.middlewares.use('/api/app-data-config', async (req, res) => {
+      if (req.method === 'GET') {
+        const appDataPath = await obterRutaDatosActual()
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ appDataPath }))
+        return
+      }
+
+      if (req.method === 'POST') {
+        let body = ''
+        req.on('data', (chunk) => {
+          body += chunk
+        })
+        req.on('end', async () => {
+          try {
+            const parsed = JSON.parse(body || '{}')
+            const appDataPath = typeof parsed?.appDataPath === 'string' ? parsed.appDataPath.trim() : ''
+            if (!appDataPath) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: 'appDataPath is required' }))
+              return
+            }
+            await writeFile(appConfigPath, JSON.stringify({ appDataPath }, null, 2), 'utf-8')
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: true, appDataPath }))
+          } catch {
+            res.statusCode = 400
+            res.end(JSON.stringify({ error: 'Invalid JSON body' }))
+          }
+        })
+        return
+      }
+
+      res.statusCode = 405
+      res.end(JSON.stringify({ error: 'Method not allowed' }))
+    })
+
     server.middlewares.use('/api/app-data', async (req, res) => {
+      const currentDataFilePath = await obterRutaDatosActual()
       if (req.method === 'GET') {
         try {
-          const content = await readFile(dataFilePath, 'utf-8')
+          const content = await readFile(currentDataFilePath, 'utf-8')
           res.setHeader('Content-Type', 'application/json')
           res.end(content)
         } catch {
@@ -33,7 +86,7 @@ const appDataApiPlugin = () => ({
         req.on('end', async () => {
           try {
             const parsed = JSON.parse(body || '{}')
-            await writeFile(dataFilePath, JSON.stringify(parsed, null, 2), 'utf-8')
+            await writeFile(currentDataFilePath, JSON.stringify(parsed, null, 2), 'utf-8')
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ ok: true }))
           } catch {
@@ -104,7 +157,8 @@ const kdbxApiPlugin = () => ({
             return
           }
 
-          const appDataRaw = await readFile(dataFilePath, 'utf-8')
+          const currentDataFilePath = await obterRutaDatosActual()
+          const appDataRaw = await readFile(currentDataFilePath, 'utf-8')
           const appData = JSON.parse(appDataRaw || '{}')
           const usuarioActualId = appData?.usuarios?.usuarioActualId
           const usuarioActual = (appData?.usuarios?.lista || []).find((u) => u.id === usuarioActualId)
