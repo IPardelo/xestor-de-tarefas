@@ -103,7 +103,13 @@ export default function CalendarView() {
 
 	if (selectedMonth === null) {
 		return (
-			<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
+			<motion.div
+				key={`year-${selectedYear}`}
+				initial={{ opacity: 0, y: 15 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -10 }}
+				transition={{ duration: 0.25 }}
+				className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
 				<div className='flex items-center justify-between mb-6'>
 					<h2 className='text-xl font-semibold text-gray-800 dark:text-white'>{t.calendarYearTitle}</h2>
 					<div className='flex items-center gap-2'>
@@ -165,7 +171,7 @@ export default function CalendarView() {
 						);
 					})}
 				</div>
-			</div>
+			</motion.div>
 		);
 	}
 
@@ -177,7 +183,13 @@ export default function CalendarView() {
 	const monthGrid = getMonthGrid(selectedYear, selectedMonth, weekStart);
 
 	return (
-		<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
+		<motion.div
+			key={`month-${selectedYear}-${selectedMonth}`}
+			initial={{ opacity: 0, y: 15 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -10 }}
+			transition={{ duration: 0.25 }}
+			className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
 			<div className='flex flex-wrap justify-between items-center gap-3 mb-4'>
 				<div className='flex items-center gap-2'>
 					<button
@@ -268,6 +280,6 @@ export default function CalendarView() {
 					</ul>
 				)}
 			</div>
-		</div>
+		</motion.div>
 	);
 }

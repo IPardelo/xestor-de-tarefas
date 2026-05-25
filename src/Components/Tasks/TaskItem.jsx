@@ -25,6 +25,7 @@ const ElementoTarea = ({ tarea }) => {
 	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
 	const usuarios = useSelector(seleccionarUsuarios);
 	const proxectos = useSelector(seleccionarProxectos);
+	const outrosUsuarios = usuarios.filter((u) => u.id !== usuarioActualId);
 	const t = translations[idioma] || translations.gl;
 	const [mostrarAcciones, setMostrarAcciones] = useState(false);
 	const [estaEditando, setEstaEditando] = useState(false);
@@ -182,6 +183,46 @@ const ElementoTarea = ({ tarea }) => {
 							/>
 						</div>
 					</div>
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+						<div>
+							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+								<i className='fa-solid fa-user-check mr-2 text-indigo-500 dark:text-indigo-400'></i>
+								{t.assignTo}
+							</label>
+							<select
+								value={tareaEditada.asignadaAId || usuarioActualId}
+								onChange={(e) => setTareaEditada({ ...tareaEditada, asignadaAId: e.target.value })}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+								{usuarios.map((usuario) => (
+									<option key={usuario.id} value={usuario.id}>
+										{usuario.nome}
+									</option>
+								))}
+							</select>
+						</div>
+						<div>
+							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+								<i className='fa-solid fa-users mr-2 text-indigo-500 dark:text-indigo-400'></i>
+								{t.sharedWith}
+							</label>
+							<select
+								value={tareaEditada.compartidaConIds?.[0] || ''}
+								onChange={(e) =>
+									setTareaEditada({
+										...tareaEditada,
+										compartidaConIds: e.target.value ? [e.target.value] : [],
+									})
+								}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+								<option value=''>{t.none}</option>
+								{outrosUsuarios.map((usuario) => (
+									<option key={usuario.id} value={usuario.id}>
+										{usuario.nome}
+									</option>
+								))}
+							</select>
+						</div>
+					</div>
 					<div className='flex justify-end gap-2 pt-2'>
 						<motion.button
 							type='button'
@@ -295,7 +336,12 @@ const ElementoTarea = ({ tarea }) => {
 						whileHover={{ scale: 1.1 }}
 						whileTap={{ scale: 0.9 }}
 						onClick={() => {
-							setTareaEditada({ ...tarea, proxectoId: tarea.proxectoId || '' });
+							setTareaEditada({
+								...tarea,
+								proxectoId: tarea.proxectoId || '',
+								asignadaAId: tarea.asignadaAId || usuarioActualId,
+								compartidaConIds: Array.isArray(tarea.compartidaConIds) ? tarea.compartidaConIds : [],
+							});
 							setEstaEditando(true);
 						}}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'
