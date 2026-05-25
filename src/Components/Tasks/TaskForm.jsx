@@ -22,11 +22,13 @@ const FormularioTarea = () => {
 	const usuarios = useSelector(seleccionarUsuarios);
 	const outrosUsuarios = useSelector(seleccionarUsuariosExceptoActual);
 	const proxectos = useSelector(seleccionarProxectos);
+	const podeCompartir = usuarios.length > 1;
 	const t = translations[idioma] || translations.gl;
 	const [expandido, setExpandido] = useState(false);
 	const [datosFormulario, setDatosFormulario] = useState({
 		titulo: '',
 		descripcion: '',
+		tipo: 'tarea',
 		prioridad: 'media',
 		fechaVencimiento: '',
 		asignadaAId: usuarioActualId,
@@ -51,8 +53,16 @@ const FormularioTarea = () => {
 	const manejarEnvio = (e) => {
 		e.preventDefault();
 
-		// Validar que al menos haya un título
-		if (!datosFormulario.titulo.trim()) return;
+		// Validar campos obligatorios (excepto fecha límite y compartir con)
+		if (
+			!datosFormulario.titulo.trim() ||
+			!datosFormulario.descripcion.trim() ||
+			!datosFormulario.tipo ||
+			!datosFormulario.prioridad ||
+			!datosFormulario.asignadaAId ||
+			!datosFormulario.proxectoId
+		)
+			return;
 
 		// Crear y despachar la nueva tarea
 		dispatch(
@@ -60,6 +70,7 @@ const FormularioTarea = () => {
 				id: nanoid(),
 				titulo: datosFormulario.titulo.trim(),
 				descripcion: datosFormulario.descripcion.trim(),
+				tipo: datosFormulario.tipo || 'tarea',
 				completada: false,
 				prioridad: datosFormulario.prioridad,
 				fechaVencimiento: datosFormulario.fechaVencimiento || null,
@@ -75,6 +86,7 @@ const FormularioTarea = () => {
 		setDatosFormulario({
 			titulo: '',
 			descripcion: '',
+			tipo: 'tarea',
 			prioridad: 'media',
 			fechaVencimiento: '',
 			asignadaAId: usuarioActualId,
@@ -117,6 +129,7 @@ const FormularioTarea = () => {
 						onChange={manejarCambio}
 						onClick={() => setExpandido(true)}
 						placeholder={t.addNewTask}
+						required
 						className='flex-1 bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-indigo-500 dark:focus:border-indigo-400 py-2 outline-none text-gray-800 dark:text-white transition-colors placeholder-gray-400 dark:placeholder-gray-500 min-w-0'
 						autoComplete='off'
 					/>
@@ -140,11 +153,28 @@ const FormularioTarea = () => {
 									value={datosFormulario.descripcion}
 									onChange={manejarCambio}
 									placeholder={t.addDescription}
+									required
 									rows='2'
 									className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg resize-none outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white'></textarea>
 							</div>
 
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+							<div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+								<div>
+									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+										<i className='fa-solid fa-layer-group mr-2 text-indigo-500 dark:text-indigo-400'></i>
+										{t.taskType}
+									</label>
+									<select
+										name='tipo'
+										value={datosFormulario.tipo}
+										onChange={manejarCambio}
+										required
+										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+										<option value='tarea'>{t.taskTypeTask}</option>
+										<option value='reunion'>{t.taskTypeMeeting}</option>
+									</select>
+								</div>
+
 								<div>
 									<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 										<i className='fa-solid fa-flag mr-2 text-indigo-500 dark:text-indigo-400'></i>
@@ -205,8 +235,11 @@ const FormularioTarea = () => {
 									name='proxectoId'
 									value={datosFormulario.proxectoId}
 									onChange={manejarCambio}
+									required
 									className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
-									<option value=''>{t.noneProject}</option>
+									<option value='' disabled>
+										{t.noneProject}
+									</option>
 									{proxectos.map((p) => (
 										<option key={p.id} value={p.id}>
 											{p.nome}
@@ -225,6 +258,7 @@ const FormularioTarea = () => {
 										name='asignadaAId'
 										value={datosFormulario.asignadaAId}
 										onChange={manejarCambio}
+										required
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
 										{usuarios.map((usuario) => (
 											<option key={usuario.id} value={usuario.id}>
@@ -243,6 +277,7 @@ const FormularioTarea = () => {
 										name='compartidaConId'
 										value={datosFormulario.compartidaConId}
 										onChange={manejarCambio}
+										disabled={!podeCompartir}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
 										<option value=''>{t.none}</option>
 										{outrosUsuarios.map((usuario) => (
