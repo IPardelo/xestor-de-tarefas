@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import {
+	actualizarUsuario,
 	eliminarUsuario,
 	rexistrarUsuario,
 	seleccionarUsuarioActualAdmin,
@@ -27,6 +28,15 @@ export default function OptionsUsersView() {
 		imaxePerfil: '',
 		admin: '0',
 	});
+	const [usuarioEditandoId, setUsuarioEditandoId] = useState('');
+	const [formEditar, setFormEditar] = useState({
+		nome: '',
+		idiomaPredeterminado: 'gl',
+		temaPredeterminado: 'claro',
+		xenero: 'F',
+		imaxePerfil: '',
+		admin: '0',
+	});
 
 	const onNovoUsuarioChange = (e) => {
 		const { name, value } = e.target;
@@ -45,6 +55,36 @@ export default function OptionsUsersView() {
 			imaxePerfil: '',
 			admin: '0',
 		});
+	};
+
+	const iniciarEdicion = (usuario) => {
+		setUsuarioEditandoId(usuario.id);
+		setFormEditar({
+			nome: usuario.nome || '',
+			idiomaPredeterminado: usuario.idiomaPredeterminado || 'gl',
+			temaPredeterminado: usuario.temaPredeterminado || 'claro',
+			xenero: usuario.xenero || 'F',
+			imaxePerfil: usuario.imaxePerfil || '',
+			admin: usuario.admin || '0',
+		});
+	};
+
+	const cancelarEdicion = () => {
+		setUsuarioEditandoId('');
+		setFormEditar({
+			nome: '',
+			idiomaPredeterminado: 'gl',
+			temaPredeterminado: 'claro',
+			xenero: 'F',
+			imaxePerfil: '',
+			admin: '0',
+		});
+	};
+
+	const gardarEdicion = (e, id) => {
+		e.preventDefault();
+		dispatch(actualizarUsuario({ id, ...formEditar }));
+		cancelarEdicion();
 	};
 
 	return (
@@ -138,20 +178,116 @@ export default function OptionsUsersView() {
 						{usuarios.map((usuario) => (
 							<div
 								key={usuario.id}
-								className='flex items-center justify-between gap-3 bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2'>
-								<div className='min-w-0'>
-									<p className='text-sm font-medium text-gray-800 dark:text-white truncate'>{usuario.nome}</p>
-									<p className='text-xs text-gray-500 dark:text-gray-400'>
-										{usuario.id} - {t.adminLabel}: {usuario.admin === '1' ? t.adminYes : t.adminNo}
-									</p>
+								className='group relative bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2'>
+								<div
+									className={`absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-1 ${
+										usuarioEditandoId === usuario.id ? 'hidden' : ''
+									}`}>
+									<button
+										type='button'
+										onClick={() => iniciarEdicion(usuario)}
+										className='w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 text-gray-500 dark:text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'
+										aria-label={t.editUser}
+										title={t.editUser}>
+										<i className='fa-solid fa-pen-to-square'></i>
+									</button>
+									<button
+										type='button'
+										disabled={usuario.id === 'ismael' || usuario.id === usuarioActual?.id}
+										onClick={() => dispatch(eliminarUsuario(usuario.id))}
+										className='w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-20 disabled:cursor-not-allowed'
+										aria-label={t.deleteUser}
+										title={t.deleteUser}>
+										<i className='fa-solid fa-trash-can'></i>
+									</button>
 								</div>
-								<button
-									type='button'
-									disabled={usuario.id === 'ismael' || usuario.id === usuarioActual?.id}
-									onClick={() => dispatch(eliminarUsuario(usuario.id))}
-									className='px-3 py-1.5 text-xs rounded-md bg-red-500 text-white disabled:bg-gray-300 disabled:text-gray-600 dark:disabled:bg-gray-600 dark:disabled:text-gray-300'>
-									{t.deleteUser}
-								</button>
+								{usuarioEditandoId === usuario.id ? (
+									<form onSubmit={(e) => gardarEdicion(e, usuario.id)} className='space-y-2 pr-10'>
+										<input
+											type='text'
+											value={formEditar.nome}
+											onChange={(e) => setFormEditar((prev) => ({ ...prev, nome: e.target.value }))}
+											placeholder={t.userName}
+											required
+											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+										/>
+										<div className='grid grid-cols-1 sm:grid-cols-4 gap-2'>
+											<select
+												value={formEditar.idiomaPredeterminado}
+												onChange={(e) =>
+													setFormEditar((prev) => ({
+														...prev,
+														idiomaPredeterminado: e.target.value,
+													}))
+												}
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+												<option value='gl'>{languageNames.gl}</option>
+												<option value='es'>{languageNames.es}</option>
+												<option value='en'>{languageNames.en}</option>
+											</select>
+											<select
+												value={formEditar.temaPredeterminado}
+												onChange={(e) =>
+													setFormEditar((prev) => ({
+														...prev,
+														temaPredeterminado: e.target.value,
+													}))
+												}
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+												<option value='claro'>{t.themeLightLabel}</option>
+												<option value='oscuro'>{t.themeDarkLabel}</option>
+											</select>
+											<select
+												value={formEditar.xenero}
+												onChange={(e) => setFormEditar((prev) => ({ ...prev, xenero: e.target.value }))}
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'>
+												<option value='M'>{t.genderMasculine}</option>
+												<option value='F'>{t.genderFeminine}</option>
+											</select>
+											<select
+												value={formEditar.admin}
+												onChange={(e) => setFormEditar((prev) => ({ ...prev, admin: e.target.value }))}
+												disabled={usuario.id === 'ismael'}
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white disabled:opacity-60'>
+												<option value='0'>
+													{t.adminLabel}: {t.adminNo}
+												</option>
+												<option value='1'>
+													{t.adminLabel}: {t.adminYes}
+												</option>
+											</select>
+										</div>
+										<input
+											type='text'
+											value={formEditar.imaxePerfil}
+											onChange={(e) =>
+												setFormEditar((prev) => ({ ...prev, imaxePerfil: e.target.value }))
+											}
+											placeholder={t.profileImage}
+											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+										/>
+										<div className='flex justify-end gap-2'>
+											<button
+												type='button'
+												onClick={cancelarEdicion}
+												className='px-3 py-1.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'>
+												{t.cancel}
+											</button>
+											<button
+												type='submit'
+												className='px-3 py-1.5 text-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-sm hover:shadow transition-shadow'>
+												{t.saveChanges}
+											</button>
+										</div>
+									</form>
+								) : (
+									<div className='min-w-0 pr-10'>
+										<p className='text-sm font-medium text-gray-800 dark:text-white truncate'>{usuario.nome}</p>
+										<p className='text-xs text-gray-500 dark:text-gray-400'>
+											{usuario.id} - {t.adminLabel}: {usuario.admin === '1' ? t.adminYes : t.adminNo}
+										</p>
+									</div>
+								)}
 							</div>
 						))}
 					</div>

@@ -124,6 +124,27 @@ const usuariosSlice = createSlice({
 			);
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
+		actualizarUsuario: (state, action) => {
+			const actual = state.lista.find((u) => u.id === state.usuarioActualId);
+			if (!actual || actual.admin !== '1') return;
+			const { id, ...cambios } = action.payload || {};
+			if (!id) return;
+			const indice = state.lista.findIndex((u) => u.id === id);
+			if (indice === -1) return;
+			const usuarioActualizado = {
+				...state.lista[indice],
+				...cambios,
+				id,
+				nome: (cambios.nome ?? state.lista[indice].nome ?? '').trim(),
+				imaxePerfil:
+					typeof cambios.imaxePerfil === 'string'
+						? cambios.imaxePerfil.trim()
+						: state.lista[indice].imaxePerfil || '',
+			};
+			if (!usuarioActualizado.nome) return;
+			state.lista[indice] = normalizarUsuario(usuarioActualizado);
+			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
+		},
 		eliminarUsuario: (state, action) => {
 			const actual = state.lista.find((u) => u.id === state.usuarioActualId);
 			if (!actual || actual.admin !== '1') return;
@@ -141,6 +162,7 @@ export const {
 	establecerXeneroUsuarioActual,
 	actualizarPreferenciasUsuarioActual,
 	rexistrarUsuario,
+	actualizarUsuario,
 	eliminarUsuario,
 } = usuariosSlice.actions;
 export const seleccionarUsuarios = (state) => state.usuarios.lista;
