@@ -21,6 +21,7 @@
     "@mui/material": "^6.4.7",
     "@reduxjs/toolkit": "2.6.1",
     "@tailwindcss/vite": "4.0.13",
+    "firebase": "^12.12.1",
     "framer-motion": "^12.5.0",
     "kdbxweb": "^2.1.1",
     "prop-types": "15.8.1",
