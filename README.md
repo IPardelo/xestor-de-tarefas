@@ -1,124 +1,108 @@
-# XestorDeTarefas - Xestión de tarefas
+# XestorDeTarefas
 
-XestorDeTarefas é unha aplicación moderna de xestión de tarefas construída con React, Redux, Vite e TailwindCSS. Permite ás persoas usuarias crear, organizar e facer seguimento das súas tarefas dun xeito eficiente cunha interface atractiva e doada de usar.
+Aplicación de xestión persoal de tarefas e proxectos feita con React + Redux Toolkit + Vite.
+
+Inclúe multiusuario local, proxectos, calendario, internacionalización (`gl`/`es`/`en`), tema claro/escuro e lectura de credenciais KDBX de proxectos.
 
 ![XestorDeTarefas Screenshot](public/Images/Interfaz.png)
 
-## 🚀 Características
+## Características actuais
 
-- ✅ Crear, editar e eliminar tarefas
-- 📋 Marcar tarefas como completadas
-- 🔍 Filtrar tarefas por estado (todas, activas, completadas)
-- 🌓 Modo escuro/claro
-- 📱 Deseño responsive para dispositivos móbiles e de escritorio
-- 💾 Almacenamento local (`localStorage`) para persistencia de datos
-- ✨ Animacións fluidas con Framer Motion
-- 🎨 Interface de usuario moderna con TailwindCSS e MUI
+- Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
+- Campos de tarefa: título, descrición, tipo (`Tarefa` ou `Reunión`), prioridade, data límite, proxecto, asignación e compartición.
+- Regras de formulario: na creación de tarefas todos os campos son obrigatorios agás data límite e compartir con.
+- Xestión de usuarios en local (con rol admin) e cambio de usuario na barra lateral.
+- Xestión de proxectos con datos de cliente.
+- Vista de calendario anual/mensual.
+- Integración KDBX (lectura de entradas por grupo/proxecto, só admin).
+- Persistencia local e en ficheiro de datos mediante endpoints locais de Vite.
 
-## 📋 Requisitos previos
+## Requisitos
 
-- Node.js (v18.0.0 ou superior)
-- npm, yarn ou pnpm
+- Node.js 18+ (recomendado 20+)
+- npm
+- Windows, Linux ou macOS
 
-## 🛠️ Instalación
+## Arranque en desenvolvemento
 
-1. Clonar o repositorio:
+1) Instalar dependencias:
+
 ```bash
-git clone https://github.com/IPardelo/xestor-de-tarefas.git
-cd XestorDeTarefas
-```
-
-2. Instalar dependencias:
-```bash
-# Con npm
 npm install
-
-# Con pnpm
-pnpm install
 ```
 
-3. Iniciar o servidor de desenvolvemento:
+2) Iniciar aplicación:
+
 ```bash
-# Con npm
 npm run dev
-
-# Con pnpm
-pnpm run dev
 ```
 
-4. Abrir [http://localhost:5173](http://localhost:5173) no navegador.
+3) Abrir no navegador:
 
-## 🏗️ Estrutura do proxecto
+- [http://localhost:5173](http://localhost:5173)
 
+### Arranque rápido en Windows
+
+Tamén podes usar o script `iniciar-app.bat` na raíz do proxecto, que:
+
+- abre o servidor Vite nunha consola nova,
+- e abre automaticamente o navegador.
+
+## Scripts dispoñibles
+
+- `npm run dev` - servidor de desenvolvemento.
+- `npm run build` - build de produción.
+- `npm run preview` - previsualización da build.
+- `npm run lint` - lint do código.
+
+## Configuración de datos locais
+
+- `app-config.json`: garda a ruta do ficheiro de datos.
+- `app-data.json`: almacena estado persistido da app (ignorado en git).
+- `vite.config.js` expón endpoints locais:
+  - `GET/POST /api/app-data-config`
+  - `GET/POST /api/app-data`
+  - `POST /api/kdbx/read`
+
+## KDBX (KeePass)
+
+- A lectura de KDBX está dispoñible desde Proxectos e restrinxida a usuario admin.
+- Requírese ruta e contrasinal válidas.
+- A base KDBX con Argon2 está soportada na execución local do proxecto.
+
+## Despregamento
+
+Para funcionalidade completa (incluíndo KDBX e persistencia por ficheiro), precisa un entorno que execute Node.js.
+
+## Estrutura xeral
+
+```text
+src/
+  App/                # Store e persistencia
+  Components/         # UI por áreas (Tasks, Projects, Layout, Options...)
+  Features/           # Slices Redux (Tasks, Users, Projects, Theme, Language)
+  i18n/               # Traducións
+vite.config.js        # Configuración Vite + endpoints locais
 ```
-xestordetarefas/
-├── public/                 # Arquivos estáticos
-├── src/                    # Código fonte
-│   ├── App/                # Configuración global da aplicación
-│   │   └── store.js        # Configuración da Redux store
-│   ├── Assets/             # Recursos (imaxes, iconas, etc.)
-│   ├── Components/         # Compoñentes reutilizables
-│   │   ├── Layout/         # Compoñentes de estrutura
-│   │   └── Tasks/          # Compoñentes específicos de tarefas
-│   ├── Features/           # Características cos seus slices de Redux
-│   │   ├── Tasks/          # Xestión de tarefas
-│   │   └── Theme/          # Xestión do tema
-│   ├── Styles/             # Estilos globais
-│   ├── App.jsx             # Compoñente principal
-│   ├── index.css           # Estilos globais
-│   └── main.jsx            # Punto de entrada
-├── index.html              # Plantilla HTML
-├── vite.config.js          # Configuración de Vite
-├── package.json            # Dependencias e scripts
-└── README.md               # Documentación
-```
 
-## 🧠 Decisións de arquitectura
+## Tecnoloxías
 
-### Redux Toolkit
+- React 19
+- Redux Toolkit
+- Vite 6
+- Tailwind CSS 4
+- Framer Motion
+- MUI
+- kdbxweb
 
-Úsase Redux Toolkit para a xestión do estado global da aplicación, seguindo un patrón de arquitectura baseado en características (`feature-based`), o que facilita a organización e o mantemento do código.
+## Licenza
 
-### Almacenamento local
+MIT. Ver `LICENSE`.
 
-As tarefas almacénanse no `localStorage` do navegador, o que permite que os datos persistan entre sesións sen necesidade dunha base de datos ou API externa.
-
-### Modo escuro
-
-A aplicación inclúe un sistema de temas que permite cambiar entre modo claro e escuro, empregando as capacidades de TailwindCSS para clases condicionais.
-
-### Animacións
-
-Úsase Framer Motion para engadir animacións fluidas que melloran a experiencia de usuario ao interactuar cos elementos da interface.
-
-## 🧪 Tecnoloxías empregadas
-
-- [React](https://reactjs.org/) - Biblioteca para construír interfaces de usuario
-- [Redux Toolkit](https://redux-toolkit.js.org/) - Ferramentas para simplificar a lóxica de Redux
-- [Vite](https://vitejs.dev/) - Contorno de desenvolvemento rápido
-- [TailwindCSS](https://tailwindcss.com/) - Framework CSS utilitario
-- [MUI (Material-UI)](https://mui.com/) - Compoñentes de React baseados en Material Design
-- [Framer Motion](https://www.framer.com/motion/) - Biblioteca de animacións para React
-
-## 🔍 Melloras futuras
-
-- Integración cun backend para sincronización de datos entre dispositivos
-- Sistema de autenticación de usuarios
-- Categorías e etiquetas para organizar tarefas
-- Vista de calendario para programar tarefas
-- Notificacións e recordatorios
-- Funcionalidade de arrastrar e soltar (`drag and drop`)
-- Exportación e importación de datos
-
-## 📄 Licenza
-
-Este proxecto está baixo a licenza MIT. Consulta o arquivo `LICENSE` para máis detalles.
-
-## 👨‍💻 Autor
+## Autor
 
 [Ismael Castiñeira](https://ipardelo.es)
-[Web](https://ipardelo.es)
 
----
-
-Grazas por usar XestorDeTarefas! Agardamos que esta ferramenta che axude a organizar as túas tarefas dun xeito eficiente. Se tes algunha suxestión ou atopas algún problema, non dubides en abrir unha incidencia en GitHub.
+```bash
+VIVA GHALISIA E A COSTA DA MORTE! 💀
+```
