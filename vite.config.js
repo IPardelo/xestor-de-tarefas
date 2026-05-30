@@ -1,107 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFile } from 'node:fs/promises'
 import kdbxweb from 'kdbxweb'
-
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
-const dataFilePath = resolve(__dirname, 'app-data.json')
-const appConfigPath = resolve(__dirname, 'app-config.json')
-
-const obterRutaDatosActual = async () => {
-  try {
-    const configRaw = await readFile(appConfigPath, 'utf-8')
-    const config = JSON.parse(configRaw || '{}')
-    const ruta = typeof config?.appDataPath === 'string' ? config.appDataPath.trim() : ''
-    if (ruta) return ruta
-    await writeFile(appConfigPath, JSON.stringify({ appDataPath: dataFilePath }, null, 2), 'utf-8')
-    return dataFilePath
-  } catch {
-    await writeFile(appConfigPath, JSON.stringify({ appDataPath: dataFilePath }, null, 2), 'utf-8')
-    return dataFilePath
-  }
-}
-
-const appDataApiPlugin = () => ({
-  name: 'app-data-api',
-  configureServer(server) {
-    server.middlewares.use('/api/app-data-config', async (req, res) => {
-      if (req.method === 'GET') {
-        const appDataPath = await obterRutaDatosActual()
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ appDataPath }))
-        return
-      }
-
-      if (req.method === 'POST') {
-        let body = ''
-        req.on('data', (chunk) => {
-          body += chunk
-        })
-        req.on('end', async () => {
-          try {
-            const parsed = JSON.parse(body || '{}')
-            const appDataPath = typeof parsed?.appDataPath === 'string' ? parsed.appDataPath.trim() : ''
-            if (!appDataPath) {
-              res.statusCode = 400
-              res.end(JSON.stringify({ error: 'appDataPath is required' }))
-              return
-            }
-            await writeFile(appConfigPath, JSON.stringify({ appDataPath }, null, 2), 'utf-8')
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ ok: true, appDataPath }))
-          } catch {
-            res.statusCode = 400
-            res.end(JSON.stringify({ error: 'Invalid JSON body' }))
-          }
-        })
-        return
-      }
-
-      res.statusCode = 405
-      res.end(JSON.stringify({ error: 'Method not allowed' }))
-    })
-
-    server.middlewares.use('/api/app-data', async (req, res) => {
-      const currentDataFilePath = await obterRutaDatosActual()
-      if (req.method === 'GET') {
-        try {
-          const content = await readFile(currentDataFilePath, 'utf-8')
-          res.setHeader('Content-Type', 'application/json')
-          res.end(content)
-        } catch {
-          res.statusCode = 500
-          res.end(JSON.stringify({ error: 'Cannot read app-data.json' }))
-        }
-        return
-      }
-
-      if (req.method === 'POST') {
-        let body = ''
-        req.on('data', (chunk) => {
-          body += chunk
-        })
-        req.on('end', async () => {
-          try {
-            const parsed = JSON.parse(body || '{}')
-            await writeFile(currentDataFilePath, JSON.stringify(parsed, null, 2), 'utf-8')
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ ok: true }))
-          } catch {
-            res.statusCode = 400
-            res.end(JSON.stringify({ error: 'Invalid JSON body' }))
-          }
-        })
-        return
-      }
-
-      res.statusCode = 405
-      res.end(JSON.stringify({ error: 'Method not allowed' }))
-    })
-  },
-})
 
 const obterTextoCampo = (entry, nomeCampo) => {
   const valor = entry?.fields?.get?.(nomeCampo)
@@ -157,18 +58,6 @@ const kdbxApiPlugin = () => ({
             return
           }
 
-          const currentDataFilePath = await obterRutaDatosActual()
-          const appDataRaw = await readFile(currentDataFilePath, 'utf-8')
-          const appData = JSON.parse(appDataRaw || '{}')
-          const usuarioActualId = appData?.usuarios?.usuarioActualId
-          const usuarioActual = (appData?.usuarios?.lista || []).find((u) => u.id === usuarioActualId)
-          if (usuarioActual?.admin !== '1') {
-            res.statusCode = 403
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ error: 'Only admin users can read KDBX data' }))
-            return
-          }
-
           const dbBuffer = await readFile(filePath)
           const dbArrayBuffer = dbBuffer.buffer.slice(
             dbBuffer.byteOffset,
@@ -194,12 +83,7 @@ const kdbxApiPlugin = () => ({
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), appDataApiPlugin(), kdbxApiPlugin()],
-  server: {
-    watch: {
-      ignored: ['**/app-data.json'],
-    },
-  },
+  plugins: [react(), tailwindcss(), kdbxApiPlugin()],
   resolve: {
     alias: {
       '@': '/src',

@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 
 // ? Store
 import { store } from '@/App/store';
-import { cargarDatosApp, gardarDatosApp, isCloudSyncEnabled, subscribirseADatosRemotos } from '@/App/persistence';
+import { cargarDatosApp, gardarDatosApp, subscribirseADatosRemotos } from '@/App/persistence';
 import { hidratarTareas } from '@/Features/Tasks/tareasSlice';
 import { hidratarTema } from '@/Features/Theme/temaSlice';
 import { hidratarIdioma } from '@/Features/Language/idiomaSlice';
@@ -54,7 +54,7 @@ async function bootstrap() {
 			remoteSnapshotHash = getHash(data);
 		}
 	} catch (error) {
-		console.error('Non se puideron cargar os datos do ficheiro JSON:', error);
+		console.error('Non se puideron cargar os datos de Firebase:', error);
 	}
 
 	let timeoutId;
@@ -75,25 +75,23 @@ async function bootstrap() {
 					remoteSnapshotHash = nextHash;
 				})
 				.catch((error) => {
-				console.error('Erro ao gardar datos no JSON:', error);
-			});
+					console.error('Erro ao gardar datos en Firebase:', error);
+				});
 		}, 200);
 	});
 
-	if (isCloudSyncEnabled()) {
-		subscribirseADatosRemotos(
-			(data) => {
-				const incomingHash = getHash(data);
-				if (incomingHash === remoteSnapshotHash) return;
-				hydratedFromRemote = true;
-				remoteSnapshotHash = incomingHash;
-				aplicarHidratacion(data);
-			},
-			(error) => {
-				console.error('Erro na sincronizacion remota con Firebase:', error);
-			}
-		);
-	}
+	subscribirseADatosRemotos(
+		(data) => {
+			const incomingHash = getHash(data);
+			if (incomingHash === remoteSnapshotHash) return;
+			hydratedFromRemote = true;
+			remoteSnapshotHash = incomingHash;
+			aplicarHidratacion(data);
+		},
+		(error) => {
+			console.error('Erro na sincronizacion remota con Firebase:', error);
+		}
+	);
 
 	ReactDOM.createRoot(document.getElementById('root')).render(
 		<React.StrictMode>

@@ -1,7 +1,6 @@
 import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db, hasFirebaseConfig } from '@/App/firebase';
 
-const API_PATH = '/api/app-data';
 const DEFAULT_SYNC_DOC = 'tarefas-shared/default';
 
 const getSyncDocPath = () => import.meta.env.VITE_FIREBASE_SYNC_DOC || DEFAULT_SYNC_DOC;
@@ -16,38 +15,33 @@ const getSyncDocRef = () => {
 export const isCloudSyncEnabled = () => hasFirebaseConfig;
 
 export async function cargarDatosApp() {
-	if (hasFirebaseConfig) {
-		const ref = getSyncDocRef();
-		if (ref) {
-			const snapshot = await getDoc(ref);
-			if (snapshot.exists()) {
-				return snapshot.data();
-			}
-			return null;
-		}
+	if (!hasFirebaseConfig) {
+		throw new Error('Firebase non está configurado');
 	}
 
-	const resp = await fetch(API_PATH);
-	if (!resp.ok) {
-		throw new Error(`Erro ao cargar datos: ${resp.status}`);
+	const ref = getSyncDocRef();
+	if (!ref) {
+		throw new Error('Ruta de documento Firebase inválida');
 	}
-	return resp.json();
+
+	const snapshot = await getDoc(ref);
+	if (snapshot.exists()) {
+		return snapshot.data();
+	}
+	return null;
 }
 
 export async function gardarDatosApp(data) {
-	if (hasFirebaseConfig) {
-		const ref = getSyncDocRef();
-		if (ref) {
-			await setDoc(ref, data, { merge: false });
-			return;
-		}
+	if (!hasFirebaseConfig) {
+		throw new Error('Firebase non está configurado');
 	}
 
-	await fetch(API_PATH, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(data),
-	});
+	const ref = getSyncDocRef();
+	if (!ref) {
+		throw new Error('Ruta de documento Firebase inválida');
+	}
+
+	await setDoc(ref, data, { merge: false });
 }
 
 export function subscribirseADatosRemotos(onData, onError) {
