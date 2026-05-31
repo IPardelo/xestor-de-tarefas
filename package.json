@@ -1,5 +1,5 @@
 {
-  "name": "xestordetarefas",
+  "name": "xestor-de-tarefas-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -8,6 +8,10 @@
   "author": {
     "name": "Ismael Castiñeira",
     "url": "https://ipardelo.es"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IPardelo/xestor-de-tarefas-web.git"
   },
   "scripts": {
     "dev": "vite",
