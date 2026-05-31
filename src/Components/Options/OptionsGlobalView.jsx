@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
 import { actualizarConfiguracionKdbx, seleccionarConfiguracionKdbx } from '@/Features/Projects/proxectosSlice';
 import { firebaseConfig, firebaseSyncDoc, hasFirebaseConfig } from '@/App/firebase';
+import { gardarDatosApp, isCloudSyncEnabled } from '@/App/persistence';
 import { translations } from '@/i18n/translations';
 
 export default function OptionsGlobalView() {
 	const dispatch = useDispatch();
+	const store = useStore();
 	const idioma = useSelector(seleccionarIdioma);
 	const eAdmin = useSelector(seleccionarUsuarioActualAdmin);
 	const kdbxConfig = useSelector(seleccionarConfiguracionKdbx);
 	const t = translations[idioma] || translations.gl;
+	const [gardandoKdbx, setGardandoKdbx] = useState(false);
+	const [mensaxeKdbx, setMensaxeKdbx] = useState('');
 
 	const [kdbxForm, setKdbxForm] = useState({
 		filePath: 'kdbx\\Database.kdbx',
@@ -30,9 +34,35 @@ export default function OptionsGlobalView() {
 		setKdbxForm((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const onSubmitKdbxConfig = (e) => {
+	const onSubmitKdbxConfig = async (e) => {
 		e.preventDefault();
 		dispatch(actualizarConfiguracionKdbx(kdbxForm));
+		setMensaxeKdbx('');
+
+		if (!isCloudSyncEnabled()) return;
+
+		setGardandoKdbx(true);
+		try {
+			const state = store.getState();
+			await gardarDatosApp({
+				usuarios: state.usuarios,
+				idioma: state.idioma,
+				tema: state.tema,
+				tareas: state.tareas,
+				proxectos: {
+					...state.proxectos,
+					kdbxConfig: {
+						filePath: (kdbxForm.filePath || '').trim() || 'kdbx\\Database.kdbx',
+						password: kdbxForm.password || '1234567890',
+					},
+				},
+			});
+			setMensaxeKdbx('Configuración KDBX gardada en Firebase.');
+		} catch {
+			setMensaxeKdbx('Erro ao gardar a configuración KDBX en Firebase.');
+		} finally {
+			setGardandoKdbx(false);
+		}
 	};
 
 	return (
@@ -78,10 +108,14 @@ export default function OptionsGlobalView() {
 						<div className='flex justify-end pt-1'>
 							<button
 								type='submit'
-								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow font-medium text-sm'>
-								{t.saveKdbxConfig}
+								disabled={gardandoKdbx}
+								className='px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:translate-y-0 font-medium text-sm'>
+								{gardandoKdbx ? 'Gardando...' : t.saveKdbxConfig}
 							</button>
 						</div>
+						{mensaxeKdbx && (
+							<p className='text-sm text-gray-600 dark:text-gray-300'>{mensaxeKdbx}</p>
+						)}
 					</form>
 
 					<div className='mt-8 pt-6 border-t border-gray-200 dark:border-gray-700'>

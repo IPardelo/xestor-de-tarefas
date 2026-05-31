@@ -275,7 +275,7 @@ export default function OptionsUsersView() {
 											</button>
 											<button
 												type='submit'
-												className='px-3 py-1.5 text-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-sm hover:shadow transition-shadow'>
+												className='px-3 py-1.5 text-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-sm hover:shadow transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:translate-y-0'>
 												{t.saveChanges}
 											</button>
 										</div>

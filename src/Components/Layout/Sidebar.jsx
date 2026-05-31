@@ -4,20 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
-import {
-	cambiarUsuario,
-	seleccionarUsuarioActual,
-	seleccionarUsuarioActualAdmin,
-	seleccionarUsuarioActualId,
-	seleccionarUsuarios,
-} from '@/Features/Users/usuariosSlice';
+import { seleccionarUsuarioActual, seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
 
-const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
-	const dispatch = useDispatch();
+const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion = () => {} }) => {
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
 	const idioma = useSelector(seleccionarIdioma);
-	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
-	const usuarios = useSelector(seleccionarUsuarios);
 	const usuarioActual = useSelector(seleccionarUsuarioActual);
 	const t = translations[idioma] || translations.gl;
 	const xeneroActual = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
@@ -103,11 +94,9 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 							t={t}
 							xeneroActual={xeneroActual}
 							benvidaLateral={benvidaLateral}
-							usuarioActualId={usuarioActualId}
 							usuarioActual={usuarioActual}
-							usuarios={usuarios}
-							onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 							onCambiarVista={onCambiarVista}
+							onCerrarSesion={onCerrarSesion}
 							onDespuesDeNavegar={() => setEstaAbierto(false)}
 						/>
 					</motion.div>
@@ -126,11 +115,9 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {} }) => {
 					t={t}
 					xeneroActual={xeneroActual}
 					benvidaLateral={benvidaLateral}
-					usuarioActualId={usuarioActualId}
 					usuarioActual={usuarioActual}
-					usuarios={usuarios}
-					onCambiarUsuario={(id) => dispatch(cambiarUsuario(id))}
 					onCambiarVista={onCambiarVista}
+					onCerrarSesion={onCerrarSesion}
 				/>
 			</aside>
 		</>
@@ -148,15 +135,12 @@ const ContenidoBarraLateral = ({
 	t,
 	xeneroActual,
 	benvidaLateral,
-	usuarioActualId,
 	usuarioActual,
-	usuarios,
-	onCambiarUsuario,
 	onCambiarVista,
+	onCerrarSesion,
 	onDespuesDeNavegar,
 }) => {
 	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
-	const podeCambiarUsuario = usuarios.length > 1;
 	const [opcionsXeraisAberto, setOpcionsXeraisAberto] = useState(false);
 	const opcionsFilhoActivo =
 		esAdmin &&
@@ -191,22 +175,7 @@ const ContenidoBarraLateral = ({
 					)}
 				</motion.div>
 				<div className='mt-3'>
-					<div className='relative'>
-						<div className='pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 dark:text-gray-300'>
-							<i className='fa-solid fa-user text-sm'></i>
-						</div>
-						<select
-							value={usuarioActualId}
-							onChange={(e) => onCambiarUsuario(e.target.value)}
-							disabled={!podeCambiarUsuario}
-							className='w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg pl-8 pr-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500'>
-							{usuarios.map((usuario) => (
-								<option key={usuario.id} value={usuario.id}>
-									{usuario.nome}
-								</option>
-							))}
-						</select>
-					</div>
+					<p className='text-sm font-medium text-gray-700 dark:text-gray-200'>{usuarioActual?.nome || '-'}</p>
 				</div>
 				<div className='mt-2 flex items-center justify-center gap-2'>
 					<p className='text-sm text-gray-500 dark:text-gray-400 flex-1 min-w-0 text-center'>{benvidaLateral}</p>
@@ -225,6 +194,14 @@ const ContenidoBarraLateral = ({
 						aria-label={t.userSettingsLabel}
 						title={t.userSettingsLabel}>
 						<i className='fa-solid fa-gear text-base' />
+					</button>
+					<button
+						type='button'
+						onClick={() => onCerrarSesion()}
+						className='shrink-0 p-1 rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-500 dark:hover:text-red-400'
+						aria-label='Pechar sesion'
+						title='Pechar sesion'>
+						<i className='fa-solid fa-right-from-bracket text-base' />
 					</button>
 				</div>
 			</div>
