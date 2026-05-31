@@ -13,6 +13,7 @@ const firebaseConfig = {
 const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 
 const hasFirebaseConfig = requiredKeys.every((key) => !!firebaseConfig[key]);
+const firebaseSyncDoc = import.meta.env.VITE_FIREBASE_SYNC_DOC || 'tarefas-shared/default';
 
 let db = null;
 
@@ -21,4 +22,4 @@ if (hasFirebaseConfig) {
 	db = getFirestore(app);
 }
 
-export { db, hasFirebaseConfig };
+export { db, hasFirebaseConfig, firebaseConfig, firebaseSyncDoc };
