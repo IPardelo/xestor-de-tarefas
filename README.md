@@ -15,8 +15,7 @@ Inclúe multiusuario local, proxectos, calendario, internacionalización (`gl`/`
 - Xestión de proxectos con datos de cliente.
 - Vista de calendario anual/mensual.
 - Integración KDBX (lectura de entradas por grupo/proxecto, só admin).
-- Persistencia local e en ficheiro de datos mediante endpoints locais de Vite.
-- Sincronización multi-dispositivo opcional con Firebase Firestore (mesmo estado compartido).
+- Persistencia e sincronización multi-dispositivo con Firebase Firestore (estado compartido).
 
 ## Requisitos
 
@@ -56,15 +55,6 @@ Tamén podes usar o script `iniciar-app.bat` na raíz do proxecto, que:
 - `npm run preview` - previsualización da build.
 - `npm run lint` - lint do código.
 
-## Configuración de datos locais
-
-- `app-config.json`: garda a ruta do ficheiro de datos.
-- `app-data.json`: almacena estado persistido da app (ignorado en git).
-- `vite.config.js` expón endpoints locais:
-  - `GET/POST /api/app-data-config`
-  - `GET/POST /api/app-data`
-  - `POST /api/kdbx/read`
-
 ## Modo multiusuario real (Firebase)
 
 Para usar a mesma app desde dous ordenadores/móbiles e compartir cambios:
@@ -73,8 +63,7 @@ Para usar a mesma app desde dous ordenadores/móbiles e compartir cambios:
 2) Enche cos datos necesarios o arquivo `.env.example` na raíz do proxecto e renomeao a `.env`.
 4) Arranca a app (`npm run dev` ou `iniciar-app.bat`) nos dispositivos que queiras.
 
-Ao ter Firebase configurado, a app usa Firestore como persistencia principal e sincroniza cambios entre sesións.  
-Se non hai configuración de Firebase, segue funcionando no modo local de sempre.
+A app usa Firestore como persistencia principal e sincroniza cambios entre sesións.
 
 ## KDBX (KeePass)
 
@@ -84,7 +73,7 @@ Se non hai configuración de Firebase, segue funcionando no modo local de sempre
 
 ## Despregamento
 
-Para funcionalidade completa (incluíndo KDBX e persistencia por ficheiro), precisa un entorno que execute Node.js.
+Para funcionalidade completa (incluíndo KDBX), precisa un entorno que execute Node.js.
 
 ## Estrutura xeral
 
@@ -94,7 +83,7 @@ src/
   Components/         # UI por áreas (Tasks, Projects, Layout, Options...)
   Features/           # Slices Redux (Tasks, Users, Projects, Theme, Language)
   i18n/               # Traducións
-vite.config.js        # Configuración Vite + endpoints locais
+vite.config.js        # Configuración Vite + endpoint local de KDBX
 ```
 
 ## Tecnoloxías
