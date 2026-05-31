@@ -13,6 +13,7 @@ import OptionsUsersView from '@/Components/Options/OptionsUsersView';
 import OptionsGlobalView from '@/Components/Options/OptionsGlobalView';
 import ProjectsView from '@/Components/Projects/ProjectsView';
 import UserSettingsView from '@/Components/Layout/UserSettingsView';
+import LoginView from '@/Components/Auth/LoginView';
 
 // Features
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
@@ -31,6 +32,7 @@ export default function App() {
 	const xenero = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
 	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
 	const [vistaActual, setVistaActual] = useState('inicio');
+	const [logueado, setLogueado] = useState(false);
 
 	useEffect(() => {
 		if (tema === 'oscuro') {
@@ -60,6 +62,15 @@ export default function App() {
 			setVistaActual('inicio');
 		}
 	}, [esAdmin, vistaActual]);
+
+	if (!logueado) {
+		return <LoginView onLogin={() => setLogueado(true)} />;
+	}
+
+	const pecharSesion = () => {
+		setLogueado(false);
+		setVistaActual('inicio');
+	};
 
 	const renderVistaActual = () => {
 		if (vistaActual === 'inicio') {
@@ -123,7 +134,7 @@ export default function App() {
 		<div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
 			<Header />
 			<div className='container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 max-w-7xl'>
-				<Sidebar vistaActual={vistaActual} onCambiarVista={setVistaActual} />
+				<Sidebar vistaActual={vistaActual} onCambiarVista={setVistaActual} onCerrarSesion={pecharSesion} />
 				<main className='flex-1 min-w-0'>
 					<AnimatePresence mode='wait'>
 						<motion.div
