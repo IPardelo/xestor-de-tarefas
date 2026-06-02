@@ -2,6 +2,11 @@
 
 Aplicación de xestión persoal de tarefas e proxectos feita con React + Redux Toolkit + Vite.
 
+## Repositorios
+
+- Web (este repo): [IPardelo/xestor-de-tarefas-web](https://github.com/IPardelo/xestor-de-tarefas-web)
+- Android: [IPardelo/xestor-de-tarefas-app](https://github.com/IPardelo/xestor-de-tarefas-app)
+
 Inclúe multiusuario local, proxectos, calendario, internacionalización (`gl`/`es`/`en`), tema claro/escuro e lectura de credenciais KDBX de proxectos.
 
 ![XestorDeTarefas Screenshot](public/Images/Interfaz.png)
