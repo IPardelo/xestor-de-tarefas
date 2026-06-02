@@ -20,6 +20,7 @@ const normalizarUsuario = (usuario) => ({
 	...usuario,
 	xenero: normalizarXenero(usuario?.xenero),
 	imaxePerfil: usuario?.imaxePerfil || '',
+	contrasenha: String(usuario?.contrasenha || ''),
 	admin: normalizarAdmin(usuario?.admin, usuario?.id, usuario?.nome),
 });
 
@@ -101,6 +102,7 @@ const usuariosSlice = createSlice({
 				usuario.temaPredeterminado = payload.temaPredeterminado;
 			}
 			if (payload.xenero) usuario.xenero = normalizarXenero(payload.xenero);
+			if (typeof payload.contrasenha === 'string') usuario.contrasenha = payload.contrasenha;
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
 		rexistrarUsuario: (state, action) => {
@@ -115,6 +117,7 @@ const usuariosSlice = createSlice({
 				normalizarUsuario({
 					id: novoId,
 					nome: novoNome,
+					contrasenha: String(payload.contrasenha || ''),
 					idiomaPredeterminado: payload.idiomaPredeterminado || 'gl',
 					temaPredeterminado: payload.temaPredeterminado || 'claro',
 					xenero: payload.xenero || 'F',
@@ -124,17 +127,53 @@ const usuariosSlice = createSlice({
 			);
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
+		rexistrarUsuarioDesdeLogin: (state, action) => {
+			const payload = action.payload || {};
+			const novoId = (payload.id || '').trim();
+			const novoNome = (payload.nome || '').trim();
+			const novaContrasenha = String(payload.contrasenha || '');
+			if (!novoId || !novoNome || !novaContrasenha) return;
+			if (state.lista.some((u) => u.id === novoId)) return;
+			state.lista.push(
+				normalizarUsuario({
+					id: novoId,
+					nome: novoNome,
+					contrasenha: novaContrasenha,
+					idiomaPredeterminado: payload.idiomaPredeterminado || 'gl',
+					temaPredeterminado: payload.temaPredeterminado || 'claro',
+					xenero: payload.xenero || 'F',
+					imaxePerfil: payload.imaxePerfil || '',
+					admin: '0',
+				})
+			);
+			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
+		},
+		cambiarContrasinalDesdeLogin: (state, action) => {
+			const payload = action.payload || {};
+			const id = (payload.id || '').trim();
+			const contrasenhaActual = String(payload.contrasenhaActual || '');
+			const novaContrasenha = String(payload.novaContrasenha || '');
+			if (!id || !contrasenhaActual || !novaContrasenha) return;
+			const usuario = state.lista.find((u) => u.id === id);
+			if (!usuario) return;
+			if (String(usuario.contrasenha || '') !== contrasenhaActual) return;
+			usuario.contrasenha = novaContrasenha;
+			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
+		},
 		actualizarUsuario: (state, action) => {
 			const actual = state.lista.find((u) => u.id === state.usuarioActualId);
 			if (!actual || actual.admin !== '1') return;
-			const { id, ...cambios } = action.payload || {};
-			if (!id) return;
-			const indice = state.lista.findIndex((u) => u.id === id);
+			const { idOriginal, id, ...cambios } = action.payload || {};
+			const idBase = (idOriginal || '').trim();
+			const novoId = (id || idBase).trim();
+			if (!idBase || !novoId) return;
+			const indice = state.lista.findIndex((u) => u.id === idBase);
 			if (indice === -1) return;
+			if (novoId !== idBase && state.lista.some((u) => u.id === novoId)) return;
 			const usuarioActualizado = {
 				...state.lista[indice],
 				...cambios,
-				id,
+				id: novoId,
 				nome: (cambios.nome ?? state.lista[indice].nome ?? '').trim(),
 				imaxePerfil:
 					typeof cambios.imaxePerfil === 'string'
@@ -143,6 +182,10 @@ const usuariosSlice = createSlice({
 			};
 			if (!usuarioActualizado.nome) return;
 			state.lista[indice] = normalizarUsuario(usuarioActualizado);
+			if (state.usuarioActualId === idBase) {
+				state.usuarioActualId = novoId;
+				localStorage.setItem(CURRENT_USER_KEY, novoId);
+			}
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
 		eliminarUsuario: (state, action) => {
@@ -162,6 +205,8 @@ export const {
 	establecerXeneroUsuarioActual,
 	actualizarPreferenciasUsuarioActual,
 	rexistrarUsuario,
+	rexistrarUsuarioDesdeLogin,
+	cambiarContrasinalDesdeLogin,
 	actualizarUsuario,
 	eliminarUsuario,
 } = usuariosSlice.actions;
