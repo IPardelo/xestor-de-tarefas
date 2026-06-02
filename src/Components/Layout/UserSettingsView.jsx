@@ -15,6 +15,7 @@ export default function UserSettingsView() {
 		idiomaPredeterminado: 'gl',
 		temaPredeterminado: 'claro',
 		xenero: 'F',
+		contrasenha: '',
 	});
 
 	useEffect(() => {
@@ -24,6 +25,7 @@ export default function UserSettingsView() {
 			idiomaPredeterminado: usuarioActual.idiomaPredeterminado || 'gl',
 			temaPredeterminado: usuarioActual.temaPredeterminado || 'claro',
 			xenero: usuarioActual.xenero || 'F',
+			contrasenha: String(usuarioActual.contrasenha || ''),
 		});
 	}, [usuarioActual]);
 
@@ -49,6 +51,17 @@ export default function UserSettingsView() {
 						value={form.imaxePerfil}
 						onChange={onChange}
 						placeholder='https://...'
+						className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+					/>
+				</div>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.userPassword}</label>
+					<input
+						type='password'
+						name='contrasenha'
+						value={form.contrasenha}
+						onChange={onChange}
+						autoComplete='current-password'
 						className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 					/>
 				</div>

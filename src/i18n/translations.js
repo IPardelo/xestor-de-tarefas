@@ -116,6 +116,7 @@ export const translations = {
 		optionsAdminOnlyHint:
 			'Os teus datos persoais e preferencias pódense cambiar coa icona de engrenaxe na barra lateral (abre a pantalla de axustes).',
 		profileImage: 'Imaxe de perfil',
+		userPassword: 'Contrasinal',
 		defaultLanguage: 'Idioma predeterminado',
 		defaultTheme: 'Tema predeterminado',
 		genderShort: 'Xénero',
@@ -291,6 +292,7 @@ export const translations = {
 		optionsAdminOnlyHint:
 			'Tus datos personales y preferencias se pueden cambiar con el icono de engranaje en la barra lateral (abre la pantalla de ajustes).',
 		profileImage: 'Imagen de perfil',
+		userPassword: 'Contraseña',
 		defaultLanguage: 'Idioma predeterminado',
 		defaultTheme: 'Tema predeterminado',
 		genderShort: 'Género',
@@ -466,6 +468,7 @@ export const translations = {
 		optionsAdminOnlyHint:
 			'You can change your profile and preferences using the gear icon in the sidebar (opens the settings screen).',
 		profileImage: 'Profile image',
+		userPassword: 'Password',
 		defaultLanguage: 'Default language',
 		defaultTheme: 'Default theme',
 		genderShort: 'Gender',

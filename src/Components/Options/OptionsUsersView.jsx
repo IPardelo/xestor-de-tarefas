@@ -22,6 +22,7 @@ export default function OptionsUsersView() {
 	const [novoUsuario, setNovoUsuario] = useState({
 		id: '',
 		nome: '',
+		contrasenha: '',
 		idiomaPredeterminado: 'gl',
 		temaPredeterminado: 'claro',
 		xenero: 'F',
@@ -30,7 +31,9 @@ export default function OptionsUsersView() {
 	});
 	const [usuarioEditandoId, setUsuarioEditandoId] = useState('');
 	const [formEditar, setFormEditar] = useState({
+		id: '',
 		nome: '',
+		contrasenha: '',
 		idiomaPredeterminado: 'gl',
 		temaPredeterminado: 'claro',
 		xenero: 'F',
@@ -49,6 +52,7 @@ export default function OptionsUsersView() {
 		setNovoUsuario({
 			id: '',
 			nome: '',
+			contrasenha: '',
 			idiomaPredeterminado: 'gl',
 			temaPredeterminado: 'claro',
 			xenero: 'F',
@@ -60,7 +64,9 @@ export default function OptionsUsersView() {
 	const iniciarEdicion = (usuario) => {
 		setUsuarioEditandoId(usuario.id);
 		setFormEditar({
+			id: usuario.id || '',
 			nome: usuario.nome || '',
+			contrasenha: String(usuario.contrasenha || ''),
 			idiomaPredeterminado: usuario.idiomaPredeterminado || 'gl',
 			temaPredeterminado: usuario.temaPredeterminado || 'claro',
 			xenero: usuario.xenero || 'F',
@@ -72,7 +78,9 @@ export default function OptionsUsersView() {
 	const cancelarEdicion = () => {
 		setUsuarioEditandoId('');
 		setFormEditar({
+			id: '',
 			nome: '',
+			contrasenha: '',
 			idiomaPredeterminado: 'gl',
 			temaPredeterminado: 'claro',
 			xenero: 'F',
@@ -83,7 +91,7 @@ export default function OptionsUsersView() {
 
 	const gardarEdicion = (e, id) => {
 		e.preventDefault();
-		dispatch(actualizarUsuario({ id, ...formEditar }));
+		dispatch(actualizarUsuario({ idOriginal: id, ...formEditar }));
 		cancelarEdicion();
 	};
 
@@ -116,8 +124,26 @@ export default function OptionsUsersView() {
 								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 								required
 							/>
+							<input
+								type='password'
+								name='contrasenha'
+								value={novoUsuario.contrasenha}
+								onChange={onNovoUsuarioChange}
+								placeholder={t.userPassword}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+								autoComplete='new-password'
+								required
+							/>
+							<input
+								type='text'
+								name='imaxePerfil'
+								value={novoUsuario.imaxePerfil}
+								onChange={onNovoUsuarioChange}
+								placeholder={t.profileImage}
+								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+							/>
 						</div>
-						<div className='grid grid-cols-1 sm:grid-cols-5 gap-3'>
+						<div className='grid grid-cols-1 sm:grid-cols-4 gap-3'>
 							<select
 								name='idiomaPredeterminado'
 								value={novoUsuario.idiomaPredeterminado}
@@ -155,14 +181,6 @@ export default function OptionsUsersView() {
 									{t.adminLabel}: {t.adminYes}
 								</option>
 							</select>
-							<input
-								type='text'
-								name='imaxePerfil'
-								value={novoUsuario.imaxePerfil}
-								onChange={onNovoUsuarioChange}
-								placeholder={t.profileImage}
-								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
-							/>
 						</div>
 						<div className='flex justify-end pt-1'>
 							<button
@@ -203,14 +221,43 @@ export default function OptionsUsersView() {
 								</div>
 								{usuarioEditandoId === usuario.id ? (
 									<form onSubmit={(e) => gardarEdicion(e, usuario.id)} className='space-y-2 pr-10'>
-										<input
-											type='text'
-											value={formEditar.nome}
-											onChange={(e) => setFormEditar((prev) => ({ ...prev, nome: e.target.value }))}
-											placeholder={t.userName}
-											required
-											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
-										/>
+										<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+											<input
+												type='text'
+												value={formEditar.id}
+												onChange={(e) => setFormEditar((prev) => ({ ...prev, id: e.target.value }))}
+												placeholder={t.userId}
+												required
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+											/>
+											<input
+												type='text'
+												value={formEditar.nome}
+												onChange={(e) => setFormEditar((prev) => ({ ...prev, nome: e.target.value }))}
+												placeholder={t.userName}
+												required
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+											/>
+											<input
+												type='password'
+												value={formEditar.contrasenha}
+												onChange={(e) =>
+													setFormEditar((prev) => ({ ...prev, contrasenha: e.target.value }))
+												}
+												placeholder={t.userPassword}
+												autoComplete='new-password'
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+											/>
+											<input
+												type='text'
+												value={formEditar.imaxePerfil}
+												onChange={(e) =>
+													setFormEditar((prev) => ({ ...prev, imaxePerfil: e.target.value }))
+												}
+												placeholder={t.profileImage}
+												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+											/>
+										</div>
 										<div className='grid grid-cols-1 sm:grid-cols-4 gap-2'>
 											<select
 												value={formEditar.idiomaPredeterminado}
@@ -257,15 +304,6 @@ export default function OptionsUsersView() {
 												</option>
 											</select>
 										</div>
-										<input
-											type='text'
-											value={formEditar.imaxePerfil}
-											onChange={(e) =>
-												setFormEditar((prev) => ({ ...prev, imaxePerfil: e.target.value }))
-											}
-											placeholder={t.profileImage}
-											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
-										/>
 										<div className='flex justify-end gap-2'>
 											<button
 												type='button'
