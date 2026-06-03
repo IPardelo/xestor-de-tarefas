@@ -51,6 +51,7 @@ const ElementoTarea = ({ tarea }) => {
 	};
 
 	const prioridad = prioridades[tarea.prioridad] || prioridades.media;
+	const tipoDaTarefa = tarea.tipo === 'reunion' ? 'reunion' : 'tarea';
 	const asignadaA = usuarios.find((u) => u.id === tarea.asignadaAId);
 	const colaborador = (tarea.compartidaConIds || [])
 		.map((id) => usuarios.find((u) => u.id === id))
@@ -111,6 +112,19 @@ const ElementoTarea = ({ tarea }) => {
 						placeholder={t.taskDescriptionPlaceholder}
 						rows='2'
 					/>
+					<div>
+						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+							<i className='fa-solid fa-layer-group mr-2 text-indigo-500 dark:text-indigo-400'></i>
+							{t.taskType}
+						</label>
+						<select
+							value={tareaEditada.tipo || 'tarea'}
+							onChange={(e) => setTareaEditada({ ...tareaEditada, tipo: e.target.value })}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-800 dark:text-white'>
+							<option value='tarea'>{t.taskTypeTask}</option>
+							<option value='reunion'>{t.taskTypeMeeting}</option>
+						</select>
+					</div>
 					<div>
 						<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
 							<i className='fa-solid fa-folder-tree mr-2 text-indigo-500 dark:text-indigo-400'></i>
@@ -302,6 +316,10 @@ const ElementoTarea = ({ tarea }) => {
 							className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full ${prioridad.class}`}>
 							<i className={`${prioridad.icon} mr-1`}></i>
 							{prioridad.label}
+						</span>
+						<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
+							<i className={`fa-solid ${tipoDaTarefa === 'reunion' ? 'fa-people-group' : 'fa-list-check'} mr-1`}></i>
+							{tipoDaTarefa === 'reunion' ? t.taskTypeMeeting : t.taskTypeTask}
 						</span>
 						{asignadaA && (
 							<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'>
