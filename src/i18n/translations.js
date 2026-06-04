@@ -128,9 +128,9 @@ export const translations = {
 		googleCalendarSourceLabel: 'Calendario',
 		googleCalendarLoading: 'Sincronizando calendarios de Google...',
 		googleCalendarLoadError: 'Non foi posible cargar os calendarios iCal configurados.',
-		googleCalendarIcalUrls: 'Calendarios de Google (iCal secreto)',
+		googleCalendarIcalUrls: 'Sincronización Google Calendar (iCal)',
 		googleCalendarIcalHint:
-			'Pega ata 3 ligazóns secretas de iCal para mostrar os eventos no calendario.',
+			'Pega ata 3 ligazóns secretas de iCal de Google Calendar para mostrar os eventos no calendario.',
 		googleCalendarIcalUrlLabel: 'URL iCal',
 		defaultLanguage: 'Idioma predeterminado',
 		defaultTheme: 'Tema predeterminado',
