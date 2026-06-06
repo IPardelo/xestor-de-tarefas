@@ -4,6 +4,7 @@ import temaReducer from '@/Features/Theme/temaSlice';
 import idiomaReducer from '@/Features/Language/idiomaSlice';
 import usuariosReducer from '@/Features/Users/usuariosSlice';
 import proxectosReducer from '@/Features/Projects/proxectosSlice';
+import notasReducer from '@/Features/Notes/notasSlice';
 
 export const store = configureStore({
 	reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
 		idioma: idiomaReducer,
 		usuarios: usuariosReducer,
 		proxectos: proxectosReducer,
+		notas: notasReducer,
 	},
 });

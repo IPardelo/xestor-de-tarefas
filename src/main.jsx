@@ -11,6 +11,7 @@ import { hidratarTema } from '@/Features/Theme/temaSlice';
 import { hidratarIdioma } from '@/Features/Language/idiomaSlice';
 import { hidratarUsuarios } from '@/Features/Users/usuariosSlice';
 import { hidratarProxectos } from '@/Features/Projects/proxectosSlice';
+import { hidratarNotas } from '@/Features/Notes/notasSlice';
 
 // ? Estilos
 import '@/index.css';
@@ -32,6 +33,7 @@ async function bootstrap() {
 		if (data?.tema) store.dispatch(hidratarTema(data.tema));
 		if (data?.tareas) store.dispatch(hidratarTareas(data.tareas));
 		if (data?.proxectos) store.dispatch(hidratarProxectos(data.proxectos));
+		if (data?.notas) store.dispatch(hidratarNotas(data.notas));
 	};
 
 	const getSerializableState = () => {
@@ -42,6 +44,7 @@ async function bootstrap() {
 			tema: state.tema,
 			tareas: state.tareas,
 			proxectos: state.proxectos,
+			notas: state.notas,
 		};
 	};
 
