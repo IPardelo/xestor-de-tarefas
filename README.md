@@ -11,16 +11,39 @@ Inclúe multiusuario local, proxectos, calendario, internacionalización (`gl`/`
 
 ![XestorDeTarefas Screenshot](public/Images/Interfaz.png)
 
+## Evolución por versión
+
+### v2.0.0
+
+- Novo módulo de **Notas**.
+- Accións en notas: crear, editar, eliminar, fixar e marcar ítems.
+
+### v1.1.0
+
+- Melloras de UI e organización da app para uso diario.
+- Compoñenente de login.
+- Integración co calendario de Google.
+
+### v1.0.0
+
+- Base da aplicación de xestión de tarefas.
+- Crear, editar, eliminar e completar tarefas.
+- Filtros, busca e ordenación de tarefas.
+- Persistencia local no dispositivo.
+- Soporte de tema claro/escuro e internacionalización inicial (`gl`/`es`/`en`).
+- Ampliación funcional con módulo de proxectos.
+- Xestión de usuarios en local con rol administrador.
+- Vista de calendario anual/mensual.
+
 ## Características actuais
 
 - Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
-- Campos de tarefa: título, descrición, tipo (`Tarefa` ou `Reunión`), prioridade, data límite, proxecto, asignación e compartición.
-- Regras de formulario: na creación de tarefas todos os campos son obrigatorios agás data límite e compartir con.
-- Xestión de usuarios en local (con rol admin) e cambio de usuario na barra lateral.
+- Módulo de notas: notas de texto e notas tipo lista/checklist con cor personalizada.
+- Ordenación de notas por fixación e última actualización.
+- Xestión de usuarios.
 - Xestión de proxectos con datos de cliente.
-- Vista de calendario anual/mensual.
-- Integración KDBX (lectura de entradas por grupo/proxecto, só admin).
-- Persistencia e sincronización multi-dispositivo con Firebase Firestore (estado compartido).
+- Vista de calendario anual/mensual con sincronización con Google Calendar.
+- Persistencia e sincronización con Firebase Firestore (estado compartido).
 
 ## Requisitos
 
