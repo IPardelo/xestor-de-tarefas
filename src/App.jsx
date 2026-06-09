@@ -9,6 +9,7 @@ import Header from '@/Components/Layout/Header';
 import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
+import NotesView from '@/Components/Notes/NotesView';
 import OptionsUsersView from '@/Components/Options/OptionsUsersView';
 import OptionsGlobalView from '@/Components/Options/OptionsGlobalView';
 import ProjectsView from '@/Components/Projects/ProjectsView';
@@ -123,6 +124,7 @@ export default function App() {
 		}
 
 		if (vistaActual === 'calendario') return <CalendarView />;
+		if (vistaActual === 'notas') return <NotesView />;
 		if (vistaActual === 'proxectos') return <ProjectsView />;
 		if (vistaActual === 'axustesUsuario') return <UserSettingsView />;
 		if (vistaActual === 'opcionesUsuarios' && esAdmin) return <OptionsUsersView />;
