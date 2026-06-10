@@ -7,17 +7,22 @@ import { motion } from 'framer-motion';
 import {
 	seleccionarConteoTareas,
 	seleccionarFiltroActivo,
+	seleccionarFiltroProxectoActivo,
 	establecerFiltro,
+	establecerFiltroProxecto,
 	establecerBusqueda,
 	establecerOrdenamiento,
 } from '@/Features/Tasks/tareasSlice';
+import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
 
 const FiltroTareas = () => {
 	const dispatch = useDispatch();
 	const filtroActivo = useSelector(seleccionarFiltroActivo);
+	const filtroProxectoActivo = useSelector(seleccionarFiltroProxectoActivo);
 	const conteoTareas = useSelector(seleccionarConteoTareas);
+	const proxectos = useSelector(seleccionarProxectos);
 	const idioma = useSelector(seleccionarIdioma);
 	const t = translations[idioma] || translations.gl;
 	const [terminoBusqueda, setTerminoBusqueda] = useState('');
@@ -51,12 +56,16 @@ const FiltroTareas = () => {
 		dispatch(establecerOrdenamiento(e.target.value));
 	};
 
+	const manejarCambioFiltroProxecto = (e) => {
+		dispatch(establecerFiltroProxecto(e.target.value));
+	};
+
 	return (
 		<div className='mb-6'>
 			<div className='bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-md p-4 sm:p-5 transition-all duration-300'>
 				<div className='flex flex-col lg:flex-row justify-between gap-4'>
 					{/* Búsqueda */}
-					<div className='relative flex-1 min-w-0'>
+					<div className='relative w-full lg:flex-1 lg:max-w-xl min-w-0'>
 						<div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 dark:text-gray-500'>
 							<i className='fa-solid fa-search'></i>
 						</div>
@@ -84,6 +93,28 @@ const FiltroTareas = () => {
 							<option value='fechaVencimiento:desc'>{t.dueDateDown}</option>
 							<option value='prioridad:asc'>{t.priorityUp}</option>
 							<option value='prioridad:desc'>{t.priorityDown}</option>
+						</select>
+						<div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500'>
+							<i className='fa-solid fa-chevron-down'></i>
+						</div>
+					</div>
+
+					{/* Filtro por proxecto */}
+					<div className='relative w-full lg:w-56'>
+						<div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 dark:text-gray-500'>
+							<i className='fa-solid fa-diagram-project'></i>
+						</div>
+						<select
+							value={filtroProxectoActivo}
+							onChange={manejarCambioFiltroProxecto}
+							className='w-full pl-10 pr-10 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors text-gray-800 dark:text-white appearance-none cursor-pointer'
+							aria-label={t.filterByProject}>
+							<option value='todos'>{t.allProjects}</option>
+							{proxectos.map((proxecto) => (
+								<option key={proxecto.id} value={proxecto.id}>
+									{proxecto.nome}
+								</option>
+							))}
 						</select>
 						<div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 dark:text-gray-500'>
 							<i className='fa-solid fa-chevron-down'></i>
