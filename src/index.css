@@ -72,3 +72,18 @@
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background-color: #f9fafb;
+}
+
+.dark body {
+	background-color: #111827;
+}

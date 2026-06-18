@@ -38,6 +38,7 @@ export default function ProjectsView() {
 	const [proxectoAEliminar, setProxectoAEliminar] = useState(null);
 	const [textoConfirmacionEliminar, setTextoConfirmacionEliminar] = useState('');
 	const [proxectoSeleccionadoId, setProxectoSeleccionadoId] = useState('');
+	const [proxectoHoverId, setProxectoHoverId] = useState('');
 	const [kdbxEntries, setKdbxEntries] = useState([]);
 	const [contrasinaisVisibles, setContrasinaisVisibles] = useState({});
 	const [kdbxLoading, setKdbxLoading] = useState(false);
@@ -317,42 +318,15 @@ export default function ProjectsView() {
 							<div
 								key={proxecto.id}
 								onClick={() => setProxectoSeleccionadoId(proxecto.id)}
-								className={`group relative border rounded-lg p-3 cursor-pointer transition-colors ${
+								className={`group relative rounded-xl p-4 sm:p-5 cursor-pointer transition-all duration-300 overflow-hidden border-l-4 shadow-sm hover:shadow-md ${
 									proxecto.id === proxectoSeleccionadoId
-										? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-400'
-										: 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40'
-								}`}>
-								<div
-									className={`absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-1 ${
-										proxectoEditandoId === proxecto.id ? 'hidden' : ''
-									}`}>
-									<button
-										type='button'
-										onClick={(e) => {
-											e.stopPropagation();
-											iniciarEdicion(proxecto);
-										}}
-										className={`w-8 h-8 rounded-full hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors ${
-											proxectoEditandoId === proxecto.id
-												? 'opacity-100 text-amber-500'
-												: 'opacity-0 group-hover:opacity-100 text-gray-500 dark:text-gray-400'
-										}`}
-										aria-label={t.editProject}
-										title={t.editProject}>
-										<i className='fa-solid fa-pen-to-square'></i>
-									</button>
-									<button
-										type='button'
-										onClick={(e) => {
-											e.stopPropagation();
-											abrirModalEliminar(proxecto);
-										}}
-										className='w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
-										aria-label={t.deleteProject}
-										title={t.deleteProject}>
-										<i className='fa-solid fa-trash-can'></i>
-									</button>
-								</div>
+										? 'bg-gradient-to-br from-indigo-50 to-purple-100/60 dark:from-indigo-900/25 dark:to-purple-900/15'
+										: 'bg-gradient-to-br from-gray-50 to-neutral-100 dark:from-gray-700 dark:to-gray-800'
+								}`}
+								style={{ borderLeftColor: proxecto.cor || '#9333ea' }}
+								onMouseEnter={() => setProxectoHoverId(proxecto.id)}
+								onMouseLeave={() => setProxectoHoverId('')}
+								onTouchStart={() => setProxectoHoverId(proxecto.id)}>
 								{proxectoEditandoId === proxecto.id ? (
 									<form
 										onSubmit={(e) => gardarEdicion(e, proxecto.id)}
@@ -442,30 +416,66 @@ export default function ProjectsView() {
 										</div>
 									</form>
 								) : (
-									<>
-										<p className='font-semibold text-gray-800 dark:text-white flex items-center gap-2'>
-											<span
-												className='inline-block w-2.5 h-2.5 rounded-full'
-												style={{ backgroundColor: proxecto.cor || '#9333ea' }}
-											/>
-											{proxecto.nome}
-										</p>
-										<p className='text-sm text-gray-600 dark:text-gray-300'>
-											{t.clientName}: {proxecto.clienteNome}
-										</p>
-										<p className='text-sm text-gray-600 dark:text-gray-300'>
-											{t.clientPhone}: {proxecto.clienteTelefono}
-										</p>
-										<p className='text-sm text-gray-600 dark:text-gray-300'>
-											{t.clientEmail}: {proxecto.clienteEmail}
-										</p>
-										<p className='text-sm text-gray-600 dark:text-gray-300'>
-											{t.agreedPrice}: {proxecto.prezoAcordado}
-										</p>
-										<p className='text-sm text-gray-600 dark:text-gray-300'>
-											{t.deliveryDeadline}: {proxecto.dataLimiteEntrega}
-										</p>
-									</>
+									<div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+										<div className='flex-1 min-w-0'>
+											<p className='font-semibold text-base sm:text-lg text-gray-800 dark:text-white'>
+												{proxecto.nome}
+											</p>
+											<div className='mt-3 flex flex-wrap items-center gap-2 text-sm'>
+												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
+													<i className='fa-solid fa-user mr-1'></i>
+													{proxecto.clienteNome}
+												</span>
+												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'>
+													<i className='fa-solid fa-phone mr-1'></i>
+													{proxecto.clienteTelefono}
+												</span>
+												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'>
+													<i className='fa-solid fa-envelope mr-1'></i>
+													{proxecto.clienteEmail}
+												</span>
+												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'>
+													<i className='fa-solid fa-euro-sign mr-1'></i>
+													{proxecto.prezoAcordado}
+												</span>
+												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-300'>
+													<i className='fa-solid fa-calendar-days mr-1'></i>
+													{proxecto.dataLimiteEntrega}
+												</span>
+											</div>
+										</div>
+										<motion.div
+											className='flex gap-2 self-end sm:self-center'
+											initial={{ opacity: 0 }}
+											animate={{ opacity: proxectoHoverId === proxecto.id ? 1 : 0 }}>
+											<motion.button
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.9 }}
+												type='button'
+												onClick={(e) => {
+													e.stopPropagation();
+													iniciarEdicion(proxecto);
+												}}
+												className='w-8 h-8 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'
+												aria-label={t.editProject}
+												title={t.editProject}>
+												<i className='fa-solid fa-pen-to-square'></i>
+											</motion.button>
+											<motion.button
+												whileHover={{ scale: 1.1, color: '#ef4444' }}
+												whileTap={{ scale: 0.9 }}
+												type='button'
+												onClick={(e) => {
+													e.stopPropagation();
+													abrirModalEliminar(proxecto);
+												}}
+												className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
+												aria-label={t.deleteProject}
+												title={t.deleteProject}>
+												<i className='fa-solid fa-trash-can'></i>
+											</motion.button>
+										</motion.div>
+									</div>
 								)}
 							</div>
 						))}
