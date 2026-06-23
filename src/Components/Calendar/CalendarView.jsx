@@ -192,6 +192,48 @@ function getMonthGrid(year, month, weekStart) {
 	return cells;
 }
 
+function obterEtiquetasOrixeDia(items = [], proxectos = [], t) {
+	const contador = new Map();
+
+	items.forEach((item) => {
+		let etiqueta = '';
+		let estiloClass = 'text-white';
+		let estiloInline = {};
+		let icono = '';
+
+		if (item?.orixe === 'ical') {
+			etiqueta = item.fonte || t.googleCalendarLabel;
+			icono = 'fa-calendar-check';
+			const corCalendario =
+				item.calendarIndex === 1 ? '#0ea5e9' : item.calendarIndex === 3 ? '#f59e0b' : '#a855f7';
+			estiloInline = {
+				backgroundColor: corHexARgba(corCalendario, 0.9),
+			};
+		} else {
+			const proxecto = proxectos.find((p) => p.id === item?.proxectoId);
+			etiqueta = proxecto ? proxecto.nome : t.taskTypeTask;
+			icono = proxecto ? 'fa-folder-tree' : 'fa-list-check';
+			if (proxecto?.cor) {
+				estiloInline = {
+					backgroundColor: corHexARgba(proxecto.cor, 0.9),
+				};
+			} else {
+				estiloInline = {
+					backgroundColor: corHexARgba('#6366f1', 0.9),
+				};
+			}
+		}
+
+		const key = `${icono}|${JSON.stringify(estiloInline)}|${etiqueta}`;
+		if (!contador.has(key)) {
+			contador.set(key, { etiqueta, estiloClass, estiloInline, icono, total: 0 });
+		}
+		contador.get(key).total += 1;
+	});
+
+	return Array.from(contador.values());
+}
+
 export default function CalendarView() {
 	const idioma = useSelector(seleccionarIdioma);
 	const tarefas = useSelector(seleccionarTodasLasTareas);
@@ -214,6 +256,7 @@ export default function CalendarView() {
 	const now = new Date();
 	const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 	const [selectedMonth, setSelectedMonth] = useState(null);
+	const [selectedDay, setSelectedDay] = useState(null);
 	const [eventosIcal, setEventosIcal] = useState([]);
 	const [icalLoading, setIcalLoading] = useState(false);
 	const [icalError, setIcalError] = useState('');
@@ -405,7 +448,10 @@ export default function CalendarView() {
 								type='button'
 								key={month}
 								whileHover={{ y: -2 }}
-								onClick={() => setSelectedMonth(month)}
+								onClick={() => {
+									setSelectedMonth(month);
+									setSelectedDay(null);
+								}}
 								className='text-left border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-700/40'>
 								<div className='flex justify-between items-center mb-2'>
 									<h3 className='capitalize font-semibold text-gray-800 dark:text-white'>{monthName}</h3>
@@ -447,9 +493,23 @@ export default function CalendarView() {
 
 	const monthName =
 		monthNames[selectedMonth] || getMonthName(new Date(selectedYear, selectedMonth, 1), locale);
+	const volverAoMesLabel = idioma === 'en' ? 'Back to month' : idioma === 'es' ? 'Volver al mes' : 'Volver ao mes';
+	const tituloTarefasDia =
+		selectedDay === null
+			? t.monthTasksList
+			: `${
+					idioma === 'en' ? 'Tasks for' : idioma === 'es' ? 'Tareas del día' : 'Tarefas do día'
+				} ${new Date(selectedYear, selectedMonth, selectedDay).toLocaleDateString(locale, {
+					day: '2-digit',
+					month: 'long',
+				})}`;
 	const monthTasks = (tarefasPorMes.get(`${selectedYear}-${selectedMonth}`) || [])
 		.filter((task) => ensureDate(task?._dueDate))
 		.sort((a, b) => ensureDate(a._dueDate) - ensureDate(b._dueDate));
+	const selectedDayTasks =
+		selectedDay === null
+			? monthTasks
+			: monthTasks.filter((task) => ensureDate(task._dueDate)?.getDate() === selectedDay);
 	const monthGrid = getMonthGrid(selectedYear, selectedMonth, weekStart);
 
 	return (
@@ -469,7 +529,10 @@ export default function CalendarView() {
 				<div className='flex items-center gap-2'>
 					<button
 						type='button'
-						onClick={() => setSelectedMonth(null)}
+						onClick={() => {
+							setSelectedMonth(null);
+							setSelectedDay(null);
+						}}
 						className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
 						<i className='fa-solid fa-arrow-left mr-2'></i>
 						{t.backToYear}
@@ -489,39 +552,75 @@ export default function CalendarView() {
 			</div>
 			<div className='grid grid-cols-7 gap-2 mb-6'>
 				{monthGrid.map((day, idx) => {
-					const taskCount = day
-						? monthTasks.filter((task) => ensureDate(task._dueDate)?.getDate() === day).length
-						: 0;
+					const dayItems = day
+						? monthTasks.filter((task) => ensureDate(task._dueDate)?.getDate() === day)
+						: [];
+					const taskCount = dayItems.length;
+					const etiquetasDia = obterEtiquetasOrixeDia(dayItems, proxectosSeguros, t);
 					return (
-						<div
+						<button
+							type='button'
 							key={idx}
+							onClick={() => {
+								if (!day) return;
+								setSelectedDay(day);
+							}}
 							className={`min-h-20 rounded-lg border p-2 ${
 								day
-									? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40'
+									? `border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40 text-left ${
+											selectedDay === day ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
+										}`
 									: 'border-transparent'
-							}`}>
+							} ${day ? 'cursor-pointer hover:shadow-sm transition-shadow' : 'cursor-default'}`}>
 							{day && (
 								<>
 									<div className='text-sm font-semibold text-gray-700 dark:text-gray-200'>{day}</div>
 									{taskCount > 0 && (
-										<div className='mt-1 text-xs text-indigo-600 dark:text-indigo-300'>
-											{taskCount} {t.calendarTasksBadge}
-										</div>
+										<>
+											<div className='mt-1 text-xs text-indigo-600 dark:text-indigo-300'>
+												{taskCount} {t.calendarTasksBadge}
+											</div>
+											<div className='mt-1 flex flex-wrap gap-1'>
+												{etiquetasDia.map((etiqueta) => (
+													<span
+														key={`${day}-${etiqueta.icono}-${etiqueta.etiqueta}`}
+														title={`${etiqueta.etiqueta}${etiqueta.total > 1 ? ` (${etiqueta.total})` : ''}`}
+														className={`inline-flex items-center justify-center text-[10px] h-5 min-w-5 px-1 rounded-full ${etiqueta.estiloClass}`}
+														style={etiqueta.estiloInline}>
+														<i className={`fa-solid ${etiqueta.icono}`}></i>
+														{etiqueta.total > 1 ? (
+															<span className='ml-1 text-[9px] font-semibold'>{etiqueta.total}</span>
+														) : null}
+													</span>
+												))}
+											</div>
+										</>
 									)}
 								</>
 							)}
-						</div>
+						</button>
 					);
 				})}
 			</div>
 
 			<div className='border-t border-gray-200 dark:border-gray-700 pt-4'>
-				<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-3'>{t.monthTasksList}</h3>
-				{monthTasks.length === 0 ? (
+				<div className='flex items-center justify-between gap-3 mb-3'>
+					<h3 className='text-lg font-semibold text-gray-800 dark:text-white'>{tituloTarefasDia}</h3>
+					{selectedDay !== null && (
+						<button
+							type='button'
+							onClick={() => setSelectedDay(null)}
+							className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm'>
+							<i className='fa-solid fa-rotate-left mr-1.5'></i>
+							{volverAoMesLabel}
+						</button>
+					)}
+				</div>
+				{selectedDayTasks.length === 0 ? (
 					<p className='text-gray-500 dark:text-gray-400'>{t.noMonthTasks}</p>
 				) : (
 					<ul className='space-y-3'>
-						{monthTasks.map((task) => {
+						{selectedDayTasks.map((task) => {
 							const proxectoVinculado = proxectosSeguros.find((p) => p.id === task.proxectoId);
 							const corLateralIcal =
 								task.calendarIndex === 1
