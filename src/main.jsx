@@ -7,8 +7,6 @@ import { Provider } from 'react-redux';
 import { store } from '@/App/store';
 import { cargarDatosApp, gardarDatosApp, subscribirseADatosRemotos } from '@/App/persistence';
 import { hidratarTareas } from '@/Features/Tasks/tareasSlice';
-import { hidratarTema } from '@/Features/Theme/temaSlice';
-import { hidratarIdioma } from '@/Features/Language/idiomaSlice';
 import { hidratarUsuarios } from '@/Features/Users/usuariosSlice';
 import { hidratarProxectos } from '@/Features/Projects/proxectosSlice';
 import { hidratarNotas } from '@/Features/Notes/notasSlice';
@@ -29,8 +27,6 @@ async function bootstrap() {
 	const aplicarHidratacion = (data) => {
 		if (!data) return;
 		if (data?.usuarios) store.dispatch(hidratarUsuarios(data.usuarios));
-		if (data?.idioma) store.dispatch(hidratarIdioma(data.idioma));
-		if (data?.tema) store.dispatch(hidratarTema(data.tema));
 		if (data?.tareas) store.dispatch(hidratarTareas(data.tareas));
 		if (data?.proxectos) store.dispatch(hidratarProxectos(data.proxectos));
 		if (data?.notas) store.dispatch(hidratarNotas(data.notas));
@@ -40,8 +36,6 @@ async function bootstrap() {
 		const state = store.getState();
 		return {
 			usuarios: state.usuarios,
-			idioma: state.idioma,
-			tema: state.tema,
 			tareas: state.tareas,
 			proxectos: state.proxectos,
 			notas: state.notas,

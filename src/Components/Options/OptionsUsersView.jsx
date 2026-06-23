@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import {
 	actualizarUsuario,
@@ -40,6 +41,7 @@ export default function OptionsUsersView() {
 		imaxePerfil: '',
 		admin: '0',
 	});
+	const [usuarioEliminandoId, setUsuarioEliminandoId] = useState('');
 
 	const onNovoUsuarioChange = (e) => {
 		const { name, value } = e.target;
@@ -194,8 +196,22 @@ export default function OptionsUsersView() {
 					<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.adminUsersTitle}</h3>
 					<div className='space-y-2'>
 						{usuarios.map((usuario) => (
-							<div
+							<motion.div
 								key={usuario.id}
+								layout
+								initial={{ opacity: 0, y: 8 }}
+								animate={
+									usuarioEliminandoId === usuario.id
+										? { opacity: 0, y: -6, scale: 0.98 }
+										: { opacity: 1, y: 0, scale: 1 }
+								}
+								transition={{ duration: usuarioEliminandoId === usuario.id ? 0.5 : 0.25 }}
+								onAnimationComplete={() => {
+									if (usuarioEliminandoId === usuario.id) {
+										dispatch(eliminarUsuario(usuario.id));
+										setUsuarioEliminandoId('');
+									}
+								}}
 								className='group relative bg-gray-50 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2'>
 								<div
 									className={`absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-1 ${
@@ -212,7 +228,7 @@ export default function OptionsUsersView() {
 									<button
 										type='button'
 										disabled={usuario.id === 'ismael' || usuario.id === usuarioActual?.id}
-										onClick={() => dispatch(eliminarUsuario(usuario.id))}
+										onClick={() => setUsuarioEliminandoId(usuario.id)}
 										className='w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-20 disabled:cursor-not-allowed'
 										aria-label={t.deleteUser}
 										title={t.deleteUser}>
@@ -326,7 +342,7 @@ export default function OptionsUsersView() {
 										</p>
 									</div>
 								)}
-							</div>
+							</motion.div>
 						))}
 					</div>
 				</div>

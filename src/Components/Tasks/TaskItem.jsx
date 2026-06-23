@@ -30,6 +30,8 @@ const ElementoTarea = ({ tarea }) => {
 	const [mostrarAcciones, setMostrarAcciones] = useState(false);
 	const [estaEditando, setEstaEditando] = useState(false);
 	const [tareaEditada, setTareaEditada] = useState(tarea);
+	const [eliminando, setEliminando] = useState(false);
+	const [eliminada, setEliminada] = useState(false);
 
 	// Prioridades con iconos y colores
 	const prioridades = {
@@ -262,15 +264,22 @@ const ElementoTarea = ({ tarea }) => {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
+			animate={eliminando ? { opacity: 0, y: -6, scale: 0.98 } : { opacity: 1, y: 0, scale: 1 }}
 			exit={{ opacity: 0, y: -10 }}
+			onAnimationComplete={() => {
+				if (eliminando && !eliminada) {
+					setEliminada(true);
+					dispatch(eliminarTarea({ id: tarea.id, usuarioId: usuarioActualId }));
+				}
+			}}
+			transition={{ duration: eliminando ? 0.5 : 0.25 }}
 			layout
 			className={`bg-gradient-to-br from-gray-50 to-neutral-100 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden
 				${
 					tarea.completada
 						? 'border-l-4 border-green-500 dark:border-green-600'
 						: 'border-l-4 border-indigo-500 dark:border-indigo-600'
-				}`}
+				} ${eliminando ? 'pointer-events-none' : ''}`}
 			onMouseEnter={() => setMostrarAcciones(true)}
 			onMouseLeave={() => setMostrarAcciones(false)}
 			onTouchStart={() => setMostrarAcciones(true)}>
@@ -363,7 +372,7 @@ const ElementoTarea = ({ tarea }) => {
 					<motion.button
 						whileHover={{ scale: 1.1, color: '#ef4444' }}
 						whileTap={{ scale: 0.9 }}
-						onClick={() => dispatch(eliminarTarea({ id: tarea.id, usuarioId: usuarioActualId }))}
+						onClick={() => setEliminando(true)}
 						className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
 						aria-label={t.deleteTask}>
 						<i className='fa-solid fa-trash-can'></i>

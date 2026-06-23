@@ -43,6 +43,7 @@ export default function ProjectsView() {
 	const [contrasinaisVisibles, setContrasinaisVisibles] = useState({});
 	const [kdbxLoading, setKdbxLoading] = useState(false);
 	const [kdbxErro, setKdbxErro] = useState('');
+	const [proxectoEliminandoId, setProxectoEliminandoId] = useState('');
 
 	const onChange = (e) => {
 		const { name, value } = e.target;
@@ -97,11 +98,12 @@ export default function ProjectsView() {
 
 	const confirmarEliminar = () => {
 		if (!proxectoAEliminar) return;
-		dispatch(eliminarProxecto(proxectoAEliminar.id));
-		if (proxectoSeleccionadoId === proxectoAEliminar.id) {
+		const proxectoId = proxectoAEliminar.id;
+		setProxectoEliminandoId(proxectoId);
+		if (proxectoSeleccionadoId === proxectoId) {
 			setProxectoSeleccionadoId('');
 		}
-		if (proxectoEditandoId === proxectoAEliminar.id) {
+		if (proxectoEditandoId === proxectoId) {
 			cancelarEdicion();
 		}
 		cancelarEliminar();
@@ -315,14 +317,28 @@ export default function ProjectsView() {
 				) : (
 					<div className='space-y-3'>
 						{proxectos.map((proxecto) => (
-							<div
+							<motion.div
 								key={proxecto.id}
+								layout
+								initial={{ opacity: 0, y: 10 }}
+								animate={
+									proxectoEliminandoId === proxecto.id
+										? { opacity: 0, y: -8, scale: 0.98 }
+										: { opacity: 1, y: 0, scale: 1 }
+								}
+								transition={{ duration: proxectoEliminandoId === proxecto.id ? 0.5 : 0.25 }}
+								onAnimationComplete={() => {
+									if (proxectoEliminandoId === proxecto.id) {
+										dispatch(eliminarProxecto(proxecto.id));
+										setProxectoEliminandoId('');
+									}
+								}}
 								onClick={() => setProxectoSeleccionadoId(proxecto.id)}
 								className={`group relative rounded-xl p-4 sm:p-5 cursor-pointer transition-all duration-300 overflow-hidden border-l-4 shadow-sm hover:shadow-md ${
 									proxecto.id === proxectoSeleccionadoId
 										? 'bg-gradient-to-br from-indigo-50 to-purple-100/60 dark:from-indigo-900/25 dark:to-purple-900/15'
 										: 'bg-gradient-to-br from-gray-50 to-neutral-100 dark:from-gray-700 dark:to-gray-800'
-								}`}
+								} ${proxectoEliminandoId === proxecto.id ? 'pointer-events-none' : ''}`}
 								style={{ borderLeftColor: proxecto.cor || '#9333ea' }}
 								onMouseEnter={() => setProxectoHoverId(proxecto.id)}
 								onMouseLeave={() => setProxectoHoverId('')}
@@ -477,7 +493,7 @@ export default function ProjectsView() {
 										</motion.div>
 									</div>
 								)}
-							</div>
+							</motion.div>
 						))}
 					</div>
 				)}
