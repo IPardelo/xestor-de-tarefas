@@ -24,6 +24,9 @@ const estadoInicial = {
 
 const normalizarCorNota = (cor) => {
 	if (typeof cor === 'string' && /^#[0-9a-fA-F]{6}$/.test(cor.trim())) return cor.trim();
+	if (cor === 'azul') return '#38bdf8';
+	if (cor === 'lila') return '#a855f7';
+	if (cor === 'verde') return '#34d399';
 	return '#9333ea';
 };
 
