@@ -235,7 +235,11 @@ export const seleccionarTareasFiltradas = createSelector(
 
 		// Aplicar filtro por proxecto
 		if (filtroProxecto !== 'todos') {
-			tareasFiltradas = tareasFiltradas.filter((tarea) => (tarea.proxectoId || '') === filtroProxecto);
+			if (filtroProxecto === 'sen-proxecto') {
+				tareasFiltradas = tareasFiltradas.filter((tarea) => !tarea.proxectoId);
+			} else {
+				tareasFiltradas = tareasFiltradas.filter((tarea) => tarea.proxectoId === filtroProxecto);
+			}
 		}
 
 		// Aplicar búsqueda
@@ -287,6 +291,24 @@ export const seleccionarConteoTareas = createSelector([seleccionarTodasLasTareas
 		baja: tareasValidas.filter((tarea) => tarea.prioridad === 'baja').length,
 	};
 });
+
+export const seleccionarConteoTarefasPorProxecto = createSelector(
+	[seleccionarTodasLasTareas],
+	(tareas) => {
+		const tarefasValidas = (tareas || []).filter((tarea) => tarea !== null && tarea !== undefined);
+		const conteo = {
+			todos: tarefasValidas.length,
+			'sen-proxecto': tarefasValidas.filter((tarea) => !tarea.proxectoId).length,
+		};
+
+		tarefasValidas.forEach((tarea) => {
+			if (!tarea.proxectoId) return;
+			conteo[tarea.proxectoId] = (conteo[tarea.proxectoId] || 0) + 1;
+		});
+
+		return conteo;
+	}
+);
 
 // Selector para obtener una tarea por ID
 export const seleccionarTareaPorId = (state, idTarea) => {
