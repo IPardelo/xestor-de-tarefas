@@ -1,7 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { esApp } from '@/Utils/plataforma';
 
 const USERS_KEY = 'usuarios';
 const CURRENT_USER_KEY = 'usuario_actual_id';
+// Só a app Android lembra a sesión entre aperturas; na web pídese o login cada vez.
+const SESSION_KEY = 'sesion_iniciada';
+
+// Usuario administrador principal: non se pode eliminar.
+export const ID_USUARIO_PROTEXIDO = 'ipardelo';
 
 const normalizarXenero = (valor) => {
 	if (valor === 'M' || valor === 'F') return valor;
@@ -11,7 +17,7 @@ const normalizarXenero = (valor) => {
 };
 
 const normalizarAdmin = (valor, id, nome) => {
-	const coincideConIsmael = id === 'ismael' || nome === 'Ismael Castiñeira';
+	const coincideConIsmael = id === ID_USUARIO_PROTEXIDO || nome === 'Ismael Castiñeira';
 	if (coincideConIsmael) return '1';
 	return valor === '1' ? '1' : '0';
 };
@@ -35,8 +41,9 @@ const normalizarUsuario = (usuario) => ({
 
 const usuariosPorDefecto = [
 	{
-		id: 'ismael',
+		id: 'ipardelo',
 		nome: 'Ismael Castiñeira',
+		contrasenha: '1234567890',
 		idiomaPredeterminado: 'gl',
 		temaPredeterminado: 'oscuro',
 		xenero: 'M',
@@ -69,11 +76,31 @@ const cargarUsuarioActualId = (usuarios) => {
 
 const usuariosIniciales = cargarUsuarios();
 
+const cargarSesionGardada = () => {
+	if (!esApp) return false;
+	try {
+		return localStorage.getItem(SESSION_KEY) === '1';
+	} catch {
+		return false;
+	}
+};
+
+const gardarSesion = (iniciada) => {
+	if (!esApp) return;
+	try {
+		if (iniciada) localStorage.setItem(SESSION_KEY, '1');
+		else localStorage.removeItem(SESSION_KEY);
+	} catch {
+		/* empty */
+	}
+};
+
 const usuariosSlice = createSlice({
 	name: 'usuarios',
 	initialState: {
 		lista: usuariosIniciales,
 		usuarioActualId: cargarUsuarioActualId(usuariosIniciales),
+		sesionIniciada: cargarSesionGardada(),
 	},
 	reducers: {
 		hidratarUsuarios: (state, action) => {
@@ -82,9 +109,27 @@ const usuariosSlice = createSlice({
 			if (Array.isArray(lista) && lista.length > 0) {
 				state.lista = lista.map(normalizarUsuario);
 			}
-			if (usuarioActualId && state.lista.some((u) => u.id === usuarioActualId)) {
+			// Con sesión iniciada non se cambia de usuario polo que chegue doutro dispositivo.
+			if (!state.sesionIniciada && usuarioActualId && state.lista.some((u) => u.id === usuarioActualId)) {
 				state.usuarioActualId = usuarioActualId;
 			}
+			if (state.sesionIniciada && !state.lista.some((u) => u.id === state.usuarioActualId)) {
+				state.sesionIniciada = false;
+				gardarSesion(false);
+			}
+		},
+		// As credenciais valídanse antes (App/autenticacion.js); aquí só se abre a sesión.
+		iniciarSesion: (state, action) => {
+			const id = action.payload;
+			if (!state.lista.some((u) => u.id === id)) return;
+			state.usuarioActualId = id;
+			state.sesionIniciada = true;
+			localStorage.setItem(CURRENT_USER_KEY, id);
+			gardarSesion(true);
+		},
+		pecharSesion: (state) => {
+			state.sesionIniciada = false;
+			gardarSesion(false);
 		},
 		cambiarUsuario: (state, action) => {
 			const novoId = action.payload;
@@ -204,7 +249,7 @@ const usuariosSlice = createSlice({
 			const actual = state.lista.find((u) => u.id === state.usuarioActualId);
 			if (!actual || actual.admin !== '1') return;
 			const idAEliminar = action.payload;
-			if (!idAEliminar || idAEliminar === 'ismael' || idAEliminar === state.usuarioActualId) return;
+			if (!idAEliminar || idAEliminar === ID_USUARIO_PROTEXIDO || idAEliminar === state.usuarioActualId) return;
 			state.lista = state.lista.filter((u) => u.id !== idAEliminar);
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},
@@ -213,6 +258,8 @@ const usuariosSlice = createSlice({
 
 export const {
 	hidratarUsuarios,
+	iniciarSesion,
+	pecharSesion,
 	cambiarUsuario,
 	establecerXeneroUsuarioActual,
 	actualizarPreferenciasUsuarioActual,
@@ -224,6 +271,7 @@ export const {
 } = usuariosSlice.actions;
 export const seleccionarUsuarios = (state) => state.usuarios.lista;
 export const seleccionarUsuarioActualId = (state) => state.usuarios.usuarioActualId;
+export const seleccionarSesionIniciada = (state) => state.usuarios.sesionIniciada === true;
 export const seleccionarUsuarioActual = (state) =>
 	state.usuarios.lista.find((u) => u.id === state.usuarios.usuarioActualId) || null;
 export const seleccionarUsuariosExceptoActual = (state) =>

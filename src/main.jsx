@@ -35,7 +35,11 @@ async function bootstrap() {
 	const getSerializableState = () => {
 		const state = store.getState();
 		return {
-			usuarios: state.usuarios,
+			// A sesión é de cada dispositivo: non se sube a Firebase.
+			usuarios: {
+				lista: state.usuarios.lista,
+				usuarioActualId: state.usuarios.usuarioActualId,
+			},
 			tareas: state.tareas,
 			proxectos: state.proxectos,
 			notas: state.notas,
