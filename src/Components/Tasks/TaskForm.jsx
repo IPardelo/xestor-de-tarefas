@@ -14,6 +14,7 @@ import {
 	seleccionarUsuariosExceptoActual,
 } from '@/Features/Users/usuariosSlice';
 import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
+import { showToast } from '@/Utils/toast';
 
 const FormularioTarea = () => {
 	const dispatch = useDispatch();
@@ -96,6 +97,7 @@ const FormularioTarea = () => {
 
 		// Contraer el formulario
 		setExpandido(false);
+		showToast(t.toastTaskSaved);
 	};
 
 	// Iconos para prioridades
