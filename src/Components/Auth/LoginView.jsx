@@ -3,18 +3,11 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	cambiarContrasinalDesdeLogin,
-	cambiarUsuario,
+	iniciarSesion,
 	rexistrarUsuarioDesdeLogin,
 	seleccionarUsuarios,
 } from '@/Features/Users/usuariosSlice';
-import { cargarDatosApp, isCloudSyncEnabled } from '@/App/persistence';
-
-const getUsuariosFromRemoteData = (data) => {
-	if (!data?.usuarios) return [];
-	if (Array.isArray(data.usuarios)) return data.usuarios;
-	if (Array.isArray(data.usuarios.lista)) return data.usuarios.lista;
-	return [];
-};
+import { validarCredenciais } from '@/App/autenticacion';
 
 export default function LoginView({ onLogin }) {
 	const dispatch = useDispatch();
@@ -38,11 +31,6 @@ export default function LoginView({ onLogin }) {
 		setMensaxe('');
 	};
 
-	const validarCredenciais = (usuarios, loginId, loginContrasenha) =>
-		usuarios.find(
-			(usuario) => usuario?.id === loginId && String(usuario?.contrasenha || '') === loginContrasenha
-		);
-
 	const onSubmit = async (event) => {
 		event.preventDefault();
 		const loginId = id.trim();
@@ -55,25 +43,15 @@ export default function LoginView({ onLogin }) {
 		setErro('');
 
 		try {
-			let usuarioValido = null;
-
-			if (isCloudSyncEnabled()) {
-				const remoteData = await cargarDatosApp();
-				const usuariosRemotos = getUsuariosFromRemoteData(remoteData);
-				usuarioValido = validarCredenciais(usuariosRemotos, loginId, contrasenha);
-			}
-
-			if (!usuarioValido) {
-				usuarioValido = validarCredenciais(usuariosLocais, loginId, contrasenha);
-			}
+			const usuarioValido = await validarCredenciais(loginId, contrasenha, usuariosLocais);
 
 			if (!usuarioValido) {
 				setErro('Credenciais incorrectas.');
 				return;
 			}
 
-			dispatch(cambiarUsuario(usuarioValido.id));
-			onLogin();
+			dispatch(iniciarSesion(usuarioValido.id));
+			onLogin?.();
 		} catch {
 			setErro('Non foi posible validar o login con Firebase.');
 		} finally {
@@ -309,5 +287,5 @@ export default function LoginView({ onLogin }) {
 }
 
 LoginView.propTypes = {
-	onLogin: PropTypes.func.isRequired,
+	onLogin: PropTypes.func,
 };
