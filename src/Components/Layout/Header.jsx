@@ -5,15 +5,14 @@ import packageJson from '../../../package.json';
 import DarkMode from '@/Components/UI/DarkMode';
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { languageNames } from '@/i18n/translations';
+import { esApp } from '@/Utils/plataforma';
 
-export default function Header() {
+export default function Header({ onToggleSidebar = () => {} }) {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
 
-	return (
-		<header className='bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6 transition-colors duration-300'>
-			<nav className='container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center'>
-				<section className='flex items-center gap-3 flex-1 min-w-0'>
+	const titulo = (
+		<>
 					<motion.div
 						initial={{ rotate: 0 }}
 						animate={{ rotate: 360 }}
@@ -32,7 +31,29 @@ export default function Header() {
 						</span>
 						<span className='text-xs text-gray-500 dark:text-gray-400 ml-2'>v{packageJson.version}</span>
 					</motion.h1>
-				</section>
+		</>
+	);
+
+	// Na app: tocar o título abre o menú lateral; tema e idioma non están na cabeceira.
+	if (esApp) {
+		return (
+			<header className='bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6 transition-colors duration-300'>
+				<nav className='container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center'>
+					<button
+						type='button'
+						onClick={onToggleSidebar}
+						className='flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-90 transition-opacity'>
+						{titulo}
+					</button>
+				</nav>
+			</header>
+		);
+	}
+
+	return (
+		<header className='bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6 transition-colors duration-300'>
+			<nav className='container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center'>
+				<section className='flex items-center gap-3 flex-1 min-w-0'>{titulo}</section>
 				<div className='flex items-center gap-2 sm:gap-4'>
 					<div className='relative'>
 						<div className='pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 dark:text-gray-300'>
