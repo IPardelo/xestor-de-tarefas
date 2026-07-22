@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { seleccionarTodasLasTareas } from '@/Features/Tasks/tareasSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
 import { seleccionarUsuarioActual, seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
+import { esApp } from '@/Utils/plataforma';
 
-const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion = () => {} }) => {
+const BarraLateral = ({
+	vistaActual,
+	onCambiarVista = () => {},
+	onCerrarSesion = () => {},
+	estaAbierto = false,
+	onToggleAbierto = () => {},
+	onCerrar = () => {},
+}) => {
 	const tarefas = useSelector(seleccionarTodasLasTareas) || [];
 	const idioma = useSelector(seleccionarIdioma);
 	const usuarioActual = useSelector(seleccionarUsuarioActual);
@@ -14,7 +22,6 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion =
 	const xeneroActual = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
 	const benvidaLateral =
 		idioma === 'en' ? t.sidebarWelcome : t.sidebarWelcomeByGender?.[xeneroActual] || t.sidebarWelcome;
-	const [estaAbierto, setEstaAbierto] = useState(false);
 
 	// Filtrar tarefas válidas para evitar erros con elementos nulos
 	const tarefasValidas = tarefas.filter((tarefa) => tarefa !== null && tarefa !== undefined);
@@ -61,21 +68,23 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion =
 						animate={{ opacity: 0.5 }}
 						exit={{ opacity: 0 }}
 						className='fixed inset-0 bg-black z-10 md:hidden'
-						onClick={() => setEstaAbierto(false)}
+						onClick={onCerrar}
 					/>
 				)}
 			</AnimatePresence>
 
-			{/* Botón de menú para móvil */}
-			<div className='md:hidden fixed bottom-4 right-4 z-20'>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={() => setEstaAbierto(!estaAbierto)}
-					className='bg-gradient-to-r from-indigo-500 to-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg'>
-					<i className={`fa-solid ${estaAbierto ? 'fa-xmark' : 'fa-bars'}`}></i>
-				</motion.button>
-			</div>
+			{/* Botón de menú para pantallas pequenas (na app ábrese tocando a cabeceira) */}
+			{!esApp && (
+				<div className='md:hidden fixed bottom-4 right-4 z-20'>
+					<motion.button
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={onToggleAbierto}
+						className='bg-gradient-to-r from-indigo-500 to-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg'>
+						<i className={`fa-solid ${estaAbierto ? 'fa-xmark' : 'fa-bars'}`}></i>
+					</motion.button>
+				</div>
+			)}
 
 			{/* Sidebar para móvil */}
 			<AnimatePresence>
@@ -87,7 +96,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion =
 						transition={{ type: 'spring', damping: 25, stiffness: 200 }}
 						className='fixed inset-y-0 left-0 w-fit bg-white dark:bg-gray-800 shadow-2xl z-20 md:hidden p-6 overflow-y-auto'>
 						<button
-							onClick={() => setEstaAbierto(false)}
+							onClick={onCerrar}
 							className='absolute top-4 left-4 w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'>
 							<i className='fa-solid fa-xmark'></i>
 						</button>
@@ -104,7 +113,7 @@ const BarraLateral = ({ vistaActual, onCambiarVista = () => {}, onCerrarSesion =
 							usuarioActual={usuarioActual}
 							onCambiarVista={onCambiarVista}
 							onCerrarSesion={onCerrarSesion}
-							onDespuesDeNavegar={() => setEstaAbierto(false)}
+							onDespuesDeNavegar={onCerrar}
 						/>
 					</motion.div>
 				)}
@@ -204,10 +213,13 @@ const ContenidoBarraLateral = ({
 					</button>
 					<button
 						type='button'
-						onClick={() => onCerrarSesion()}
+						onClick={() => {
+							onCerrarSesion();
+							if (esApp) onDespuesDeNavegar?.();
+						}}
 						className='shrink-0 p-1 rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-500 dark:hover:text-red-400'
-						aria-label='Pechar sesion'
-						title='Pechar sesion'>
+						aria-label={esApp ? t.logout : 'Pechar sesion'}
+						title={esApp ? t.logout : 'Pechar sesion'}>
 						<i className='fa-solid fa-right-from-bracket text-base' />
 					</button>
 				</div>

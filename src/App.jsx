@@ -9,19 +9,27 @@ import Header from '@/Components/Layout/Header';
 import Sidebar from '@/Components/Layout/Sidebar';
 import TaskFilter from '@/Components/Tasks/TaskFilter';
 import CalendarView from '@/Components/Calendar/CalendarView';
+import CalendarErrorBoundary from '@/Components/Calendar/CalendarErrorBoundary';
 import NotesView from '@/Components/Notes/NotesView';
 import OptionsUsersView from '@/Components/Options/OptionsUsersView';
 import OptionsGlobalView from '@/Components/Options/OptionsGlobalView';
 import ProjectsView from '@/Components/Projects/ProjectsView';
 import UserSettingsView from '@/Components/Layout/UserSettingsView';
 import LoginView from '@/Components/Auth/LoginView';
+import ToastCenter from '@/Components/UI/ToastCenter';
 
 // Features
 import { establecerIdioma, seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { establecerTema, seleccionarTema } from '@/Features/Theme/temaSlice';
 import { limpiarTareas } from '@/Features/Tasks/tareasSlice';
 import { translations } from '@/i18n/translations';
-import { seleccionarUsuarioActual, seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
+import {
+	pecharSesion,
+	seleccionarSesionIniciada,
+	seleccionarUsuarioActual,
+	seleccionarUsuarioActualAdmin,
+} from '@/Features/Users/usuariosSlice';
+import { esApp } from '@/Utils/plataforma';
 
 export default function App() {
 	const dispatch = useDispatch();
@@ -29,12 +37,13 @@ export default function App() {
 	const idioma = useSelector(seleccionarIdioma);
 	const usuarioActual = useSelector(seleccionarUsuarioActual);
 	const esAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const sesionIniciada = useSelector(seleccionarSesionIniciada);
 	const t = translations[idioma] || translations.gl;
 	const xenero = usuarioActual?.xenero === 'M' ? 'masculino' : 'feminino';
 	const benvida = idioma === 'en' ? t.welcome : t.welcomeByGender?.[xenero] || t.welcome;
 	const [vistaActual, setVistaActual] = useState('inicio');
-	const [logueado, setLogueado] = useState(false);
 	const [modalPecharSesionAberta, setModalPecharSesionAberta] = useState(false);
+	const [sidebarAberta, setSidebarAberta] = useState(false);
 	const preferenciasAplicadasRef = useRef({ idioma: null, tema: null });
 
 	useEffect(() => {
@@ -55,11 +64,27 @@ export default function App() {
 			dispatch(establecerIdioma(idiomaPredeterminado));
 			preferenciasAplicadasRef.current.idioma = idiomaPredeterminado;
 		}
-		if (preferenciasAplicadasRef.current.tema !== temaPredeterminado) {
+		// Na app o tema segue ao do sistema (ver o efecto seguinte).
+		if (!esApp && preferenciasAplicadasRef.current.tema !== temaPredeterminado) {
 			dispatch(establecerTema(temaPredeterminado));
 			preferenciasAplicadasRef.current.tema = temaPredeterminado;
 		}
 	}, [dispatch, usuarioActual?.idiomaPredeterminado, usuarioActual?.temaPredeterminado]);
+
+	useEffect(() => {
+		if (!esApp) return;
+		const mediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+		if (!mediaQuery) return;
+
+		dispatch(establecerTema(mediaQuery.matches ? 'oscuro' : 'claro'));
+
+		const onChange = (event) => {
+			dispatch(establecerTema(event.matches ? 'oscuro' : 'claro'));
+		};
+
+		mediaQuery.addEventListener('change', onChange);
+		return () => mediaQuery.removeEventListener('change', onChange);
+	}, [dispatch]);
 
 	// Limpiar tareas inválidas al iniciar la aplicación
 	useEffect(() => {
@@ -76,14 +101,20 @@ export default function App() {
 		}
 	}, [esAdmin, vistaActual]);
 
-	if (!logueado) {
-		return <LoginView onLogin={() => setLogueado(true)} />;
+	if (!sesionIniciada) {
+		return (
+			<>
+				{esApp && <ToastCenter />}
+				<LoginView />
+			</>
+		);
 	}
 
-	const pecharSesion = () => {
-		setLogueado(false);
+	const confirmarPecharSesion = () => {
+		dispatch(pecharSesion());
 		setVistaActual('inicio');
 		setModalPecharSesionAberta(false);
+		setSidebarAberta(false);
 	};
 
 	const renderVistaActual = () => {
@@ -136,7 +167,13 @@ export default function App() {
 			);
 		}
 
-		if (vistaActual === 'calendario') return <CalendarView />;
+		if (vistaActual === 'calendario') {
+			return (
+				<CalendarErrorBoundary key='calendar-boundary'>
+					<CalendarView />
+				</CalendarErrorBoundary>
+			);
+		}
 		if (vistaActual === 'notas') return <NotesView />;
 		if (vistaActual === 'proxectos') return <ProjectsView />;
 		if (vistaActual === 'axustesUsuario') return <UserSettingsView />;
@@ -147,12 +184,17 @@ export default function App() {
 
 	return (
 		<div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
-			<Header />
+			{esApp && <ToastCenter />}
+			<Header onToggleSidebar={() => setSidebarAberta((v) => !v)} />
 			<div className='container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 max-w-7xl'>
 				<Sidebar
 					vistaActual={vistaActual}
 					onCambiarVista={setVistaActual}
-					onCerrarSesion={() => setModalPecharSesionAberta(true)}
+					estaAbierto={sidebarAberta}
+					onToggleAbierto={() => setSidebarAberta((v) => !v)}
+					onCerrar={() => setSidebarAberta(false)}
+					// Na web pídese confirmación; na app pecha a sesión directamente.
+					onCerrarSesion={() => (esApp ? confirmarPecharSesion() : setModalPecharSesionAberta(true))}
 				/>
 				<main className='flex-1 min-w-0'>
 					<AnimatePresence mode='wait'>
@@ -206,7 +248,7 @@ export default function App() {
 								</button>
 								<button
 									type='button'
-									onClick={pecharSesion}
+									onClick={confirmarPecharSesion}
 									className='px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'>
 									{idioma === 'en' ? 'Sign out' : idioma === 'es' ? 'Salir' : 'Saír'}
 								</button>
