@@ -14,13 +14,14 @@ móbil, sincronizado entre dispositivos e detrás do teu propio inicio de sesió
 
 [![Licenza](https://img.shields.io/badge/licenza-MIT-22c55e?style=flat-square)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Android](https://img.shields.io/badge/app%20Android-repo-3ddc84?style=flat-square&logo=android&logoColor=white)](https://github.com/IPardelo/xestor-de-tarefas-app)
+[![Android](https://img.shields.io/badge/app%20Android-incluída-3ddc84?style=flat-square&logo=android&logoColor=white)](#-app-android)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.6-764ABC?style=flat-square&logo=redux&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![MUI](https://img.shields.io/badge/MUI-6-007FFF?style=flat-square&logo=mui&logoColor=white)
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12-0055FF?style=flat-square&logo=framer&logoColor=white)
+![Capacitor](https://img.shields.io/badge/Capacitor-8-119EFF?style=flat-square&logo=capacitor&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 ![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint&logoColor=white)
 ![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
@@ -50,7 +51,8 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - 📁 Xestión de proxectos con datos de cliente.
 - 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
 - 🔥 Persistencia e sincronización con Firebase Firestore (estado compartido).
-- 🔑 Lectura de credenciais KDBX (KeePass) dos proxectos, restrinxida a admin.
+- 🔑 Lectura de credenciais KDBX (KeePass) dos proxectos, restrinxida a admin (só na web).
+- 📱 App Android feita co mesmo código, con vistas adaptadas ao móbil.
 
 ## Configuración
 
@@ -59,6 +61,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - Node.js 18+ (recomendado 20+)
 - npm
 - Windows, Linux ou macOS
+- Para a app Android: Android Studio con JDK 21
 
 ### 🔥 Firebase
 
@@ -75,6 +78,41 @@ A app usa Firestore como persistencia principal e sincroniza cambios entre sesi�
 - A lectura de KDBX está dispoñible desde Proxectos e restrinxida a usuario admin.
 - Requírese ruta e contrasinal válidas.
 - A base KDBX con Argon2 está soportada na execución local do proxecto.
+- Só funciona na web: a lectura faise no servidor de Vite, que non existe dentro da app Android.
+
+## 📱 App Android
+
+A app Android sae deste mesmo repositorio: é a web compilada en modo `android` e empaquetada con [Capacitor](https://capacitorjs.com). Os datos son os mesmos (o mesmo documento de Firebase), así que o que fagas nun dispositivo aparece no resto.
+
+### Scripts
+
+| Script | Que fai |
+| --- | --- |
+| `npm run dev` | Web en modo desenvolvemento |
+| `npm run dev:android` | A interface da app no navegador, para probala sen móbil |
+| `npm run build` | Compila a web en `dist/` |
+| `npm run build:android` | Compila a interface da app en `dist/` |
+| `npm run android:sync` | `build:android` + copia o resultado ao proxecto `android/` |
+| `npm run android:open` | Abre o proxecto en Android Studio |
+| `npm run android:run` | Sincroniza e instala a app no móbil ou emulador conectado |
+
+Despois de calquera cambio no código hai que volver xerar a app (`npm run android:run`, ou `android:sync` e compilar dende Android Studio) para que chegue ao móbil. Os datos non: sincronízanse sós por Firebase.
+
+### Que cambia entre web e app
+
+O código é común (Redux, Firebase, traducións e a maioría de compoñentes). As diferenzas resólvense así:
+
+- **Vistas `*.android.jsx`:** cando se compila en modo `android`, Vite usa `Compoñente.android.jsx` se existe e, se non, `Compoñente.jsx`. A app ten a súa propia versión de `LoginView`, `UserSettingsView`, `NotesView`, `OptionsGlobalView`, `OptionsUsersView`, `ProjectsView`, `TaskFilter`, `TaskItem` e `CalendarView` (botóns sempre visibles, modais de confirmación e avisos). Se cambias unha destas vistas, mira se tamén hai que cambiar a súa parella.
+- **`esApp` (`src/Utils/plataforma.js`):** para diferenzas pequenas dentro dun mesmo ficheiro (`App.jsx`, `Header.jsx`, `Sidebar.jsx`, `usuariosSlice.js`).
+
+| | Web | App |
+| --- | --- | --- |
+| Sesión | Pídese o login cada vez | Queda lembrada no móbil |
+| Tema | Selector na cabeceira e tema por defecto de cada usuario | Segue o tema do sistema |
+| Idioma | Selector na cabeceira | Idioma por defecto do usuario |
+| Menú | Barra lateral (botón flotante en pantallas pequenas) | Tocando a cabeceira |
+| Pechar sesión | Con confirmación | Directo |
+| KDBX | Si | Non |
 
 ## Estrutura xeral
 
@@ -85,13 +123,14 @@ xestor-de-tarefas/
 ├─ kdbx/
 │  └─ Database.kdbx               # Base KeePass local (credenciais de proxectos)
 ├─ scripts/                       # Utilidades auxiliares
-├─ android/                       # Envoltorio da app Android
+├─ android/                       # Proxecto nativo Android (Capacitor)
 ├─ src/
 │  ├─ App/
 │  │  ├─ store.js                 # configureStore + rexistro de slices
 │  │  ├─ persistence.js           # Carga/gardado do estado
+│  │  ├─ autenticacion.js         # Validación do login (Firebase + local)
 │  │  └─ firebase.js              # Inicialización de Firebase/Firestore
-│  ├─ Components/                 # UI por áreas
+│  ├─ Components/                 # UI por áreas (*.android.jsx = versión da app)
 │  │  ├─ Auth/                    # LoginView
 │  │  ├─ Layout/                  # Header, Sidebar, UserSettingsView
 │  │  ├─ Tasks/                   # TasksList, TaskItem, TaskForm, TaskFilter
@@ -99,7 +138,7 @@ xestor-de-tarefas/
 │  │  ├─ Notes/                   # NotesView (notas de texto e checklist)
 │  │  ├─ Calendar/                # CalendarView (anual/mensual/diaria)
 │  │  ├─ Options/                 # OptionsGlobalView, OptionsUsersView
-│  │  └─ UI/                      # DarkMode e compoñentes comúns
+│  │  └─ UI/                      # DarkMode, ToastCenter e compoñentes comúns
 │  ├─ Features/                   # Slices Redux Toolkit
 │  │  ├─ Tasks/tareasSlice.js
 │  │  ├─ Projects/proxectosSlice.js
@@ -111,11 +150,13 @@ xestor-de-tarefas/
 │  │  └─ translations.js          # Traducións gl / es / en
 │  ├─ Assets/                     # Fontes SF Pro e Font Awesome
 │  ├─ Styles/DarkMode.css         # Estilos do tema escuro
+│  ├─ Utils/                      # plataforma.js (esApp) e toast.js
 │  ├─ App.jsx                     # Compoñente raíz e enrutado de vistas
 │  ├─ main.jsx                    # Punto de entrada (Provider + render)
 │  └─ index.css                   # Estilos base + Tailwind
 ├─ index.html                     # HTML raíz de Vite
-├─ vite.config.js                 # Vite + React + Tailwind + endpoint /api/kdbx/read
+├─ vite.config.js                 # Vite + React + Tailwind + endpoint /api/kdbx/read + modo android
+├─ capacitor.config.json          # appId, appName e webDir (dist)
 ├─ eslint.config.js               # Regras ESLint 9
 ├─ jsconfig.json                  # Alias @ → /src
 ├─ iniciar-app.bat                # Arranque rápido en Windows
@@ -124,6 +165,16 @@ xestor-de-tarefas/
 ```
 
 ## Evolución por versión
+
+### v2.2.0
+
+- A app Android intégrase neste repositorio (antes estaba en `xestor-de-tarefas-app`).
+- Novos scripts `dev:android`, `build:android` e `android:sync/open/run`.
+- Vistas propias da app en ficheiros `*.android.jsx`, co resto do código compartido.
+- Login contra Firebase tamén na app, con sesión lembrada só no móbil.
+- Filtro de tarefas "sen proxecto" e conta de tarefas por proxecto.
+- A sesión dun dispositivo xa non cambia o usuario activo dos demais ao sincronizar.
+- Usuario de exemplo por defecto: `ipardelo`.
 
 ### v2.1.0
 
