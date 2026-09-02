@@ -29,8 +29,28 @@ const gardarKdbxConfigLocal = (config) => {
 	}
 };
 
+// Copia local dos proxectos: se Firebase non responde, non se arranca cunha lista baleira.
+const PROXECTOS_STORAGE_KEY = 'proxectos';
+
+const cargarProxectosLocais = () => {
+	try {
+		const parsed = JSON.parse(localStorage.getItem(PROXECTOS_STORAGE_KEY) || '[]');
+		return Array.isArray(parsed) ? parsed.filter((p) => p && typeof p.id === 'string') : [];
+	} catch {
+		return [];
+	}
+};
+
+const gardarProxectosLocais = (lista) => {
+	try {
+		localStorage.setItem(PROXECTOS_STORAGE_KEY, JSON.stringify(lista));
+	} catch {
+		/* empty */
+	}
+};
+
 const estadoInicial = {
-	lista: [],
+	lista: cargarProxectosLocais(),
 	kdbxConfig: cargarKdbxConfigLocal(),
 	kdbxEntries: [],
 };
@@ -58,6 +78,7 @@ const proxectosSlice = createSlice({
 			const lista = action.payload?.lista;
 			if (Array.isArray(lista)) {
 				state.lista = lista.map(normalizarProxecto);
+				gardarProxectosLocais(state.lista);
 			}
 		},
 		engadirProxecto: (state, action) => {
@@ -68,6 +89,7 @@ const proxectosSlice = createSlice({
 					creadoEn: new Date().toISOString(),
 				})
 			);
+			gardarProxectosLocais(state.lista);
 		},
 		actualizarProxecto: (state, action) => {
 			const { id, ...cambios } = action.payload || {};
@@ -80,11 +102,13 @@ const proxectosSlice = createSlice({
 				id,
 				creadoEn: state.lista[indice].creadoEn,
 			});
+			gardarProxectosLocais(state.lista);
 		},
 		eliminarProxecto: (state, action) => {
 			const proxectoId = action.payload;
 			if (!proxectoId) return;
 			state.lista = state.lista.filter((proxecto) => proxecto.id !== proxectoId);
+			gardarProxectosLocais(state.lista);
 		},
 		actualizarConfiguracionKdbx: (state, action) => {
 			const payload = action.payload || {};
