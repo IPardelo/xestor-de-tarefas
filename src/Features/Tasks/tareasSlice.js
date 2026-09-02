@@ -68,7 +68,10 @@ export const tareasSlice = createSlice({
 	reducers: {
 		hidratarTareas: (state, action) => {
 			const payload = action.payload || {};
-			if (Array.isArray(payload.tareas)) state.tareas = payload.tareas;
+			if (Array.isArray(payload.tareas)) {
+				state.tareas = payload.tareas;
+				localStorage.setItem('tareas', JSON.stringify(state.tareas));
+			}
 			if (typeof payload.filtro === 'string') state.filtro = payload.filtro;
 			if (typeof payload.filtroProxecto === 'string') state.filtroProxecto = payload.filtroProxecto;
 			if (typeof payload.busqueda === 'string') state.busqueda = payload.busqueda;

@@ -62,6 +62,7 @@ const notasSlice = createSlice({
 						itensLista: normalizarItensLista(nota.itensLista),
 						cor: normalizarCorNota(nota.cor),
 					}));
+				gardarNotasNoAlmacenamento(state.notas);
 			}
 		},
 		agregarNota: (state, action) => {

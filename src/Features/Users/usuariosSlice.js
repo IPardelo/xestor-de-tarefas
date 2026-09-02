@@ -108,6 +108,7 @@ const usuariosSlice = createSlice({
 			const usuarioActualId = action.payload?.usuarioActualId;
 			if (Array.isArray(lista) && lista.length > 0) {
 				state.lista = lista.map(normalizarUsuario);
+				localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 			}
 			// Con sesión iniciada non se cambia de usuario polo que chegue doutro dispositivo.
 			if (!state.sesionIniciada && usuarioActualId && state.lista.some((u) => u.id === usuarioActualId)) {
