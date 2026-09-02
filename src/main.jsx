@@ -5,11 +5,7 @@ import { Provider } from 'react-redux';
 
 // ? Store
 import { store } from '@/App/store';
-import { cargarDatosApp, gardarDatosApp, subscribirseADatosRemotos } from '@/App/persistence';
-import { hidratarTareas } from '@/Features/Tasks/tareasSlice';
-import { hidratarUsuarios } from '@/Features/Users/usuariosSlice';
-import { hidratarProxectos } from '@/Features/Projects/proxectosSlice';
-import { hidratarNotas } from '@/Features/Notes/notasSlice';
+import { iniciarSincronizacion } from '@/App/sincronizacion';
 
 // ? Estilos
 import '@/index.css';
@@ -20,79 +16,9 @@ import '@/Assets/FontAwesome/css/all.min.css';
 // ? Componentes
 import App from '@/App.jsx';
 
-async function bootstrap() {
-	let remoteSnapshotHash = null;
-	let hydratedFromRemote = false;
-
-	const aplicarHidratacion = (data) => {
-		if (!data) return;
-		if (data?.usuarios) store.dispatch(hidratarUsuarios(data.usuarios));
-		if (data?.tareas) store.dispatch(hidratarTareas(data.tareas));
-		if (data?.proxectos) store.dispatch(hidratarProxectos(data.proxectos));
-		if (data?.notas) store.dispatch(hidratarNotas(data.notas));
-	};
-
-	const getSerializableState = () => {
-		const state = store.getState();
-		return {
-			// A sesión é de cada dispositivo: non se sube a Firebase.
-			usuarios: {
-				lista: state.usuarios.lista,
-				usuarioActualId: state.usuarios.usuarioActualId,
-			},
-			tareas: state.tareas,
-			proxectos: state.proxectos,
-			notas: state.notas,
-		};
-	};
-
-	const getHash = (value) => JSON.stringify(value);
-
-	try {
-		const data = await cargarDatosApp();
-		if (data) {
-			aplicarHidratacion(data);
-			remoteSnapshotHash = getHash(data);
-		}
-	} catch (error) {
-		console.error('Non se puideron cargar os datos de Firebase:', error);
-	}
-
-	let timeoutId;
-	store.subscribe(() => {
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => {
-			if (hydratedFromRemote) {
-				hydratedFromRemote = false;
-				return;
-			}
-
-			const dataToSave = getSerializableState();
-			const nextHash = getHash(dataToSave);
-			if (nextHash === remoteSnapshotHash) return;
-
-			gardarDatosApp(dataToSave)
-				.then(() => {
-					remoteSnapshotHash = nextHash;
-				})
-				.catch((error) => {
-					console.error('Erro ao gardar datos en Firebase:', error);
-				});
-		}, 200);
-	});
-
-	subscribirseADatosRemotos(
-		(data) => {
-			const incomingHash = getHash(data);
-			if (incomingHash === remoteSnapshotHash) return;
-			hydratedFromRemote = true;
-			remoteSnapshotHash = incomingHash;
-			aplicarHidratacion(data);
-		},
-		(error) => {
-			console.error('Erro na sincronizacion remota con Firebase:', error);
-		}
-	);
+function bootstrap() {
+	// Firebase conéctase en segundo plano: a app arranca xa cos datos locais.
+	iniciarSincronizacion(store);
 
 	ReactDOM.createRoot(document.getElementById('root')).render(
 		<React.StrictMode>

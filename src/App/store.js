@@ -5,6 +5,7 @@ import idiomaReducer from '@/Features/Language/idiomaSlice';
 import usuariosReducer from '@/Features/Users/usuariosSlice';
 import proxectosReducer from '@/Features/Projects/proxectosSlice';
 import notasReducer from '@/Features/Notes/notasSlice';
+import { middlewareSincronizacion } from '@/App/sincronizacion';
 
 export const store = configureStore({
 	reducer: {
@@ -15,4 +16,5 @@ export const store = configureStore({
 		proxectos: proxectosReducer,
 		notas: notasReducer,
 	},
+	middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(middlewareSincronizacion),
 });
