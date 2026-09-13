@@ -1,11 +1,4 @@
-import { cargarDatosApp, isCloudSyncEnabled } from '@/App/persistence';
-
-const getUsuariosFromRemoteData = (data) => {
-	if (!data?.usuarios) return [];
-	if (Array.isArray(data.usuarios)) return data.usuarios;
-	if (Array.isArray(data.usuarios.lista)) return data.usuarios.lista;
-	return [];
-};
+import { cargarUsuariosRemotos, isCloudSyncEnabled } from '@/App/persistence';
 
 const buscarUsuario = (usuarios, loginId, loginContrasenha) =>
 	usuarios.find(
@@ -21,8 +14,7 @@ export async function validarCredenciais(loginId, loginContrasenha, usuariosLoca
 	let usuarioValido = null;
 
 	if (isCloudSyncEnabled()) {
-		const remoteData = await cargarDatosApp();
-		usuarioValido = buscarUsuario(getUsuariosFromRemoteData(remoteData), loginId, loginContrasenha);
+		usuarioValido = buscarUsuario(await cargarUsuariosRemotos(), loginId, loginContrasenha);
 	}
 
 	return usuarioValido || buscarUsuario(usuariosLocais, loginId, loginContrasenha) || null;
