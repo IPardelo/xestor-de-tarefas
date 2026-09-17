@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
 import { actualizarConfiguracionKdbx, seleccionarConfiguracionKdbx } from '@/Features/Projects/proxectosSlice';
 import { firebaseConfig, firebaseSyncDoc, hasFirebaseConfig } from '@/App/firebase';
-import { gardarDatosApp, isCloudSyncEnabled } from '@/App/persistence';
+import { gardarConfiguracionKdbx, isCloudSyncEnabled } from '@/App/persistence';
 import { translations } from '@/i18n/translations';
 
 export default function OptionsGlobalView() {
 	const dispatch = useDispatch();
-	const store = useStore();
 	const idioma = useSelector(seleccionarIdioma);
 	const eAdmin = useSelector(seleccionarUsuarioActualAdmin);
 	const kdbxConfig = useSelector(seleccionarConfiguracionKdbx);
@@ -43,19 +42,10 @@ export default function OptionsGlobalView() {
 
 		setGardandoKdbx(true);
 		try {
-			const state = store.getState();
-			await gardarDatosApp({
-				usuarios: state.usuarios,
-				idioma: state.idioma,
-				tema: state.tema,
-				tareas: state.tareas,
-				proxectos: {
-					...state.proxectos,
-					kdbxConfig: {
-						filePath: (kdbxForm.filePath || '').trim() || 'kdbx\\Database.kdbx',
-						password: kdbxForm.password || '1234567890',
-					},
-				},
+			// Antes gardábase o estado enteiro (e sen as notas, que se borraban de Firebase).
+			await gardarConfiguracionKdbx({
+				filePath: (kdbxForm.filePath || '').trim() || 'kdbx\\Database.kdbx',
+				password: kdbxForm.password || '1234567890',
 			});
 			setMensaxeKdbx('Configuración KDBX gardada en Firebase.');
 		} catch {
