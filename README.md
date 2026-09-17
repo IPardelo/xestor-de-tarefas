@@ -73,6 +73,41 @@ Para usar a mesma app desde dous ordenadores/móbiles e compartir cambios:
 
 A app usa Firestore como persistencia principal e sincroniza cambios entre sesións.
 
+#### Como se gardan os datos
+
+Cada usuario, tarefa, proxecto e nota é un documento propio dentro do documento de sincronización (`VITE_FIREBASE_SYNC_DOC`, por defecto `tarefas-shared/default`):
+
+```text
+tarefas-shared/default                  # documento antigo (v2.2.0 e anteriores): xa non se escribe
+tarefas-shared/default/usuarios/{id}
+tarefas-shared/default/tarefas/{id}
+tarefas-shared/default/proxectos/{id}
+tarefas-shared/default/notas/{id}
+tarefas-shared/default/meta/esquema     # versión da estrutura
+tarefas-shared/default/meta/copia-v1    # copia do documento antigo feita ao migrar
+tarefas-shared/default/meta/kdbx        # configuración KDBX gardada dende Opcións
+```
+
+- **Migración automática:** a primeira vez que se abre a v2.3.0, os datos do documento antigo cópianse ás coleccións novas e gárdase unha copia en `meta/copia-v1`.
+- **Só se sobe o que cambia:** cada acción escribe ou borra só os elementos afectados, así que un dispositivo con datos vellos non pode pisar os cambios doutro.
+- **Sen conexión:** a app funciona cos datos locais e garda os cambios nunha cola (`localStorage`) que se envía ao conectar, aínda que se peche a app entremedias.
+- **Proteccións:** non se escribe nada ata ter lido Firebase, unha acción que borre varios elementos á vez non borra nada en Firebase e unha lectura baleira dende a caché non borra os datos locais.
+
+As regras de Firestore teñen que permitir as subcoleccións (`{document=**}`):
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /tarefas-shared/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+> As versións anteriores á v2.3.0 seguen escribindo no documento antigo e os seus cambios xa non chegan ao resto. Actualiza todos os dispositivos.
+
 ### 🔒 KDBX (KeePass)
 
 - A lectura de KDBX está dispoñible desde Proxectos e restrinxida a usuario admin.
@@ -127,7 +162,8 @@ xestor-de-tarefas/
 ├─ src/
 │  ├─ App/
 │  │  ├─ store.js                 # configureStore + rexistro de slices
-│  │  ├─ persistence.js           # Carga/gardado do estado
+│  │  ├─ persistence.js           # Firestore: coleccións, migración e escrituras por elemento
+│  │  ├─ sincronizacion.js        # Middleware de Redux, cola de pendentes e escoita en tempo real
 │  │  ├─ autenticacion.js         # Validación do login (Firebase + local)
 │  │  └─ firebase.js              # Inicialización de Firebase/Firestore
 │  ├─ Components/                 # UI por áreas (*.android.jsx = versión da app)
@@ -165,6 +201,15 @@ xestor-de-tarefas/
 ```
 
 ## Evolución por versión
+
+### v2.3.0
+
+- Sincronización elemento a elemento: cada usuario, tarefa, proxecto e nota é un documento de Firestore.
+- Migración automática dende o documento único, con copia en `meta/copia-v1`.
+- Arranxado: os proxectos desaparecían cando un dispositivo abría a app sen poder ler Firebase (p. ex. un móbil recén instalado sen conexión).
+- Arranxado: gardar a configuración KDBX borraba as notas de Firebase.
+- Os cambios feitos sen conexión quedan nunha cola e envíanse ao conectar.
+- Copia local dos proxectos en `localStorage`.
 
 ### v2.2.0
 
