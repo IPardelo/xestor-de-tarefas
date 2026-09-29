@@ -26,7 +26,10 @@ móbil, sincronizado entre dispositivos e detrás do teu propio inicio de sesió
 ![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint&logoColor=white)
 ![KeePass](https://img.shields.io/badge/KDBX-kdbxweb-6ABF4B?style=flat-square&logo=keepassxc&logoColor=white)
 
-![XestorDeTarefas Screenshot](public/Images/Interfaz.png)
+<img src="public/Images/Interfaz.png" alt="Inicio" width="50%">
+&nbsp;
+&nbsp;
+<img src="public/Images/Interfaz.gif" alt="Inicio" width="230">
 
 </div>
 
@@ -108,6 +111,14 @@ service cloud.firestore {
 
 > As versións anteriores á v2.3.0 seguen escribindo no documento antigo e os seus cambios xa non chegan ao resto. Actualiza todos os dispositivos.
 
+### 📅 Calendarios de Google (iCal)
+
+- Cada usuario pode engadir ata 3 calendarios en Axustes de usuario co "enderezo secreto en formato iCal" de Google Calendar.
+- Google non permite descargalos dende o navegador (CORS). Na web descárgaos o servidor de Vite (`/api/ical`) e na app Android fanse con `CapacitorHttp` dende o propio móbil. A URL non pasa por servizos de terceiros.
+- Os eventos que se repiten (`RRULE`: diario, semanal, mensual, anual, con excepcións e ocorrencias movidas ou canceladas) amósanse en todos os seus días, dende o 1 de xaneiro do ano pasado ata o 31 de decembro de dentro de dous anos.
+- Cada calendario gárdase no dispositivo: non se volve descargar durante 10 minutos e, se falla a descarga, amósase a última copia gardada cun aviso.
+- A web ten que estar arrancada con `npm run dev` / `npm run preview` (ou `iniciar-app.bat`) para que funcione `/api/ical`.
+
 ### 🔒 KDBX (KeePass)
 
 - A lectura de KDBX está dispoñible desde Proxectos e restrinxida a usuario admin.
@@ -186,12 +197,12 @@ xestor-de-tarefas/
 │  │  └─ translations.js          # Traducións gl / es / en
 │  ├─ Assets/                     # Fontes SF Pro e Font Awesome
 │  ├─ Styles/DarkMode.css         # Estilos do tema escuro
-│  ├─ Utils/                      # plataforma.js (esApp) e toast.js
+│  ├─ Utils/                      # plataforma.js (esApp), toast.js e ical.js (carga de calendarios)
 │  ├─ App.jsx                     # Compoñente raíz e enrutado de vistas
 │  ├─ main.jsx                    # Punto de entrada (Provider + render)
 │  └─ index.css                   # Estilos base + Tailwind
 ├─ index.html                     # HTML raíz de Vite
-├─ vite.config.js                 # Vite + React + Tailwind + endpoint /api/kdbx/read + modo android
+├─ vite.config.js                 # Vite + React + Tailwind + /api/kdbx/read + /api/ical + modo android
 ├─ capacitor.config.json          # appId, appName e webDir (dist)
 ├─ eslint.config.js               # Regras ESLint 9
 ├─ jsconfig.json                  # Alias @ → /src
@@ -201,6 +212,14 @@ xestor-de-tarefas/
 ```
 
 ## Evolución por versión
+
+### v2.3.1
+
+- Arranxado: os calendarios iCal non cargaban de vez en cando porque dependían de dous proxies públicos gratuítos.
+- Web: proxy propio en Vite (`/api/ical`); app: descarga nativa con `CapacitorHttp`.
+- Se falla a descarga, amósase a última copia gardada.
+- Os calendarios só se volven descargar cando cambian as URL (antes tamén ao sincronizar ou cambiar de idioma).
+- Os eventos que se repiten xa saen todos os días que tocan (antes só o primeiro).
 
 ### v2.3.0
 

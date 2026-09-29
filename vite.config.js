@@ -78,13 +78,58 @@ const rexistrarRutaKdbx = (middlewares) => {
     })
 }
 
+// Proxy para calendarios iCal: Google non permite descargalos dende o navegador (CORS),
+// así que os descarga o servidor de Vite. Só acepta URL http(s) que devolvan un .ics.
+const ICAL_TEMPO_MAXIMO_MS = 15000
+const ICAL_TAMANO_MAXIMO = 10 * 1024 * 1024
+
+const rexistrarRutaIcal = (middlewares) => {
+  middlewares.use('/api/ical', async (req, res) => {
+    const responderErro = (status, error) => {
+      res.statusCode = status
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error }))
+    }
+
+    if (req.method !== 'GET') return responderErro(405, 'Method not allowed')
+
+    let destino
+    try {
+      const parametro = new URL(req.url, 'http://localhost').searchParams.get('url') || ''
+      destino = new URL(parametro.replace(/^webcal:\/\//, 'https://'))
+    } catch {
+      return responderErro(400, 'URL inválida')
+    }
+    if (!['http:', 'https:'].includes(destino.protocol)) return responderErro(400, 'Só se admiten URL http(s)')
+
+    const controller = new AbortController()
+    const temporizador = setTimeout(() => controller.abort(), ICAL_TEMPO_MAXIMO_MS)
+    try {
+      const resposta = await fetch(destino, { signal: controller.signal, redirect: 'follow' })
+      if (!resposta.ok) return responderErro(502, `O calendario respondeu HTTP ${resposta.status}`)
+      const texto = await resposta.text()
+      if (texto.length > ICAL_TAMANO_MAXIMO) return responderErro(502, 'Calendario demasiado grande')
+      if (!texto.includes('BEGIN:VCALENDAR')) return responderErro(502, 'A URL non devolve un calendario iCal')
+      res.setHeader('Content-Type', 'text/calendar; charset=utf-8')
+      res.setHeader('Cache-Control', 'no-store')
+      res.end(texto)
+    } catch (error) {
+      responderErro(502, error?.name === 'AbortError' ? 'Tempo esgotado' : error?.message || 'Erro descargando o calendario')
+    } finally {
+      clearTimeout(temporizador)
+    }
+  })
+}
+
 const kdbxApiPlugin = () => ({
   name: 'kdbx-api',
   configureServer(server) {
     rexistrarRutaKdbx(server.middlewares)
+    rexistrarRutaIcal(server.middlewares)
   },
   configurePreviewServer(server) {
     rexistrarRutaKdbx(server.middlewares)
+    rexistrarRutaIcal(server.middlewares)
   },
 })
 

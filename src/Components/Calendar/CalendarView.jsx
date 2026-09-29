@@ -6,6 +6,7 @@ import { seleccionarProxectos } from '@/Features/Projects/proxectosSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
 import { translations } from '@/i18n/translations';
+import { cargarCalendariosIcal } from '@/Utils/ical';
 
 const localeByLang = {
 	gl: 'gl-ES',
@@ -45,139 +46,6 @@ function ensureDate(value) {
 	}
 	if (typeof value === 'string') return normalizeDate(value);
 	return null;
-}
-
-function parseIcalDate(rawValue) {
-	if (!rawValue) return null;
-	const value = String(rawValue).trim();
-
-	if (/^\d{8}$/.test(value)) {
-		const year = Number.parseInt(value.slice(0, 4), 10);
-		const month = Number.parseInt(value.slice(4, 6), 10) - 1;
-		const day = Number.parseInt(value.slice(6, 8), 10);
-		return new Date(year, month, day);
-	}
-
-	if (/^\d{8}T\d{6}Z$/.test(value)) {
-		const iso = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}T${value.slice(
-			9,
-			11
-		)}:${value.slice(11, 13)}:${value.slice(13, 15)}Z`;
-		const parsed = new Date(iso);
-		return Number.isNaN(parsed.getTime())
-			? null
-			: new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-	}
-
-	if (/^\d{8}T\d{6}$/.test(value)) {
-		const year = Number.parseInt(value.slice(0, 4), 10);
-		const month = Number.parseInt(value.slice(4, 6), 10) - 1;
-		const day = Number.parseInt(value.slice(6, 8), 10);
-		return new Date(year, month, day);
-	}
-
-	const fallback = new Date(value);
-	return Number.isNaN(fallback.getTime())
-		? null
-		: new Date(fallback.getFullYear(), fallback.getMonth(), fallback.getDate());
-}
-
-function parseIcalEvents(icalText, sourceLabel, calendarIndex = 0) {
-	if (!icalText || typeof icalText !== 'string') return [];
-
-	const unfolded = icalText.replace(/\r?\n[ \t]/g, '');
-	const lines = unfolded.split(/\r?\n/);
-	const events = [];
-	let current = null;
-
-	lines.forEach((line) => {
-		if (line === 'BEGIN:VEVENT') {
-			current = {};
-			return;
-		}
-		if (line === 'END:VEVENT') {
-			if (current?.dtstart) {
-				const date = parseIcalDate(current.dtstart);
-				if (date) {
-					events.push({
-						id: current.uid || `${sourceLabel}-${events.length}-${date.toISOString()}`,
-						titulo: current.summary || 'Evento',
-						descripcion: current.description || '',
-						_dueDate: date,
-						orixe: 'ical',
-						fonte: sourceLabel,
-						calendarIndex,
-					});
-				}
-			}
-			current = null;
-			return;
-		}
-		if (!current) return;
-
-		const separator = line.indexOf(':');
-		if (separator === -1) return;
-
-		const rawKey = line.slice(0, separator);
-		const value = line.slice(separator + 1).trim();
-		const key = rawKey.split(';')[0].toUpperCase();
-		if (key === 'DTSTART') current.dtstart = value;
-		if (key === 'SUMMARY') current.summary = value;
-		if (key === 'DESCRIPTION') current.description = value.replace(/\\n/g, '\n');
-		if (key === 'UID') current.uid = value;
-	});
-
-	return events;
-}
-
-function normalizeIcalUrl(url) {
-	if (typeof url !== 'string') return '';
-	const trimmed = url.trim().replace(/^['"]|['"]$/g, '');
-	if (!trimmed) return '';
-	if (trimmed.startsWith('webcal://')) return `https://${trimmed.slice('webcal://'.length)}`;
-	return trimmed;
-}
-
-const ICAL_CACHE_PREFIX = 'ical_cache_v1:';
-const ICAL_CACHE_TTL_MS = 10 * 60 * 1000;
-
-function getIcalCache(url) {
-	try {
-		const raw = localStorage.getItem(`${ICAL_CACHE_PREFIX}${url}`);
-		if (!raw) return null;
-		const parsed = JSON.parse(raw);
-		if (!parsed?.body || typeof parsed?.savedAt !== 'number') return null;
-		if (Date.now() - parsed.savedAt > ICAL_CACHE_TTL_MS) return null;
-		return parsed.body;
-	} catch {
-		return null;
-	}
-}
-
-function setIcalCache(url, body) {
-	try {
-		localStorage.setItem(
-			`${ICAL_CACHE_PREFIX}${url}`,
-			JSON.stringify({
-				body,
-				savedAt: Date.now(),
-			})
-		);
-	} catch {
-		/* empty */
-	}
-}
-
-async function fetchWithTimeout(url, timeoutMs = 6000) {
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const response = await fetch(url, { signal: controller.signal });
-		if (!response.ok) throw new Error(`HTTP ${response.status}`);
-		return await response.text();
-	} finally {
-		clearTimeout(timeoutId);
-	}
 }
 
 function getMonthGrid(year, month, weekStart) {
@@ -260,6 +128,7 @@ export default function CalendarView() {
 	const [eventosIcal, setEventosIcal] = useState([]);
 	const [icalLoading, setIcalLoading] = useState(false);
 	const [icalError, setIcalError] = useState('');
+	const [icalDesactualizado, setIcalDesactualizado] = useState(false);
 
 	const calendariosIcal = useMemo(() => {
 		const listaBruta = usuarioActual?.calendariosIcal;
@@ -280,97 +149,51 @@ export default function CalendarView() {
 		[tarefasSeguras]
 	);
 
+	// Clave estable: só se volve cargar cando cambian de verdade as URL.
+	const claveCalendarios = calendariosIcal.join('\n');
+
 	useEffect(() => {
 		let cancelled = false;
+		const urls = claveCalendarios ? claveCalendarios.split('\n') : [];
 
-		const cargarEventosIcal = async () => {
-			if (calendariosIcal.length === 0) {
-				setEventosIcal([]);
-				setIcalError('');
-				setIcalLoading(false);
-				return;
-			}
-
-			setIcalLoading(true);
+		if (urls.length === 0) {
+			setEventosIcal([]);
 			setIcalError('');
+			setIcalDesactualizado(false);
+			setIcalLoading(false);
+			return undefined;
+		}
 
-			try {
-				const resultados = await Promise.allSettled(
-					calendariosIcal.map(async (url, index) => {
-						const normalizedUrl = normalizeIcalUrl(url);
-						if (!normalizedUrl) {
-							throw new Error('URL iCal baleira');
-						}
-
-						const cached = getIcalCache(normalizedUrl);
-						let body = cached || '';
-
-						if (!body) {
-							const urlsCandidatas = [
-								normalizedUrl,
-								`https://api.allorigins.win/raw?url=${encodeURIComponent(normalizedUrl)}`,
-								`https://corsproxy.io/?${encodeURIComponent(normalizedUrl)}`,
-							];
-
-							const tentativas = urlsCandidatas.map((candidata) =>
-								fetchWithTimeout(candidata).then((text) => {
-									if (!text?.includes('BEGIN:VCALENDAR')) {
-										throw new Error('Contido iCal inválido');
-									}
-									return text;
-								})
-							);
-
-							body = await Promise.any(tentativas);
-							setIcalCache(normalizedUrl, body);
-						}
-
-						if (!body || !body.includes('BEGIN:VCALENDAR')) {
-							throw new Error('Contido iCal inválido');
-						}
-
-						const sourceLabel = `${t.googleCalendarSourceLabel} ${index + 1}`;
-						return parseIcalEvents(body, sourceLabel, index + 1);
-					})
-				);
-
-				if (!cancelled) {
-					const eventosCargados = resultados
-						.filter((resultado) => resultado.status === 'fulfilled')
-						.flatMap((resultado) => resultado.value);
-
-					setEventosIcal(eventosCargados);
-
-					const totalFallados = resultados.filter((resultado) => resultado.status === 'rejected').length;
-					if (totalFallados === calendariosIcal.length && calendariosIcal.length > 0) {
-						setIcalError(t.googleCalendarLoadError);
-					} else {
-						setIcalError('');
-					}
-				}
-			} catch {
-				if (!cancelled) {
-					setEventosIcal([]);
-					setIcalError(t.googleCalendarLoadError);
-				}
-			} finally {
-				if (!cancelled) {
-					setIcalLoading(false);
-				}
-			}
-		};
-
-		cargarEventosIcal();
+		setIcalLoading(true);
+		cargarCalendariosIcal(urls)
+			.then(({ eventos, fallados, desactualizados }) => {
+				if (cancelled) return;
+				setEventosIcal(eventos);
+				setIcalError(fallados > 0 ? 'erro' : '');
+				setIcalDesactualizado(desactualizados > 0);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setIcalError('erro');
+			})
+			.finally(() => {
+				if (!cancelled) setIcalLoading(false);
+			});
 
 		return () => {
 			cancelled = true;
 		};
-	}, [calendariosIcal, t.googleCalendarLoadError, t.googleCalendarSourceLabel]);
+	}, [claveCalendarios]);
 
 	const elementosCalendario = useMemo(() => {
 		const tarefasNormalizadas = tarefasConData.map((tarefa) => ({ ...tarefa, orixe: 'tarefa' }));
-		return [...tarefasNormalizadas, ...eventosIcal];
-	}, [tarefasConData, eventosIcal]);
+		// O nome do calendario ponse aquí para que cambie co idioma sen volver descargar.
+		const eventosConFonte = eventosIcal.map((evento) => ({
+			...evento,
+			fonte: `${t.googleCalendarSourceLabel} ${evento.calendarIndex}`,
+		}));
+		return [...tarefasNormalizadas, ...eventosConFonte];
+	}, [tarefasConData, eventosIcal, t.googleCalendarSourceLabel]);
 
 	const tarefasPorMes = useMemo(() => {
 		const map = new Map();
@@ -408,7 +231,10 @@ export default function CalendarView() {
 				{icalLoading && (
 					<p className='mb-4 text-sm text-indigo-600 dark:text-indigo-300'>{t.googleCalendarLoading}</p>
 				)}
-				{icalError && <p className='mb-4 text-sm text-red-600 dark:text-red-300'>{icalError}</p>}
+				{icalError && <p className='mb-4 text-sm text-red-600 dark:text-red-300'>{t.googleCalendarLoadError}</p>}
+			{!icalError && icalDesactualizado && (
+				<p className='mb-4 text-sm text-amber-600 dark:text-amber-300'>{t.googleCalendarStaleNotice}</p>
+			)}
 
 				<div className='flex items-center justify-between mb-6'>
 					<h2 className='text-xl font-semibold text-gray-800 dark:text-white'>{t.calendarYearTitle}</h2>
@@ -523,7 +349,10 @@ export default function CalendarView() {
 			{icalLoading && (
 				<p className='mb-4 text-sm text-indigo-600 dark:text-indigo-300'>{t.googleCalendarLoading}</p>
 			)}
-			{icalError && <p className='mb-4 text-sm text-red-600 dark:text-red-300'>{icalError}</p>}
+			{icalError && <p className='mb-4 text-sm text-red-600 dark:text-red-300'>{t.googleCalendarLoadError}</p>}
+			{!icalError && icalDesactualizado && (
+				<p className='mb-4 text-sm text-amber-600 dark:text-amber-300'>{t.googleCalendarStaleNotice}</p>
+			)}
 
 			<div className='flex flex-wrap justify-between items-center gap-3 mb-4'>
 				<div className='flex items-center gap-2'>

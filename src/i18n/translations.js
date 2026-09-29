@@ -147,6 +147,7 @@ export const translations = {
 		googleCalendarSourceLabel: 'Calendario',
 		googleCalendarLoading: 'Sincronizando calendarios de Google...',
 		googleCalendarLoadError: 'Non foi posible cargar os calendarios iCal configurados.',
+		googleCalendarStaleNotice: 'Non se puido actualizar o calendario: amósase a última copia gardada.',
 		googleCalendarIcalUrls: 'Sincronización Google Calendar (iCal)',
 		googleCalendarIcalHint:
 			'Pega ata 3 ligazóns secretas de iCal de Google Calendar para mostrar os eventos no calendario.',
@@ -393,6 +394,7 @@ export const translations = {
 		googleCalendarSourceLabel: 'Calendario',
 		googleCalendarLoading: 'Sincronizando calendarios de Google...',
 		googleCalendarLoadError: 'No se pudieron cargar los calendarios iCal configurados.',
+		googleCalendarStaleNotice: 'No se pudo actualizar el calendario: se muestra la última copia guardada.',
 		googleCalendarIcalUrls: 'Calendarios de Google (iCal secreto)',
 		googleCalendarIcalHint:
 			'Pega hasta 3 enlaces secretos de iCal para mostrar los eventos en el calendario.',
@@ -639,6 +641,7 @@ export const translations = {
 		googleCalendarSourceLabel: 'Calendar',
 		googleCalendarLoading: 'Syncing Google calendars...',
 		googleCalendarLoadError: 'Could not load configured iCal calendars.',
+		googleCalendarStaleNotice: 'Could not refresh the calendar: showing the last saved copy.',
 		googleCalendarIcalUrls: 'Google calendars (secret iCal)',
 		googleCalendarIcalHint:
 			'Paste up to 3 secret iCal links to show external events in the calendar.',
