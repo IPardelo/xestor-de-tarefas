@@ -11,7 +11,6 @@ import { db, firebaseSyncDoc, hasFirebaseConfig } from '@/App/firebase';
  *   tarefas-shared/default/notas/{id}      ← un documento por nota
  *   tarefas-shared/default/meta/esquema    ← versión da estrutura (migración feita)
  *   tarefas-shared/default/meta/copia-v1   ← copia do documento antigo ao migrar
- *   tarefas-shared/default/meta/kdbx       ← configuración KDBX gardada dende Opcións
  *
  * Cada cambio só escribe o elemento que cambiou, así que un dispositivo con datos
  * vellos xa non pode pisar o documento enteiro.
@@ -149,13 +148,4 @@ export async function cargarUsuariosRemotos() {
 	// Aínda sen migrar: lense do documento antigo.
 	const antigo = await getDoc(refDocumentoBase());
 	return antigo.exists() ? extraerDoDocumentoAntigo(antigo.data(), 'usuarios') : [];
-}
-
-/** Garda a configuración KDBX en meta/kdbx (antes ía dentro do documento enteiro). */
-export async function gardarConfiguracionKdbx(config) {
-	await setDoc(refMeta('kdbx'), {
-		filePath: config?.filePath || '',
-		password: config?.password || '',
-		actualizadoEn: new Date().toISOString(),
-	});
 }

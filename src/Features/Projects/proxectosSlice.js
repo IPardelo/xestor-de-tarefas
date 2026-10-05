@@ -1,34 +1,5 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit';
 
-const KDBX_CONFIG_STORAGE_KEY = 'kdbx_config_local';
-const DEFAULT_KDBX_CONFIG = {
-	filePath: 'kdbx\\Database.kdbx',
-	password: '1234567890',
-};
-
-const cargarKdbxConfigLocal = () => {
-	try {
-		const raw = localStorage.getItem(KDBX_CONFIG_STORAGE_KEY);
-		if (!raw) return DEFAULT_KDBX_CONFIG;
-		const parsed = JSON.parse(raw);
-		if (!parsed || typeof parsed !== 'object') return DEFAULT_KDBX_CONFIG;
-		return {
-			filePath: (parsed.filePath || '').trim() || DEFAULT_KDBX_CONFIG.filePath,
-			password: parsed.password || DEFAULT_KDBX_CONFIG.password,
-		};
-	} catch {
-		return DEFAULT_KDBX_CONFIG;
-	}
-};
-
-const gardarKdbxConfigLocal = (config) => {
-	try {
-		localStorage.setItem(KDBX_CONFIG_STORAGE_KEY, JSON.stringify(config));
-	} catch {
-		/* empty */
-	}
-};
-
 // Copia local dos proxectos: se Firebase non responde, non se arranca cunha lista baleira.
 const PROXECTOS_STORAGE_KEY = 'proxectos';
 
@@ -51,8 +22,6 @@ const gardarProxectosLocais = (lista) => {
 
 const estadoInicial = {
 	lista: cargarProxectosLocais(),
-	kdbxConfig: cargarKdbxConfigLocal(),
-	kdbxEntries: [],
 };
 
 const COLOR_PROXECTO_POR_DEFECTO = '#9333ea';
@@ -110,17 +79,6 @@ const proxectosSlice = createSlice({
 			state.lista = state.lista.filter((proxecto) => proxecto.id !== proxectoId);
 			gardarProxectosLocais(state.lista);
 		},
-		actualizarConfiguracionKdbx: (state, action) => {
-			const payload = action.payload || {};
-			state.kdbxConfig = {
-				filePath: (payload.filePath || '').trim() || DEFAULT_KDBX_CONFIG.filePath,
-				password: payload.password || DEFAULT_KDBX_CONFIG.password,
-			};
-			gardarKdbxConfigLocal(state.kdbxConfig);
-		},
-		establecerKdbxEntries: (state, action) => {
-			state.kdbxEntries = Array.isArray(action.payload) ? action.payload : [];
-		},
 	},
 });
 
@@ -129,11 +87,7 @@ export const {
 	engadirProxecto,
 	actualizarProxecto,
 	eliminarProxecto,
-	actualizarConfiguracionKdbx,
-	establecerKdbxEntries,
 } =
 	proxectosSlice.actions;
 export const seleccionarProxectos = (state) => state.proxectos.lista || [];
-export const seleccionarConfiguracionKdbx = (state) => state.proxectos.kdbxConfig || estadoInicial.kdbxConfig;
-export const seleccionarKdbxEntries = (state) => state.proxectos.kdbxEntries || [];
 export default proxectosSlice.reducer;

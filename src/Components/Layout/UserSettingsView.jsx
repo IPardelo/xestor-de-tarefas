@@ -17,6 +17,8 @@ export default function UserSettingsView() {
 		xenero: 'F',
 		contrasenha: '',
 		calendariosIcal: ['', '', ''],
+		kdbxFilePath: '',
+		kdbxPassword: '',
 	});
 
 	useEffect(() => {
@@ -31,6 +33,8 @@ export default function UserSettingsView() {
 				{ length: 3 },
 				(_, index) => usuarioActual.calendariosIcal?.[index] || ''
 			),
+			kdbxFilePath: usuarioActual.kdbxConfig?.filePath || '',
+			kdbxPassword: usuarioActual.kdbxConfig?.password || '',
 		});
 	}, [usuarioActual]);
 
@@ -50,7 +54,13 @@ export default function UserSettingsView() {
 
 	const onSubmit = (e) => {
 		e.preventDefault();
-		dispatch(actualizarPreferenciasUsuarioActual(form));
+		const { kdbxFilePath, kdbxPassword, ...resto } = form;
+		dispatch(
+			actualizarPreferenciasUsuarioActual({
+				...resto,
+				kdbxConfig: { filePath: kdbxFilePath, password: kdbxPassword },
+			})
+		);
 	};
 
 	return (
@@ -131,6 +141,33 @@ export default function UserSettingsView() {
 								className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 							/>
 						))}
+					</div>
+				</div>
+				<div>
+					<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+						{t.kdbxConfigTitle}
+					</label>
+					<p className='text-xs text-gray-500 dark:text-gray-400 mb-2'>{t.kdbxConfigHint}</p>
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+						<input
+							type='text'
+							name='kdbxFilePath'
+							value={form.kdbxFilePath}
+							onChange={onChange}
+							placeholder={t.kdbxPath}
+							aria-label={t.kdbxPath}
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
+						<input
+							type='password'
+							name='kdbxPassword'
+							value={form.kdbxPassword}
+							onChange={onChange}
+							placeholder={t.kdbxPassword}
+							aria-label={t.kdbxPassword}
+							autoComplete='new-password'
+							className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
+						/>
 					</div>
 				</div>
 				<div className='pt-2'>

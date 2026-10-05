@@ -54,7 +54,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 - 📁 Xestión de proxectos con datos de cliente.
 - 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
 - 🔥 Persistencia e sincronización con Firebase Firestore (estado compartido).
-- 🔑 Lectura de credenciais KDBX (KeePass) dos proxectos, restrinxida a admin (só na web).
+- 🔑 Lectura de credenciais KDBX (KeePass) dos proxectos, cunha base propia por usuario (só na web).
 - 📱 App Android feita co mesmo código, con vistas adaptadas ao móbil.
 
 ## Configuración
@@ -88,7 +88,6 @@ tarefas-shared/default/proxectos/{id}
 tarefas-shared/default/notas/{id}
 tarefas-shared/default/meta/esquema     # versión da estrutura
 tarefas-shared/default/meta/copia-v1    # copia do documento antigo feita ao migrar
-tarefas-shared/default/meta/kdbx        # configuración KDBX gardada dende Opcións
 ```
 
 - **Migración automática:** a primeira vez que se abre a v2.3.0, os datos do documento antigo cópianse ás coleccións novas e gárdase unha copia en `meta/copia-v1`.
@@ -121,8 +120,9 @@ service cloud.firestore {
 
 ### 🔒 KDBX (KeePass)
 
-- A lectura de KDBX está dispoñible desde Proxectos e restrinxida a usuario admin.
-- Requírese ruta e contrasinal válidas.
+- A lectura de KDBX está dispoñible desde Proxectos.
+- Cada usuario configura a ruta e o contrasinal da súa base en Axustes de usuario, debaixo dos calendarios iCal. Gárdase co resto dos datos do usuario.
+- Os administradores que xa tiñan a configuración global de antes (en Opcións globais) herdan esa ruta.
 - A base KDBX con Argon2 está soportada na execución local do proxecto.
 - Só funciona na web: a lectura faise no servidor de Vite, que non existe dentro da app Android.
 
@@ -212,6 +212,14 @@ xestor-de-tarefas/
 ```
 
 ## Evolución por versión
+
+### Sen publicar
+
+- Proxectos: só o nome é obrigatorio; cliente, teléfono, email, prezo e data de entrega son opcionais e non se amosan se están baleiros.
+- Calendario: a vista mensual amosa os eventos co seu título e cor en cada día, e os de varios días como unha barra continua. Tamén se ven os días dos meses veciños e hai frechas para cambiar de mes.
+- Os eventos de Google Calendar len a data de fin (`DTEND` / `DURATION`).
+- A configuración KDBX pasa a ser de cada usuario (en Axustes de usuario) e xa non está restrinxida a admin.
+- "Opcións globais" pasa a chamarse "Configuración de Firebase" e só amosa os datos da conexión.
 
 ### v2.3.1
 

@@ -5,12 +5,11 @@ import {
 	actualizarProxecto,
 	engadirProxecto,
 	eliminarProxecto,
-	seleccionarConfiguracionKdbx,
 	seleccionarProxectos,
 } from '@/Features/Projects/proxectosSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
-import { seleccionarUsuarioActualAdmin } from '@/Features/Users/usuariosSlice';
+import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
 
 const estadoInicialForm = {
 	nome: '',
@@ -28,8 +27,9 @@ export default function ProjectsView() {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
 	const proxectos = useSelector(seleccionarProxectos);
-	const kdbxConfig = useSelector(seleccionarConfiguracionKdbx);
-	const eAdmin = useSelector(seleccionarUsuarioActualAdmin);
+	const usuarioActual = useSelector(seleccionarUsuarioActual);
+	// Cada usuario le a súa propia base KDBX (configúrase en Axustes de usuario).
+	const kdbxConfig = usuarioActual?.kdbxConfig;
 	const t = translations[idioma] || translations.gl;
 	const [form, setForm] = useState(estadoInicialForm);
 	const [expandido, setExpandido] = useState(false);
@@ -121,9 +121,9 @@ export default function ProjectsView() {
 
 	useEffect(() => {
 		if (!proxectoSeleccionado) return;
-		if (!eAdmin) {
+		if (!kdbxConfig?.filePath) {
 			setKdbxEntries([]);
-			setKdbxErro(t.kdbxAdminOnly);
+			setKdbxErro(t.kdbxNotConfigured);
 			return;
 		}
 
@@ -151,7 +151,7 @@ export default function ProjectsView() {
 		};
 
 		cargarKdbx();
-	}, [proxectoSeleccionado, eAdmin, kdbxConfig?.filePath, kdbxConfig?.password, t.kdbxAdminOnly, t.kdbxReadError]);
+	}, [proxectoSeleccionado, kdbxConfig?.filePath, kdbxConfig?.password, t.kdbxNotConfigured, t.kdbxReadError]);
 
 	useEffect(() => {
 		setContrasinaisVisibles({});
@@ -203,7 +203,6 @@ export default function ProjectsView() {
 										name='clienteNome'
 										value={form.clienteNome}
 										onChange={onChange}
-										required
 										placeholder={t.clientName}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -217,7 +216,6 @@ export default function ProjectsView() {
 										name='clienteTelefono'
 										value={form.clienteTelefono}
 										onChange={onChange}
-										required
 										placeholder={t.clientPhone}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -234,7 +232,6 @@ export default function ProjectsView() {
 										name='clienteEmail'
 										value={form.clienteEmail}
 										onChange={onChange}
-										required
 										placeholder={t.clientEmail}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -248,7 +245,6 @@ export default function ProjectsView() {
 										name='prezoAcordado'
 										value={form.prezoAcordado}
 										onChange={onChange}
-										required
 										placeholder={t.agreedPrice}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -265,7 +261,6 @@ export default function ProjectsView() {
 										name='dataLimiteEntrega'
 										value={form.dataLimiteEntrega}
 										onChange={onChange}
-										required
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
 								</div>
@@ -360,7 +355,6 @@ export default function ProjectsView() {
 											name='clienteNome'
 											value={formEditar.clienteNome}
 											onChange={onChangeEditar}
-											required
 											placeholder={t.clientName}
 											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 										/>
@@ -369,7 +363,6 @@ export default function ProjectsView() {
 												name='clienteTelefono'
 												value={formEditar.clienteTelefono}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.clientPhone}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -378,7 +371,6 @@ export default function ProjectsView() {
 												name='clienteEmail'
 												value={formEditar.clienteEmail}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.clientEmail}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -388,7 +380,6 @@ export default function ProjectsView() {
 												name='prezoAcordado'
 												value={formEditar.prezoAcordado}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.agreedPrice}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -397,7 +388,6 @@ export default function ProjectsView() {
 												name='dataLimiteEntrega'
 												value={formEditar.dataLimiteEntrega}
 												onChange={onChangeEditar}
-												required
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
 										</div>
@@ -438,26 +428,36 @@ export default function ProjectsView() {
 												{proxecto.nome}
 											</p>
 											<div className='mt-3 flex flex-wrap items-center gap-2 text-sm'>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
-													<i className='fa-solid fa-user mr-1'></i>
-													{proxecto.clienteNome}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'>
-													<i className='fa-solid fa-phone mr-1'></i>
-													{proxecto.clienteTelefono}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'>
-													<i className='fa-solid fa-envelope mr-1'></i>
-													{proxecto.clienteEmail}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'>
-													<i className='fa-solid fa-euro-sign mr-1'></i>
-													{proxecto.prezoAcordado}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-300'>
-													<i className='fa-solid fa-calendar-days mr-1'></i>
-													{proxecto.dataLimiteEntrega}
-												</span>
+												{tenValor(proxecto.clienteNome) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
+														<i className='fa-solid fa-user mr-1'></i>
+														{proxecto.clienteNome}
+													</span>
+												)}
+												{tenValor(proxecto.clienteTelefono) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'>
+														<i className='fa-solid fa-phone mr-1'></i>
+														{proxecto.clienteTelefono}
+													</span>
+												)}
+												{tenValor(proxecto.clienteEmail) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'>
+														<i className='fa-solid fa-envelope mr-1'></i>
+														{proxecto.clienteEmail}
+													</span>
+												)}
+												{tenValor(proxecto.prezoAcordado) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'>
+														<i className='fa-solid fa-euro-sign mr-1'></i>
+														{proxecto.prezoAcordado}
+													</span>
+												)}
+												{tenValor(proxecto.dataLimiteEntrega) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-300'>
+														<i className='fa-solid fa-calendar-days mr-1'></i>
+														{proxecto.dataLimiteEntrega}
+													</span>
+												)}
 											</div>
 										</div>
 										<motion.div

@@ -30,6 +30,28 @@ const normalizarCalendariosIcal = (valor) => {
 		.filter(Boolean);
 };
 
+// Base KeePass de exemplo que vén co proxecto (kdbx/Database.kdbx).
+export const KDBX_CONFIG_EXEMPLO = { filePath: 'kdbx\\Database.kdbx', password: '1234567890' };
+// Antes a configuración KDBX era global (Opcións globais) e gardábase con esta clave.
+const KDBX_CONFIG_GLOBAL_ANTIGA = 'kdbx_config_local';
+
+const lerKdbxConfigGlobalAntiga = () => {
+	try {
+		const parsed = JSON.parse(localStorage.getItem(KDBX_CONFIG_GLOBAL_ANTIGA) || 'null');
+		if (parsed && typeof parsed === 'object' && parsed.filePath) {
+			return { filePath: String(parsed.filePath).trim(), password: String(parsed.password || '') };
+		}
+	} catch {
+		/* empty */
+	}
+	return KDBX_CONFIG_EXEMPLO;
+};
+
+const normalizarKdbxConfig = (valor) => ({
+	filePath: typeof valor?.filePath === 'string' ? valor.filePath.trim() : '',
+	password: typeof valor?.password === 'string' ? valor.password : '',
+});
+
 const normalizarUsuario = (usuario) => ({
 	...usuario,
 	xenero: normalizarXenero(usuario?.xenero),
@@ -37,6 +59,13 @@ const normalizarUsuario = (usuario) => ({
 	contrasenha: String(usuario?.contrasenha || ''),
 	admin: normalizarAdmin(usuario?.admin, usuario?.id, usuario?.nome),
 	calendariosIcal: normalizarCalendariosIcal(usuario?.calendariosIcal),
+	// Configuración KDBX de cada usuario. Os admins que aínda non a teñen herdan a global de antes.
+	kdbxConfig:
+		usuario?.kdbxConfig && typeof usuario.kdbxConfig === 'object'
+			? normalizarKdbxConfig(usuario.kdbxConfig)
+			: normalizarAdmin(usuario?.admin, usuario?.id, usuario?.nome) === '1'
+				? lerKdbxConfigGlobalAntiga()
+				: normalizarKdbxConfig(null),
 });
 
 const usuariosPorDefecto = [
@@ -48,6 +77,7 @@ const usuariosPorDefecto = [
 		temaPredeterminado: 'oscuro',
 		xenero: 'M',
 		admin: '1',
+		kdbxConfig: KDBX_CONFIG_EXEMPLO,
 	},
 ];
 
@@ -160,6 +190,9 @@ const usuariosSlice = createSlice({
 			if (typeof payload.contrasenha === 'string') usuario.contrasenha = payload.contrasenha;
 			if (Array.isArray(payload.calendariosIcal)) {
 				usuario.calendariosIcal = normalizarCalendariosIcal(payload.calendariosIcal);
+			}
+			if (payload.kdbxConfig && typeof payload.kdbxConfig === 'object') {
+				usuario.kdbxConfig = normalizarKdbxConfig(payload.kdbxConfig);
 			}
 			localStorage.setItem(USERS_KEY, JSON.stringify(state.lista));
 		},

@@ -7,6 +7,7 @@ import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
 import { translations } from '@/i18n/translations';
 import { cargarCalendariosIcal } from '@/Utils/ical';
+import MonthEventsGrid, { rangoElemento } from '@/Components/Calendar/MonthEventsGrid';
 
 const localeByLang = {
 	gl: 'gl-ES',
@@ -58,48 +59,6 @@ function getMonthGrid(year, month, weekStart) {
 	for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
 	while (cells.length % 7 !== 0) cells.push(null);
 	return cells;
-}
-
-function obterEtiquetasOrixeDia(items = [], proxectos = [], t) {
-	const contador = new Map();
-
-	items.forEach((item) => {
-		let etiqueta = '';
-		let estiloClass = 'text-white';
-		let estiloInline = {};
-		let icono = '';
-
-		if (item?.orixe === 'ical') {
-			etiqueta = item.fonte || t.googleCalendarLabel;
-			icono = 'fa-calendar-check';
-			const corCalendario =
-				item.calendarIndex === 1 ? '#0ea5e9' : item.calendarIndex === 3 ? '#f59e0b' : '#a855f7';
-			estiloInline = {
-				backgroundColor: corHexARgba(corCalendario, 0.9),
-			};
-		} else {
-			const proxecto = proxectos.find((p) => p.id === item?.proxectoId);
-			etiqueta = proxecto ? proxecto.nome : t.taskTypeTask;
-			icono = proxecto ? 'fa-folder-tree' : 'fa-list-check';
-			if (proxecto?.cor) {
-				estiloInline = {
-					backgroundColor: corHexARgba(proxecto.cor, 0.9),
-				};
-			} else {
-				estiloInline = {
-					backgroundColor: corHexARgba('#6366f1', 0.9),
-				};
-			}
-		}
-
-		const key = `${icono}|${JSON.stringify(estiloInline)}|${etiqueta}`;
-		if (!contador.has(key)) {
-			contador.set(key, { etiqueta, estiloClass, estiloInline, icono, total: 0 });
-		}
-		contador.get(key).total += 1;
-	});
-
-	return Array.from(contador.values());
 }
 
 export default function CalendarView() {
@@ -329,14 +288,36 @@ export default function CalendarView() {
 					day: '2-digit',
 					month: 'long',
 				})}`;
-	const monthTasks = (tarefasPorMes.get(`${selectedYear}-${selectedMonth}`) || [])
-		.filter((task) => ensureDate(task?._dueDate))
-		.sort((a, b) => ensureDate(a._dueDate) - ensureDate(b._dueDate));
+	const inicioMes = new Date(selectedYear, selectedMonth, 1);
+	const finMes = new Date(selectedYear, selectedMonth + 1, 0);
+	// Elementos que tocan algún día do mes (os de varios días poden empezar antes ou acabar despois).
+	const elementosConRango = elementosCalendario
+		.map((task) => {
+			const rango = rangoElemento({
+				...task,
+				_dueDate: ensureDate(task?._dueDate) || ensureDate(task?.fechaVencimiento),
+			});
+			return rango ? { ...task, _dueDate: rango.inicio, _endDate: rango.fin } : null;
+		})
+		.filter(Boolean)
+		.sort((a, b) => a._dueDate - b._dueDate);
+	const monthTasks = elementosConRango.filter(
+		(task) => task._dueDate <= finMes && task._endDate >= inicioMes
+	);
+	const tocaDia = (task, day) => {
+		const dia = new Date(selectedYear, selectedMonth, day);
+		return task._dueDate <= dia && task._endDate >= dia;
+	};
+	const irAoMes = (delta) => {
+		const destino = new Date(selectedYear, selectedMonth + delta, 1);
+		setSelectedYear(destino.getFullYear());
+		setSelectedMonth(destino.getMonth());
+		setSelectedDay(null);
+	};
 	const selectedDayTasks =
 		selectedDay === null
 			? monthTasks
-			: monthTasks.filter((task) => ensureDate(task._dueDate)?.getDate() === selectedDay);
-	const monthGrid = getMonthGrid(selectedYear, selectedMonth, weekStart);
+			: monthTasks.filter((task) => tocaDia(task, selectedDay));
 
 	return (
 		<motion.div
@@ -370,66 +351,33 @@ export default function CalendarView() {
 						{monthName} {selectedYear}
 					</h2>
 				</div>
+				<div className='flex items-center gap-2'>
+					<button
+						type='button'
+						onClick={() => irAoMes(-1)}
+						className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
+						<i className='fa-solid fa-chevron-left'></i>
+					</button>
+					<button
+						type='button'
+						onClick={() => irAoMes(1)}
+						className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
+						<i className='fa-solid fa-chevron-right'></i>
+					</button>
+				</div>
 			</div>
 
-			<div className='grid grid-cols-7 gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
-				{weekdayHeaders.map((day) => (
-					<div key={day} className='text-center'>
-						{day}
-					</div>
-				))}
-			</div>
-			<div className='grid grid-cols-7 gap-2 mb-6'>
-				{monthGrid.map((day, idx) => {
-					const dayItems = day
-						? monthTasks.filter((task) => ensureDate(task._dueDate)?.getDate() === day)
-						: [];
-					const taskCount = dayItems.length;
-					const etiquetasDia = obterEtiquetasOrixeDia(dayItems, proxectosSeguros, t);
-					return (
-						<button
-							type='button'
-							key={idx}
-							onClick={() => {
-								if (!day) return;
-								setSelectedDay(day);
-							}}
-							className={`min-h-20 rounded-lg border p-2 ${
-								day
-									? `border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40 text-left ${
-											selectedDay === day ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-										}`
-									: 'border-transparent'
-							} ${day ? 'cursor-pointer hover:shadow-sm transition-shadow' : 'cursor-default'}`}>
-							{day && (
-								<>
-									<div className='text-sm font-semibold text-gray-700 dark:text-gray-200'>{day}</div>
-									{taskCount > 0 && (
-										<>
-											<div className='mt-1 text-xs text-indigo-600 dark:text-indigo-300'>
-												{taskCount} {t.calendarTasksBadge}
-											</div>
-											<div className='mt-1 flex flex-wrap gap-1'>
-												{etiquetasDia.map((etiqueta) => (
-													<span
-														key={`${day}-${etiqueta.icono}-${etiqueta.etiqueta}`}
-														title={`${etiqueta.etiqueta}${etiqueta.total > 1 ? ` (${etiqueta.total})` : ''}`}
-														className={`inline-flex items-center justify-center text-[10px] h-5 min-w-5 px-1 rounded-full ${etiqueta.estiloClass}`}
-														style={etiqueta.estiloInline}>
-														<i className={`fa-solid ${etiqueta.icono}`}></i>
-														{etiqueta.total > 1 ? (
-															<span className='ml-1 text-[9px] font-semibold'>{etiqueta.total}</span>
-														) : null}
-													</span>
-												))}
-											</div>
-										</>
-									)}
-								</>
-							)}
-						</button>
-					);
-				})}
+			<div className='mb-6'>
+				<MonthEventsGrid
+					year={selectedYear}
+					month={selectedMonth}
+					weekStart={weekStart}
+					weekdayHeaders={weekdayHeaders}
+					items={elementosConRango}
+					proxectos={proxectosSeguros}
+					selectedDay={selectedDay}
+					onSelectDay={setSelectedDay}
+				/>
 			</div>
 
 			<div className='border-t border-gray-200 dark:border-gray-700 pt-4'>
@@ -508,6 +456,9 @@ export default function CalendarView() {
 										</div>
 										<span className='text-xs text-gray-500 dark:text-gray-400 shrink-0'>
 											{ensureDate(task._dueDate)?.toLocaleDateString(locale) || ''}
+										{task._endDate && task._endDate > task._dueDate
+											? ` – ${task._endDate.toLocaleDateString(locale)}`
+											: ''}
 										</span>
 									</div>
 								</motion.li>

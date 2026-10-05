@@ -55,6 +55,30 @@ function parseIcalDate(rawValue) {
 		: new Date(fallback.getFullYear(), fallback.getMonth(), fallback.getDate());
 }
 
+// ---------- Duración (DTEND / DURATION) ----------
+
+const ePuraData = (valor) => /^\d{8}$/.test(String(valor || '').trim());
+const eMedianoite = (valor) => /T000000Z?$/.test(String(valor || '').trim());
+
+/**
+ * Cantos días máis alén do primeiro ocupa un evento.
+ * DTEND é exclusivo nos eventos de día enteiro (e nos que rematan ás 00:00).
+ */
+function calcularDiasExtra(evento, inicio) {
+	let fin = null;
+	if (evento.dtend) {
+		fin = parseIcalDate(evento.dtend);
+		if (fin && (ePuraData(evento.dtend) || eMedianoite(evento.dtend))) fin = sumarDias(fin, -1);
+	} else if (evento.duration) {
+		const m = String(evento.duration).match(/P(?:(\d+)W)?(?:(\d+)D)?/);
+		const dias = m ? Number(m[1] || 0) * 7 + Number(m[2] || 0) : 0;
+		fin = sumarDias(inicio, ePuraData(evento.dtstart) ? dias - 1 : dias);
+	}
+	if (!fin) return 0;
+	const diferenza = Math.round((fin - inicio) / 86400000);
+	return Math.max(0, Math.min(diferenza, 366));
+}
+
 // ---------- Repeticións (RRULE) ----------
 
 const DIAS_SEMANA = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
@@ -225,6 +249,8 @@ export function parseIcalEvents(icalText, calendarIndex = 0, rango = {}) {
 		const value = line.slice(separator + 1).trim();
 		const key = rawKey.split(';')[0].toUpperCase();
 		if (key === 'DTSTART') current.dtstart = value;
+		if (key === 'DTEND') current.dtend = value;
+		if (key === 'DURATION') current.duration = value;
 		if (key === 'SUMMARY') current.summary = value;
 		if (key === 'DESCRIPTION') current.description = value.replace(/\\n/g, '\n');
 		if (key === 'UID') current.uid = value;
@@ -247,6 +273,8 @@ export function parseIcalEvents(icalText, calendarIndex = 0, rango = {}) {
 		titulo: evento.summary || 'Evento',
 		descripcion: evento.description || '',
 		_dueDate: data,
+		// Último día (incluído) dos eventos que duran varios días.
+		_endDate: evento.diasExtra > 0 ? sumarDias(data, evento.diasExtra) : data,
 		orixe: 'ical',
 		calendarIndex,
 	});
@@ -255,6 +283,7 @@ export function parseIcalEvents(icalText, calendarIndex = 0, rango = {}) {
 		const inicio = parseIcalDate(evento.dtstart);
 		if (!inicio) return;
 		if (evento.status === 'CANCELLED') return;
+		evento.diasExtra = calcularDiasExtra(evento, inicio);
 
 		if (evento.recurrenceId) {
 			if (inicio >= desde && inicio <= ata) events.push(crear(evento, inicio, `|${claveDia(inicio)}`));

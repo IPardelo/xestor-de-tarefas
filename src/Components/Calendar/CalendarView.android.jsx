@@ -7,6 +7,7 @@ import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { seleccionarUsuarioActual } from '@/Features/Users/usuariosSlice';
 import { translations } from '@/i18n/translations';
 import { cargarCalendariosIcal } from '@/Utils/ical';
+import MonthEventsGrid, { rangoElemento } from '@/Components/Calendar/MonthEventsGrid';
 
 const localeByLang = {
 	gl: 'gl-ES',
@@ -277,23 +278,34 @@ export default function CalendarView() {
 
 	const monthName =
 		monthNames[selectedMonth] || getMonthName(new Date(selectedYear, selectedMonth, 1), locale);
-	const monthTasks = (tarefasPorMes.get(`${selectedYear}-${selectedMonth}`) || [])
-		.filter((task) => ensureDate(task?._dueDate))
-		.sort((a, b) => ensureDate(a._dueDate) - ensureDate(b._dueDate));
-	const monthGrid = getMonthGrid(selectedYear, selectedMonth, weekStart);
-	const monthTasksByDay = (() => {
-		const map = new Map();
-		monthTasks.forEach((task) => {
-			const dueDate = ensureDate(task?._dueDate);
-			if (!dueDate) return;
-			const day = dueDate.getDate();
-			if (!map.has(day)) map.set(day, []);
-			map.get(day).push(task);
-		});
-		return map;
-	})();
+	const inicioMes = new Date(selectedYear, selectedMonth, 1);
+	const finMes = new Date(selectedYear, selectedMonth + 1, 0);
+	// Elementos que tocan algún día do mes (os de varios días poden empezar antes ou acabar despois).
+	const elementosConRango = elementosCalendario
+		.map((task) => {
+			const rango = rangoElemento({
+				...task,
+				_dueDate: ensureDate(task?._dueDate) || ensureDate(task?.fechaVencimiento),
+			});
+			return rango ? { ...task, _dueDate: rango.inicio, _endDate: rango.fin } : null;
+		})
+		.filter(Boolean)
+		.sort((a, b) => a._dueDate - b._dueDate);
+	const monthTasks = elementosConRango.filter(
+		(task) => task._dueDate <= finMes && task._endDate >= inicioMes
+	);
+	const tocaDia = (task, day) => {
+		const dia = new Date(selectedYear, selectedMonth, day);
+		return task._dueDate <= dia && task._endDate >= dia;
+	};
+	const irAoMes = (delta) => {
+		const destino = new Date(selectedYear, selectedMonth + delta, 1);
+		setSelectedYear(destino.getFullYear());
+		setSelectedMonth(destino.getMonth());
+		setSelectedDay(null);
+	};
 	const visibleTasks =
-		selectedDay === null ? monthTasks : monthTasksByDay.get(selectedDay)?.slice().sort((a, b) => ensureDate(a._dueDate) - ensureDate(b._dueDate)) || [];
+		selectedDay === null ? monthTasks : monthTasks.filter((task) => tocaDia(task, selectedDay));
 	const formatoDiaMes = new Intl.DateTimeFormat(locale, {
 		day: '2-digit',
 		month: 'long',
@@ -304,51 +316,6 @@ export default function CalendarView() {
 			: `${t.dayTasksList || t.monthTasksList} ${formatoDiaMes.format(
 					new Date(selectedYear, selectedMonth, selectedDay)
 				)}`;
-
-	const obterEstiloCalendarioIcal = (calendarIndex) => {
-		if (calendarIndex === 1) {
-			return { cor: '#0ea5e9', icono: 'fa-calendar-days' };
-		}
-		if (calendarIndex === 2) {
-			return { cor: '#a855f7', icono: 'fa-calendar-day' };
-		}
-		if (calendarIndex === 3) {
-			return { cor: '#f59e0b', icono: 'fa-calendar-week' };
-		}
-		return { cor: '#6366f1', icono: 'fa-calendar' };
-	};
-
-	const obterTiposPorDia = (day) => {
-		const items = monthTasksByDay.get(day) || [];
-		const vistos = new Set();
-		return items
-			.map((task) => {
-				if (task.orixe === 'ical') {
-					const key = `cal-${task.calendarIndex || 0}`;
-					if (vistos.has(key)) return null;
-					vistos.add(key);
-					const estilo = obterEstiloCalendarioIcal(task.calendarIndex);
-					return {
-						key,
-						cor: estilo.cor,
-						icono: estilo.icono,
-						titulo: task.fonte || t.googleCalendarLabel,
-					};
-				}
-				const proxectoVinculado = proxectosSeguros.find((p) => p.id === task.proxectoId);
-				const key = `proj-${proxectoVinculado?.id || 'none'}`;
-				if (vistos.has(key)) return null;
-				vistos.add(key);
-				return {
-					key,
-					cor: proxectoVinculado?.cor || '#6366f1',
-					icono: 'fa-folder-tree',
-					titulo: proxectoVinculado?.nome || t.taskProject,
-				};
-			})
-			.filter(Boolean)
-			.slice(0, 2);
-	};
 
 	return (
 		<motion.div
@@ -382,55 +349,34 @@ export default function CalendarView() {
 						{monthName} {selectedYear}
 					</h2>
 				</div>
+				<div className='flex items-center gap-2'>
+					<button
+						type='button'
+						onClick={() => irAoMes(-1)}
+						className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
+						<i className='fa-solid fa-chevron-left'></i>
+					</button>
+					<button
+						type='button'
+						onClick={() => irAoMes(1)}
+						className='px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
+						<i className='fa-solid fa-chevron-right'></i>
+					</button>
+				</div>
 			</div>
 
-			<div className='grid grid-cols-7 gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
-				{weekdayHeaders.map((day) => (
-					<div key={day} className='text-center'>
-						{day}
-					</div>
-				))}
-			</div>
-			<div className='grid grid-cols-7 gap-2 mb-6'>
-				{monthGrid.map((day, idx) => {
-					const tiposDia = day ? obterTiposPorDia(day) : [];
-					return (
-						<button
-							type='button'
-							key={idx}
-							onClick={() => {
-								if (!day) return;
-								setSelectedDay(day);
-							}}
-							className={`min-h-20 rounded-lg border p-2 text-left transition-colors relative ${
-								day
-									? `border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40 hover:bg-white dark:hover:bg-gray-700 ${
-											selectedDay === day ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-										}`
-									: 'border-transparent'
-							}`}>
-							{day && (
-								<>
-									<div className='absolute top-2 left-2 text-sm font-semibold text-gray-700 dark:text-gray-200'>
-										{day}
-									</div>
-									<div className='mt-7 flex flex-wrap gap-1.5 max-w-[98px]'>
-											{tiposDia.map((tipo) => (
-												<span
-													key={tipo.key}
-													title={tipo.titulo}
-													className='inline-flex items-center justify-center w-8 h-8 rounded-full'
-													style={{ backgroundColor: corHexARgba(tipo.cor, 0.18), color: tipo.cor }}>
-													<i className={`fa-solid ${tipo.icono} text-sm`}></i>
-												</span>
-											))}
-									</div>
-									{/* Sen contador numérico: só iconas de tipo por día */}
-								</>
-							)}
-						</button>
-					);
-				})}
+			<div className='mb-6'>
+				<MonthEventsGrid
+					year={selectedYear}
+					month={selectedMonth}
+					weekStart={weekStart}
+					weekdayHeaders={weekdayHeaders}
+					items={elementosConRango}
+					proxectos={proxectosSeguros}
+					selectedDay={selectedDay}
+					onSelectDay={setSelectedDay}
+					compacto
+				/>
 			</div>
 
 			<div className='border-t border-gray-200 dark:border-gray-700 pt-4'>
@@ -507,6 +453,9 @@ export default function CalendarView() {
 										</div>
 										<span className='text-xs text-gray-500 dark:text-gray-400 shrink-0'>
 											{ensureDate(task._dueDate)?.toLocaleDateString(locale) || ''}
+										{task._endDate && task._endDate > task._dueDate
+											? ` – ${task._endDate.toLocaleDateString(locale)}`
+											: ''}
 										</span>
 									</div>
 								</motion.li>

@@ -21,6 +21,8 @@ const estadoInicialForm = {
 	cor: '#9333ea',
 };
 
+const tenValor = (valor) => valor !== null && valor !== undefined && String(valor).trim() !== '';
+
 export default function ProjectsView() {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
@@ -146,7 +148,6 @@ export default function ProjectsView() {
 										name='clienteNome'
 										value={form.clienteNome}
 										onChange={onChange}
-										required
 										placeholder={t.clientName}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -160,7 +161,6 @@ export default function ProjectsView() {
 										name='clienteTelefono'
 										value={form.clienteTelefono}
 										onChange={onChange}
-										required
 										placeholder={t.clientPhone}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -177,7 +177,6 @@ export default function ProjectsView() {
 										name='clienteEmail'
 										value={form.clienteEmail}
 										onChange={onChange}
-										required
 										placeholder={t.clientEmail}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -191,7 +190,6 @@ export default function ProjectsView() {
 										name='prezoAcordado'
 										value={form.prezoAcordado}
 										onChange={onChange}
-										required
 										placeholder={t.agreedPrice}
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
@@ -208,7 +206,6 @@ export default function ProjectsView() {
 										name='dataLimiteEntrega'
 										value={form.dataLimiteEntrega}
 										onChange={onChange}
-										required
 										className='w-full px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 									/>
 								</div>
@@ -289,7 +286,6 @@ export default function ProjectsView() {
 											name='clienteNome'
 											value={formEditar.clienteNome}
 											onChange={onChangeEditar}
-											required
 											placeholder={t.clientName}
 											className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 										/>
@@ -298,7 +294,6 @@ export default function ProjectsView() {
 												name='clienteTelefono'
 												value={formEditar.clienteTelefono}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.clientPhone}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -307,7 +302,6 @@ export default function ProjectsView() {
 												name='clienteEmail'
 												value={formEditar.clienteEmail}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.clientEmail}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -317,7 +311,6 @@ export default function ProjectsView() {
 												name='prezoAcordado'
 												value={formEditar.prezoAcordado}
 												onChange={onChangeEditar}
-												required
 												placeholder={t.agreedPrice}
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
@@ -326,7 +319,6 @@ export default function ProjectsView() {
 												name='dataLimiteEntrega'
 												value={formEditar.dataLimiteEntrega}
 												onChange={onChangeEditar}
-												required
 												className='w-full px-3 py-2 text-sm bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 dark:text-white'
 											/>
 										</div>
@@ -367,26 +359,36 @@ export default function ProjectsView() {
 												{proxecto.nome}
 											</p>
 											<div className='mt-3 flex flex-wrap items-center gap-2 text-sm'>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
-													<i className='fa-solid fa-user mr-1'></i>
-													{proxecto.clienteNome}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'>
-													<i className='fa-solid fa-phone mr-1'></i>
-													{proxecto.clienteTelefono}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'>
-													<i className='fa-solid fa-envelope mr-1'></i>
-													{proxecto.clienteEmail}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'>
-													<i className='fa-solid fa-euro-sign mr-1'></i>
-													{proxecto.prezoAcordado}
-												</span>
-												<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-300'>
-													<i className='fa-solid fa-calendar-days mr-1'></i>
-													{proxecto.dataLimiteEntrega}
-												</span>
+												{tenValor(proxecto.clienteNome) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
+														<i className='fa-solid fa-user mr-1'></i>
+														{proxecto.clienteNome}
+													</span>
+												)}
+												{tenValor(proxecto.clienteTelefono) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'>
+														<i className='fa-solid fa-phone mr-1'></i>
+														{proxecto.clienteTelefono}
+													</span>
+												)}
+												{tenValor(proxecto.clienteEmail) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300'>
+														<i className='fa-solid fa-envelope mr-1'></i>
+														{proxecto.clienteEmail}
+													</span>
+												)}
+												{tenValor(proxecto.prezoAcordado) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300'>
+														<i className='fa-solid fa-euro-sign mr-1'></i>
+														{proxecto.prezoAcordado}
+													</span>
+												)}
+												{tenValor(proxecto.dataLimiteEntrega) && (
+													<span className='inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/20 dark:text-violet-300'>
+														<i className='fa-solid fa-calendar-days mr-1'></i>
+														{proxecto.dataLimiteEntrega}
+													</span>
+												)}
 											</div>
 										</div>
 										<motion.div

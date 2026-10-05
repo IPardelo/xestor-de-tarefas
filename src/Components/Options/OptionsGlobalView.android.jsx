@@ -19,7 +19,6 @@ export default function OptionsGlobalView() {
 
 			{eAdmin && (
 				<div>
-					<h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-4'>{t.firebaseConfigTitle}</h3>
 					<form className='space-y-3'>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>{t.firebaseStatusLabel}</label>
