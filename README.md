@@ -1,6 +1,6 @@
 <div align="center">
 
-![XestorDeTarefas Screenshot](public/Images/banner.PNG)
+<img src="public/Images/banner.PNG" width="480" align="middle"/>&nbsp;&nbsp;<img src="https://img.shields.io/github/package-json/v/IPardelo/xestor-de-tarefas-web?label=versión&style=flat-square&color=7c3aed" align="middle"/>
 
 <br>
 
@@ -222,7 +222,7 @@ xestor-de-tarefas/
 
 ## Evolución por versión
 
-### Sen publicar
+### v2.4.0
 
 - Proxectos: só o nome é obrigatorio; cliente, teléfono, email, prezo e data de entrega son opcionais e non se amosan se están baleiros.
 - Calendario: a vista mensual amosa os eventos co seu título e cor en cada día, e os de varios días como unha barra continua. Tamén se ven os días dos meses veciños e hai frechas para cambiar de mes.
