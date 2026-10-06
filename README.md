@@ -49,7 +49,7 @@ XestorDeTarefas nace da idea contraria: **a app é túa e os datos tamén**.
 
 - ✅ Xestión de tarefas: crear, editar, eliminar, completar, buscar, filtrar e ordenar.
 - 📝 Módulo de notas: notas de texto e notas tipo lista/checklist con cor personalizada.
-- 📌 Ordenación de notas por fixación e última actualización.
+- 📌 Notas fixadas arriba e orde manual arrastrando e soltando (tamén no móbil).
 - 👥 Xestión de usuarios.
 - 📁 Xestión de proxectos con datos de cliente.
 - 📅 Vista de calendario anual/mensual con sincronización con Google Calendar.
@@ -160,6 +160,15 @@ O código é común (Redux, Firebase, traducións e a maioría de compoñentes).
 | Pechar sesión | Con confirmación | Directo |
 | KDBX | Si | Non |
 
+### 🔔 Recordatorios (app Android)
+
+- Ao crear ou editar unha nota na app pódese poñer un recordatorio (data e hora). Gárdase na nota (`recordatorio`) e sincronízase con Firebase.
+- O móbil programa o aviso con `@capacitor/local-notifications`: soa aínda que a app estea pechada e non precisa servidor.
+- Ao tocar a notificación ábrese a app na nota.
+- A primeira vez pídese o permiso de notificacións (Android 13+) e lévase ao axuste de "alarmas exactas" (Android 12+) para que soe á hora xusta.
+- Na web vese o recordatorio na nota, pero non se pode poñer nin soa.
+- Despois de actualizar: `npm install` e `npm run android:sync`.
+
 ## Estrutura xeral
 
 ```text
@@ -219,6 +228,10 @@ xestor-de-tarefas/
 - Calendario: a vista mensual amosa os eventos co seu título e cor en cada día, e os de varios días como unha barra continua. Tamén se ven os días dos meses veciños e hai frechas para cambiar de mes.
 - Os eventos de Google Calendar len a data de fin (`DTEND` / `DURATION`).
 - A configuración KDBX pasa a ser de cada usuario (en Axustes de usuario) e xa non está restrinxida a admin.
+- Notas: pódense ordenar arrastrándoas dende a parte superior (cabeceira e título); a orde gárdase en cada nota e sincronízase. As opcións Editar, Fixar e Eliminar están nun menú de tres puntos na esquina superior dereita.
+- Notas tipo lista: editor por elementos. "+ Elemento de lista" engade un ao principio, Intro crea outro debaixo, Borrar nun elemento baleiro quítao e os seis puntos (⋮⋮) serven para arrastralos e ordenalos.
+- Recordatorios nas notas (app Android): data e hora en cada nota e aviso con notificación local aínda coa app pechada. Ver a sección "Recordatorios".
+- "Creación de usuarios" pasa a chamarse "Xestión de usuarios".
 - "Opcións globais" pasa a chamarse "Configuración de Firebase" e só amosa os datos da conexión.
 
 ### v2.3.1

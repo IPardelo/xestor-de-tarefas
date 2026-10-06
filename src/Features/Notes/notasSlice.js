@@ -42,6 +42,9 @@ const normalizarItensLista = (itens) => {
 		.filter((item) => item.texto);
 };
 
+const normalizarRecordatorio = (valor) =>
+	typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(valor.trim()) ? valor.trim() : '';
+
 const podeEditarNota = (nota, usuarioId) => {
 	if (!nota || !usuarioId) return false;
 	return nota.usuarioId === usuarioId;
@@ -82,6 +85,7 @@ const notasSlice = createSlice({
 				itensLista,
 				cor: normalizarCorNota(payload.cor),
 				fixada: Boolean(payload.fixada),
+				recordatorio: normalizarRecordatorio(payload.recordatorio),
 				creadaEn: payload.creadaEn || new Date().toISOString(),
 				actualizadaEn: new Date().toISOString(),
 			};
@@ -97,6 +101,10 @@ const notasSlice = createSlice({
 			nota.tipo = tipo === 'lista' ? 'lista' : 'texto';
 			nota.itensLista = normalizarItensLista(itensLista);
 			nota.cor = normalizarCorNota(cor || nota.cor);
+			// Só se cambia se vén no payload (a web non ten o campo e non o debe borrar).
+			if ('recordatorio' in (action.payload || {})) {
+				nota.recordatorio = normalizarRecordatorio(action.payload.recordatorio);
+			}
 			nota.actualizadaEn = new Date().toISOString();
 			gardarNotasNoAlmacenamento(state.notas);
 		},
@@ -111,6 +119,16 @@ const notasSlice = createSlice({
 			if (!nota) return;
 			nota.fixada = !nota.fixada;
 			nota.actualizadaEn = new Date().toISOString();
+			gardarNotasNoAlmacenamento(state.notas);
+		},
+		// Garda a orde manual (arrastrar e soltar) das notas dun usuario.
+		reordenarNotas: (state, action) => {
+			const { usuarioId, ids } = action.payload || {};
+			if (!usuarioId || !Array.isArray(ids)) return;
+			ids.forEach((id, indice) => {
+				const nota = state.notas.find((item) => item.id === id && podeEditarNota(item, usuarioId));
+				if (nota && nota.orde !== indice) nota.orde = indice;
+			});
 			gardarNotasNoAlmacenamento(state.notas);
 		},
 		alternarItemListaNota: (state, action) => {
@@ -133,6 +151,7 @@ export const {
 	eliminarNota,
 	alternarNotaFixada,
 	alternarItemListaNota,
+	reordenarNotas,
 } = notasSlice.actions;
 
 export const seleccionarNotas = (state) => state.notas?.notas || [];
@@ -143,6 +162,11 @@ export const seleccionarNotasUsuarioActual = createSelector(
 			.filter((nota) => nota?.usuarioId === usuarioId)
 			.sort((a, b) => {
 				if (Boolean(b.fixada) !== Boolean(a.fixada)) return Number(b.fixada) - Number(a.fixada);
+				// Orde manual: as notas sen orde (as novas) van primeiro; o resto, como se deixaron.
+				const aTenOrde = Number.isFinite(a.orde);
+				const bTenOrde = Number.isFinite(b.orde);
+				if (aTenOrde && bTenOrde && a.orde !== b.orde) return a.orde - b.orde;
+				if (aTenOrde !== bTenOrde) return aTenOrde ? 1 : -1;
 				return new Date(b.actualizadaEn || 0) - new Date(a.actualizadaEn || 0);
 			})
 );

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from '@reduxjs/toolkit';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,11 +8,17 @@ import {
 	eliminarNota,
 	alternarNotaFixada,
 	alternarItemListaNota,
+	reordenarNotas,
 	seleccionarNotasUsuarioActual,
 } from '@/Features/Notes/notasSlice';
 import { seleccionarUsuarioActualId } from '@/Features/Users/usuariosSlice';
 import { seleccionarIdioma } from '@/Features/Language/idiomaSlice';
 import { translations } from '@/i18n/translations';
+import useArrastrarNotas from '@/Components/Notes/useArrastrarNotas';
+import MenuNota from '@/Components/Notes/MenuNota';
+import EditorLista, { textoAElementos } from '@/Components/Notes/EditorLista';
+import { CampoRecordatorio, EtiquetaRecordatorio } from '@/Components/Notes/RecordatorioNota';
+import { pedirPermisosRecordatorios } from '@/Utils/recordatorios';
 import { showToast } from '@/Utils/toast';
 
 const corHexARgba = (hex, alpha = 1) => {
@@ -24,12 +30,15 @@ const corHexARgba = (hex, alpha = 1) => {
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-export default function NotesView() {
+export default function NotesView({ notaDestacadaId = null, onNotaDestacadaVista }) {
 	const dispatch = useDispatch();
 	const idioma = useSelector(seleccionarIdioma);
 	const usuarioActualId = useSelector(seleccionarUsuarioActualId);
 	const notas = useSelector(seleccionarNotasUsuarioActual);
 	const t = translations[idioma] || translations.gl;
+	const { notasOrdenadas, arrastrandoId, propsZona } = useArrastrarNotas(notas, (ids) =>
+		dispatch(reordenarNotas({ usuarioId: usuarioActualId, ids }))
+	);
 
 	const [novaNota, setNovaNota] = useState({
 		titulo: '',
@@ -37,9 +46,10 @@ export default function NotesView() {
 		tipo: 'texto',
 		cor: '#9333ea',
 		itensLista: [],
-		textoLista: '',
+		recordatorio: '',
 	});
 	const [editandoId, setEditandoId] = useState(null);
+	const [menuAbertoId, setMenuAbertoId] = useState(null);
 	const [expandidoNovaNota, setExpandidoNovaNota] = useState(false);
 	const [borrador, setBorrador] = useState({
 		titulo: '',
@@ -47,11 +57,8 @@ export default function NotesView() {
 		tipo: 'texto',
 		cor: '#9333ea',
 		itensLista: [],
-		textoLista: '',
+		recordatorio: '',
 	});
-	const novaListaRef = useRef(null);
-	const borradorListaRef = useRef(null);
-
 	const limparNovaNota = () =>
 		setNovaNota({
 			titulo: '',
@@ -59,69 +66,36 @@ export default function NotesView() {
 			tipo: 'texto',
 			cor: '#9333ea',
 			itensLista: [],
-			textoLista: '',
+			recordatorio: '',
 		});
 
-	const LIMIADOR_CASELLA = /^\s*(?:[-*]\s*)?(?:\[(?:\s|x|X)\]|☐|☑)\s*/;
-
-	const limparPrefixoCasilla = (liña) => String(liña || '').replace(LIMIADOR_CASELLA, '');
-
-	const engadirPrefixoCasilla = (liña) => {
-		const limpo = limparPrefixoCasilla(liña);
-		return limpo.trim() ? `☐ ${limpo.trim()}` : '☐ ';
+	const comprobarPermisos = async (recordatorio) => {
+		if (!recordatorio) return;
+		const ok = await pedirPermisosRecordatorios();
+		if (!ok) showToast(t.noteReminderNoPermission);
 	};
 
-	const obterEstadoCasilla = (liña) => /^\s*(?:[-*]\s*)?(?:\[(?:x|X)\]|☑)\s*/.test(String(liña || ''));
-
-	const textoConCasillas = (textoOuItens) => {
-		if (Array.isArray(textoOuItens)) {
-			return textoOuItens
-				.map((item) => `${item?.completado ? '☑' : '☐'} ${String(item?.texto || '').trim()}`.trimEnd())
-				.join('\n');
-		}
-		const liñas = String(textoOuItens || '').split('\n');
-		return liñas.map(engadirPrefixoCasilla).join('\n');
-	};
-
-	const axustarAlturaTextarea = (textarea) => {
-		if (!textarea) return;
-		textarea.style.height = 'auto';
-		textarea.style.height = `${textarea.scrollHeight}px`;
-	};
-
-	const inserirLiñaConCasilla = (event, value, onChange) => {
-		if (event.key !== 'Enter' || event.shiftKey) return;
-		event.preventDefault();
-		const target = event.currentTarget;
-		const inicio = target.selectionStart ?? value.length;
-		const fin = target.selectionEnd ?? value.length;
-		const prefixo = '☐ ';
-		const seguinteValor = `${value.slice(0, inicio)}\n${prefixo}${value.slice(fin)}`;
-		const novaPosicion = inicio + 1 + prefixo.length;
-		onChange(seguinteValor);
-		requestAnimationFrame(() => {
-			target.setSelectionRange(novaPosicion, novaPosicion);
-		});
-	};
+	const [destacadaId, setDestacadaId] = useState(null);
+	useEffect(() => {
+		if (!notaDestacadaId) return undefined;
+		setDestacadaId(notaDestacadaId);
+		onNotaDestacadaVista?.();
+		const temporizador = setTimeout(() => {
+			document
+				.querySelector(`[data-nota-id="${CSS.escape(notaDestacadaId)}"]`)
+				?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}, 300);
+		const apagar = setTimeout(() => setDestacadaId(null), 2500);
+		return () => {
+			clearTimeout(temporizador);
+			clearTimeout(apagar);
+		};
+	}, [notaDestacadaId, onNotaDestacadaVista]);
 
 	const iconosTipoNota = {
 		texto: 'fa-align-left',
 		lista: 'fa-list-check',
 	};
-
-	const textoAItensLista = (texto, itensPrevios = []) =>
-		String(texto || '')
-			.split('\n')
-			.map((liña) => ({
-				texto: limparPrefixoCasilla(liña).trim(),
-				completado: obterEstadoCasilla(liña),
-			}))
-			.filter((item) => item.texto)
-			.map((liña, indice) => ({
-				id: itensPrevios[indice]?.id || nanoid(),
-				texto: liña.texto,
-				completado: liña.completado,
-			}));
 
 	const gardarNovaNota = (e) => {
 		e.preventDefault();
@@ -134,9 +108,11 @@ export default function NotesView() {
 				tipo: novaNota.tipo,
 				cor: novaNota.cor,
 				itensLista:
-					novaNota.tipo === 'lista' ? textoAItensLista(novaNota.textoLista, novaNota.itensLista) : [],
+					novaNota.tipo === 'lista' ? novaNota.itensLista.filter((item) => item.texto.trim()) : [],
+				recordatorio: novaNota.recordatorio,
 			})
 		);
+		comprobarPermisos(novaNota.recordatorio);
 		limparNovaNota();
 		setExpandidoNovaNota(false);
 		showToast(t.toastNoteSaved);
@@ -150,7 +126,7 @@ export default function NotesView() {
 			tipo: nota.tipo === 'lista' ? 'lista' : 'texto',
 			cor: nota.cor || '#9333ea',
 			itensLista: Array.isArray(nota.itensLista) ? nota.itensLista : [],
-			textoLista: textoConCasillas(nota.itensLista || []),
+			recordatorio: nota.recordatorio || '',
 		});
 	};
 
@@ -164,34 +140,14 @@ export default function NotesView() {
 				tipo: borrador.tipo,
 				cor: borrador.cor,
 				itensLista:
-					borrador.tipo === 'lista' ? textoAItensLista(borrador.textoLista, borrador.itensLista) : [],
+					borrador.tipo === 'lista' ? borrador.itensLista.filter((item) => item.texto.trim()) : [],
+				recordatorio: borrador.recordatorio,
 			})
 		);
+		comprobarPermisos(borrador.recordatorio);
 		setEditandoId(null);
 		showToast(t.toastNoteSaved);
 	};
-
-	const onChangeListaNovaNota = (novoTexto) =>
-		setNovaNota((prev) => ({
-			...prev,
-			textoLista: novoTexto,
-			itensLista: textoAItensLista(novoTexto, prev.itensLista),
-		}));
-
-	const onChangeListaBorrador = (novoTexto) =>
-		setBorrador((prev) => ({
-			...prev,
-			textoLista: novoTexto,
-			itensLista: textoAItensLista(novoTexto, prev.itensLista),
-		}));
-
-	useEffect(() => {
-		axustarAlturaTextarea(novaListaRef.current);
-	}, [novaNota.textoLista, novaNota.tipo, expandidoNovaNota]);
-
-	useEffect(() => {
-		axustarAlturaTextarea(borradorListaRef.current);
-	}, [borrador.textoLista, borrador.tipo, editandoId]);
 
 	return (
 		<div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors duration-300'>
@@ -250,7 +206,7 @@ export default function NotesView() {
 														setNovaNota((prev) => ({
 															...prev,
 															tipo: 'lista',
-															textoLista: textoConCasillas(prev.textoLista),
+															itensLista: prev.itensLista.length ? prev.itensLista : textoAElementos(prev.contido),
 														}));
 														return;
 													}
@@ -279,33 +235,17 @@ export default function NotesView() {
 									className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
 								/>
 							) : (
-								<div className='space-y-2'>
-									<textarea
-										ref={novaListaRef}
-										value={novaNota.textoLista}
-										onInput={(e) => axustarAlturaTextarea(e.currentTarget)}
-										onFocus={() =>
-											setNovaNota((prev) => {
-												const novoTexto = prev.textoLista ? prev.textoLista : '☐ ';
-												requestAnimationFrame(() => axustarAlturaTextarea(novaListaRef.current));
-												return {
-													...prev,
-													textoLista: novoTexto,
-												};
-											})
-										}
-										onChange={(e) => onChangeListaNovaNota(e.target.value)}
-										onKeyDown={(e) =>
-											inserirLiñaConCasilla(e, novaNota.textoLista, (novoTexto) =>
-												onChangeListaNovaNota(novoTexto)
-											)
-										}
-										placeholder={t.noteChecklistNewItemPlaceholder}
-										rows='5'
-										className='w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 overflow-hidden resize-none'
-									/>
-								</div>
+								<EditorLista
+									t={t}
+									itens={novaNota.itensLista}
+									onChange={(itens) => setNovaNota((prev) => ({ ...prev, itensLista: itens }))}
+								/>
 							)}
+							<CampoRecordatorio
+								t={t}
+								valor={novaNota.recordatorio}
+								onChange={(recordatorio) => setNovaNota((prev) => ({ ...prev, recordatorio }))}
+							/>
 							<div className='flex flex-wrap items-center justify-between gap-3'>
 								<div className='flex items-center gap-2'>
 									<input
@@ -342,57 +282,57 @@ export default function NotesView() {
 				<p className='text-gray-500 dark:text-gray-400'>{t.noNotes}</p>
 			) : (
 				<div className='columns-1 sm:columns-2 lg:columns-3 gap-4'>
-					{notas.map((nota) => {
+					{notasOrdenadas.map((nota) => {
 						const corNota = nota.cor || '#9333ea';
 						const estaEditando = editandoId === nota.id;
+						const estaArrastrando = arrastrandoId === nota.id;
 						return (
 							<motion.article
 								key={nota.id}
+								data-nota-id={nota.id}
 								layout
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
-								className='break-inside-avoid mb-4 rounded-xl p-4 border shadow-sm text-gray-900 dark:text-gray-100'
+								className={`break-inside-avoid mb-4 rounded-xl p-4 border shadow-sm text-gray-900 dark:text-gray-100 transition-shadow ${
+									estaArrastrando ? 'relative z-10 shadow-xl ring-2 ring-indigo-500 opacity-90' : menuAbertoId === nota.id ? 'relative z-20' : destacadaId === nota.id ? 'ring-2 ring-indigo-500' : ''
+								}`}
 								style={{
 									backgroundColor: corHexARgba(corNota, 0.18),
 									borderColor: corHexARgba(corNota, 0.45),
 								}}>
-								<div className='flex items-center justify-between gap-2 mb-2'>
-									<button
-										type='button'
-										onClick={() =>
+								<div
+									{...propsZona(nota.id, !estaEditando)}
+									className={`-mx-4 -mt-4 px-4 pt-4 pb-1 mb-1 rounded-t-xl select-none ${
+										estaEditando ? '' : estaArrastrando ? 'cursor-grabbing' : 'cursor-grab'
+									}`}>
+								<div className='flex items-start justify-between gap-2'>
+									<div className='min-w-0 flex-1'>
+										{!estaEditando && nota.titulo ? (
+											<h3 className='font-semibold text-lg leading-snug mb-2 break-words'>{nota.titulo}</h3>
+										) : (
+											<div className='h-6' />
+										)}
+									</div>
+									{nota.fixada && (
+										<i
+											className='fa-solid fa-thumbtack -rotate-12 text-xs text-gray-500 dark:text-gray-400 mt-1.5'
+											title={t.pinnedNote}
+											aria-label={t.pinnedNote}></i>
+									)}
+									<MenuNota
+										t={t}
+										fixada={Boolean(nota.fixada)}
+										onAbrirCambio={(aberto) => setMenuAbertoId(aberto ? nota.id : null)}
+										onEditar={() => comezarEdicion(nota)}
+										onFixar={() =>
 											dispatch(alternarNotaFixada({ id: nota.id, usuarioId: usuarioActualId }))
 										}
-										className='text-xs font-medium text-gray-800 dark:text-gray-100 hover:text-black dark:hover:text-white'>
-										<motion.i
-											className='fa-solid fa-thumbtack inline-block mr-1'
-											animate={{ rotate: nota.fixada ? -12 : 0 }}
-											transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-										/>{' '}
-										{nota.fixada ? t.unpinNote : t.pinNote}
-									</button>
-									<div className='flex gap-2 self-end sm:self-center'>
-										<motion.button
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.9 }}
-											type='button'
-											onClick={() => comezarEdicion(nota)}
-											title={t.editNote}
-											className='w-8 h-8 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors'>
-											<i className='fa-solid fa-pen-to-square'></i>
-										</motion.button>
-										<motion.button
-											whileHover={{ scale: 1.1, color: '#ef4444' }}
-											whileTap={{ scale: 0.9 }}
-											type='button'
-											onClick={() => {
-												dispatch(eliminarNota({ id: nota.id, usuarioId: usuarioActualId }));
-												showToast(t.toastNoteDeleted);
-											}}
-											title={t.deleteNote}
-											className='w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'>
-											<i className='fa-solid fa-trash-can'></i>
-										</motion.button>
-									</div>
+										onEliminar={() => {
+											dispatch(eliminarNota({ id: nota.id, usuarioId: usuarioActualId }));
+											showToast(t.toastNoteDeleted);
+										}}
+									/>
+								</div>
 								</div>
 
 								{estaEditando ? (
@@ -423,7 +363,7 @@ export default function NotesView() {
 																	setBorrador((prev) => ({
 																		...prev,
 																		tipo: 'lista',
-																		textoLista: textoConCasillas(prev.textoLista),
+																		itensLista: prev.itensLista.length ? prev.itensLista : textoAElementos(prev.contido),
 																	}));
 																	return;
 																}
@@ -451,33 +391,18 @@ export default function NotesView() {
 												className='w-full mt-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 resize-none'
 											/>
 										) : (
-											<div className='mt-1 space-y-2'>
-												<textarea
-													ref={borradorListaRef}
-													value={borrador.textoLista}
-													onInput={(e) => axustarAlturaTextarea(e.currentTarget)}
-													onFocus={() =>
-														setBorrador((prev) => {
-															const novoTexto = prev.textoLista ? prev.textoLista : '☐ ';
-															requestAnimationFrame(() => axustarAlturaTextarea(borradorListaRef.current));
-															return {
-																...prev,
-																textoLista: novoTexto,
-															};
-														})
-													}
-													onChange={(e) => onChangeListaBorrador(e.target.value)}
-													onKeyDown={(e) =>
-														inserirLiñaConCasilla(e, borrador.textoLista, (novoTexto) =>
-															onChangeListaBorrador(novoTexto)
-														)
-													}
-													placeholder={t.noteChecklistNewItemPlaceholder}
-													rows='5'
-													className='w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/60 overflow-hidden resize-none'
-												/>
-											</div>
+											<EditorLista
+												t={t}
+												itens={borrador.itensLista}
+												onChange={(itens) => setBorrador((prev) => ({ ...prev, itensLista: itens }))}
+												compacto
+											/>
 										)}
+										<CampoRecordatorio
+											t={t}
+											valor={borrador.recordatorio}
+											onChange={(recordatorio) => setBorrador((prev) => ({ ...prev, recordatorio }))}
+										/>
 										<div className='flex items-center justify-between gap-2'>
 											<div className='flex items-center gap-2'>
 												<input
@@ -507,7 +432,6 @@ export default function NotesView() {
 									</div>
 								) : (
 									<div>
-										{nota.titulo && <h3 className='font-semibold text-base mb-1'>{nota.titulo}</h3>}
 										{nota.tipo !== 'lista' && nota.contido && (
 											<p className='text-sm whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100'>
 												{nota.contido}
@@ -538,6 +462,7 @@ export default function NotesView() {
 												))}
 											</ul>
 										)}
+										<EtiquetaRecordatorio nota={nota} idioma={idioma} t={t} />
 									</div>
 								)}
 							</motion.article>

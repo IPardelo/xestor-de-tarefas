@@ -30,6 +30,8 @@ import {
 	seleccionarUsuarioActualAdmin,
 } from '@/Features/Users/usuariosSlice';
 import { esApp } from '@/Utils/plataforma';
+import { seleccionarNotasUsuarioActual } from '@/Features/Notes/notasSlice';
+import { escoitarToquesRecordatorios, sincronizarRecordatorios } from '@/Utils/recordatorios';
 
 export default function App() {
 	const dispatch = useDispatch();
@@ -45,6 +47,23 @@ export default function App() {
 	const [modalPecharSesionAberta, setModalPecharSesionAberta] = useState(false);
 	const [sidebarAberta, setSidebarAberta] = useState(false);
 	const preferenciasAplicadasRef = useRef({ idioma: null, tema: null });
+	const notasUsuario = useSelector(seleccionarNotasUsuarioActual);
+	const [notaDestacadaId, setNotaDestacadaId] = useState(null);
+
+	// App: programa os recordatorios das notas como notificacións locais.
+	useEffect(() => {
+		if (!esApp) return;
+		sincronizarRecordatorios(sesionIniciada ? notasUsuario : []);
+	}, [notasUsuario, sesionIniciada]);
+
+	// App: ao tocar a notificación dun recordatorio ábrese a nota.
+	useEffect(() => {
+		if (!esApp) return undefined;
+		return escoitarToquesRecordatorios((notaId) => {
+			setVistaActual('notas');
+			setNotaDestacadaId(notaId);
+		});
+	}, []);
 
 	useEffect(() => {
 		if (tema === 'oscuro') {
@@ -174,7 +193,11 @@ export default function App() {
 				</CalendarErrorBoundary>
 			);
 		}
-		if (vistaActual === 'notas') return <NotesView />;
+		if (vistaActual === 'notas') {
+			return (
+				<NotesView notaDestacadaId={notaDestacadaId} onNotaDestacadaVista={() => setNotaDestacadaId(null)} />
+			);
+		}
 		if (vistaActual === 'proxectos') return <ProjectsView />;
 		if (vistaActual === 'axustesUsuario') return <UserSettingsView />;
 		if (vistaActual === 'opcionesUsuarios' && esAdmin) return <OptionsUsersView />;
